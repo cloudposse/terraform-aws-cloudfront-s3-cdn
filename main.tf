@@ -57,14 +57,14 @@ resource "aws_s3_bucket" "origin" {
   cors_rule {
     allowed_headers = "${var.allowed_headers}"
     allowed_methods = "${var.allowed_methods}"
-    allowed_origins = ["${var.aliases}"]
+    allowed_origins = "${var.aliases}"
     expose_headers  = ["${var.expose_headers}"]
     max_age_seconds = "${var.max_age_seconds}"
   }
 }
 
 module "logs" {
-  source                   = "git::https://github.com/cloudposse/tf_log_storage.git?ref=init"
+  source                   = "git::https://github.com/cloudposse/tf_log_storage.git?ref=tags/0.1.0"
   namespace                = "${var.namespace}"
   stage                    = "${var.stage}"
   name                     = "${var.name}"
@@ -107,7 +107,7 @@ resource "aws_cloudfront_distribution" "default" {
     prefix          = "${var.log_prefix}"
   }
 
-  aliases = ["${var.aliases}"]
+  aliases = "${var.aliases}"
 
   origin {
     domain_name = "${null_resource.default.triggers.domain_name}"
@@ -156,9 +156,9 @@ resource "aws_cloudfront_distribution" "default" {
   tags = "${module.distribution_label.tags}"
 }
 
-module "dns_aliases" {
+module "dns" {
   source          = "git::https://github.com/cloudposse/tf_vanity.git?ref=generalize"
-  aliases         = ["${var.aliases}"]
+  aliases         = "${var.aliases}"
   zone_id         = "${var.dns_zone_id}"
   target_dns_name = "${aws_cloudfront_distribution.default.domain_name}"
   target_zone_id  = "${aws_cloudfront_distribution.default.hosted_zone_id}"

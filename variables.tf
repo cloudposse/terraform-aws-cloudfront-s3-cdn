@@ -10,7 +10,7 @@ variable "delimiter" {
   default = "-"
 }
 
-varaible "enabled" {
+variable "enabled" {
   default = "true"
 }
 
@@ -140,6 +140,6 @@ variable "max_age_seconds" {
   default = "3000"
 }
 
-variable "origin_bucket" {
+variable "dns_zone_id" {
   default = ""
 }
