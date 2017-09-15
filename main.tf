@@ -12,7 +12,8 @@ resource "aws_cloudfront_origin_access_identity" "default" {
   comment = "${module.distribution_label.id}"
 }
 
-data "template_file" "bucket_policy" {
+data "template_file" "bucket_policy_file" {
+  count    = "${signum(length(var.custom_bucket_domain_name)) == 1 ? 0 : 1}"
   template = "${file("${path.module}/policy.json")}"
 
   vars {
@@ -86,7 +87,7 @@ resource "aws_cloudfront_distribution" "default" {
 
   origin {
     domain_name = "${signum(length(var.custom_bucket_domain_name)) == 1 ? var.custom_bucket_domain_name : join("", aws_s3_bucket.origin.*.bucket_domain_name) }"
-    origin_id   = "${signum(length(var.custom_bucket_id)) == 1 ?  var.custom_bucket_id : aws_s3_bucket.origin.bucket}"
+    origin_id   = "${signum(length(var.custom_bucket_id)) == 1 ?  var.custom_bucket_id : aws_s3_bucket.origin.id}"
     origin_path = "${var.origin_path}"
 
     s3_origin_config {
@@ -104,7 +105,7 @@ resource "aws_cloudfront_distribution" "default" {
   default_cache_behavior {
     allowed_methods  = "${var.allowed_methods}"
     cached_methods   = "${var.cached_methods}"
-    target_origin_id = "${aws_s3_bucket.origin.bucket}"
+    target_origin_id = "${signum(length(var.custom_bucket_id)) == 1 ?  var.custom_bucket_id : aws_s3_bucket.origin.id}"
     compress         = "${var.compress}"
 
     forwarded_values {
