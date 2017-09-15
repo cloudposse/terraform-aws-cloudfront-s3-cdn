@@ -12,9 +12,30 @@ resource "aws_cloudfront_origin_access_identity" "default" {
   comment = "${module.distribution_label.id}"
 }
 
-data "template_file" "bucket_policy_file" {
-  count    = "${signum(length(var.custom_bucket_domain_name)) == 1 ? 0 : 1}"
-  template = "${file("${path.module}/policy.json")}"
+data "aws_iam_policy_document" "origin" {
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["arn:aws:s3:::$${bucket_name}$${origin_path}*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["${aws_cloudfront_origin_access_identity.default.iam_arn}"]
+    }
+  }
+
+  statement {
+    actions   = ["s3:ListBucket"]
+    resources = ["arn:aws:s3:::$${bucket_name}"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["${aws_cloudfront_origin_access_identity.default.iam_arn}"]
+    }
+  }
+}
+
+data "template_file" "default" {
+  template = "${data.aws_iam_policy_document.origin.json}"
 
   vars {
     origin_path = "${var.origin_path}"
@@ -22,11 +43,15 @@ data "template_file" "bucket_policy_file" {
   }
 }
 
+resource "aws_s3_bucket_policy" "default" {
+  bucket = "${null_resource.default.triggers.bucket}"
+  policy = "${data.template_file.default.rendered}"
+}
+
 resource "aws_s3_bucket" "origin" {
-  count  = "${signum(length(var.custom_bucket_domain_name)) == 1 ? 0 : 1}"
+  count  = "${signum(length(var.origin_bucket)) == 1 ? 0 : 1}"
   bucket = "${module.origin_label.id}"
   acl    = "private"
-  policy = "${data.template_file.bucket_policy.rendered}"
   tags   = "${module.origin_label.tags}"
 
   cors_rule {
@@ -36,8 +61,6 @@ resource "aws_s3_bucket" "origin" {
     expose_headers  = ["${var.expose_headers}"]
     max_age_seconds = "${var.max_age_seconds}"
   }
-
-  depends_on = ["data.template_file.bucket_policy"]
 }
 
 module "logs" {
@@ -65,7 +88,9 @@ module "distribution_label" {
 
 resource "null_resource" "default" {
   triggers {
-    domain_name = "${signum(length(var.custom_bucket_domain_name)) == 1 ? var.custom_bucket_domain_name : join("", aws_s3_bucket.origin.*.bucket_domain_name) }"
+    bucket             = "${signum(length(var.origin_bucket)) == 1 ? var.origin_bucket : join("", aws_s3_bucket.origin.*.id)}"
+    bucket_domain_name = "${signum(length(var.origin_bucket)) == 1 ? format("%s.s3.amazonaws.com", var.origin_bucket) : join("", aws_s3_bucket.origin.*.bucket_domain_name) }"
+    bucket_arn         = "${signum(length(var.origin_bucket)) == 1 ? "" : join("", aws_s3_bucket.origin.*.arn)}"
   }
 }
 

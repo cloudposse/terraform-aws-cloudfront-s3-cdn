@@ -140,14 +140,6 @@ variable "max_age_seconds" {
   default = "3000"
 }
 
-# variable "routing_rules" {
-#   default = ""
-# }
-
-variable "custom_bucket_domain_name" {
-  default = ""
-}
-
-variable "custom_bucket_id" {
+variable "origin_bucket" {
   default = ""
 }

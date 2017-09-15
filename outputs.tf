@@ -23,7 +23,11 @@ output "cf_hosted_zone_id" {
 }
 
 output "s3_bucket" {
-  value = "${aws_s3_bucket.origin.bucket}"
+  value = "${null_resource.default.bucket}"
+}
+
+output "s3_bucket_domain_name" {
+  value = "${null_resource.default.bucket_domain_name}"
 }
 
 output "s3_bucket_arn" {

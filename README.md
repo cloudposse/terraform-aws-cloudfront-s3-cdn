@@ -1,4 +1,4 @@
-# tf_cdn
+# tf_cdn_s3
 
 Terraform module to easily provision CloudFront CDN with an S3 or custom origin.
 
