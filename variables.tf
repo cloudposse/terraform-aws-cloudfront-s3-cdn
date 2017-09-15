@@ -1,9 +1,13 @@
 variable "name" {}
-variable "namespage" {}
+variable "namespace" {}
 variable "stage" {}
 
 variable "tags" {
   default = {}
+}
+
+variable "delimiter" {
+  default = "-"
 }
 
 variable "acm_certificate_arn" {
@@ -112,4 +116,34 @@ variable "geo_restriction_locations" {
 
   # e.g. ["US", "CA", "GB", "DE"]
   default = []
+}
+
+variable "default_error_object" {
+  default = "404.html"
+}
+
+variable "allowed_headers" {
+  type    = "list"
+  default = ["*"]
+}
+
+variable "expose_headers" {
+  type    = "list"
+  default = ["ETag"]
+}
+
+variable "max_age_seconds" {
+  default = "3000"
+}
+
+# variable "routing_rules" {
+#   default = ""
+# }
+
+variable "custom_bucket_domain_name" {
+  default = ""
+}
+
+variable "custom_bucket_id" {
+  default = ""
 }

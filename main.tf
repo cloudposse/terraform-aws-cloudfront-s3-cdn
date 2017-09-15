@@ -12,33 +12,38 @@ resource "aws_cloudfront_origin_access_identity" "default" {
   comment = "${module.distribution_label.id}"
 }
 
-data "aws_iam_policy_document" "origin" {
-  statement {
-    actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::${aws_s3_bucket.origin.bucket}${var.origin_path}*"]
+data "template_file" "bucket_policy" {
+  template = "${file("${path.module}/policy.json")}"
 
-    principals {
-      type        = "AWS"
-      identifiers = ["${aws_cloudfront_origin_access_identity.default.iam_arn}"]
-    }
-  }
-
-  statement {
-    actions   = ["s3:ListBucket"]
-    resources = ["arn:aws:s3:::${aws_s3_bucket.origin.bucket}"]
-
-    principals {
-      type        = "AWS"
-      identifiers = ["${aws_cloudfront_origin_access_identity.default.iam_arn}"]
-    }
+  vars {
+    origin_path = "${var.origin_path}"
+    bucket_name = "${module.origin_label.id}"
   }
 }
 
 resource "aws_s3_bucket" "origin" {
+  count  = "${signum(length(var.custom_bucket_domain_name)) == 1 ? 0 : 1}"
   bucket = "${module.origin_label.id}"
   acl    = "private"
-  policy = "${data.aws_iam_policy_document.origin.json}"
+  policy = "${data.template_file.bucket_policy.rendered}"
   tags   = "${module.origin_label.tags}"
+
+  website {
+    index_document = "${var.default_root_object}"
+    error_document = "${var.default_error_object}"
+
+    //routing_rules  = "${var.routing_rules}"
+  }
+
+  cors_rule {
+    allowed_headers = "${var.allowed_headers}"
+    allowed_methods = "${var.allowed_methods}"
+    allowed_origins = ["${var.aliases}"]
+    expose_headers  = ["${var.expose_headers}"]
+    max_age_seconds = "${var.max_age_seconds}"
+  }
+
+  depends_on = ["data.template_file.bucket_policy"]
 }
 
 module "logs" {
@@ -80,8 +85,8 @@ resource "aws_cloudfront_distribution" "default" {
   aliases = ["${var.aliases}"]
 
   origin {
-    domain_name = "${aws_s3_bucket.origin.bucket_domain_name}"
-    origin_id   = "${aws_s3_bucket.origin.bucket}"
+    domain_name = "${signum(length(var.custom_bucket_domain_name)) == 1 ? var.custom_bucket_domain_name : join("", aws_s3_bucket.origin.*.bucket_domain_name) }"
+    origin_id   = "${signum(length(var.custom_bucket_id)) == 1 ?  var.custom_bucket_id : aws_s3_bucket.origin.bucket}"
     origin_path = "${var.origin_path}"
 
     s3_origin_config {
@@ -124,14 +129,12 @@ resource "aws_cloudfront_distribution" "default" {
   }
 
   tags = "${module.distribution_label.tags}"
-
-  depends_on = ["aws_s3_bucket.logs"]
 }
 
 module "dns_aliases" {
-  source          = "git::https://github.com/cloudposse/tf_vanity?ref=tags/0.2.0"
+  source          = "git::https://github.com/cloudposse/tf_vanity.git?ref=generalize"
   aliases         = ["${var.aliases}"]
   zone_id         = "${var.dns_zone_id}"
-  target_dns_name = "${aws_elb.example.dns_name}"
-  target_zone_id  = "${aws_elb.example.zone_id}"
+  target_dns_name = "${aws_cloudfront_distribution.default.domain_name}"
+  target_zone_id  = "${aws_cloudfront_distribution.default.hosted_zone_id}"
 }
