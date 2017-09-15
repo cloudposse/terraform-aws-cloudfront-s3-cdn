@@ -29,13 +29,6 @@ resource "aws_s3_bucket" "origin" {
   policy = "${data.template_file.bucket_policy.rendered}"
   tags   = "${module.origin_label.tags}"
 
-  website {
-    index_document = "${var.default_root_object}"
-    error_document = "${var.default_error_object}"
-
-    //routing_rules  = "${var.routing_rules}"
-  }
-
   cors_rule {
     allowed_headers = "${var.allowed_headers}"
     allowed_methods = "${var.allowed_methods}"
@@ -70,8 +63,14 @@ module "distribution_label" {
   tags      = "${var.tags}"
 }
 
+resource "null_resource" "default" {
+  triggers {
+    domain_name = "${signum(length(var.custom_bucket_domain_name)) == 1 ? var.custom_bucket_domain_name : join("", aws_s3_bucket.origin.*.bucket_domain_name) }"
+  }
+}
+
 resource "aws_cloudfront_distribution" "default" {
-  enabled             = "true"
+  enabled             = "${var.enabled}"
   is_ipv6_enabled     = "${var.is_ipv6_enabled}"
   comment             = "${var.comment}"
   default_root_object = "${var.default_root_object}"
@@ -86,8 +85,8 @@ resource "aws_cloudfront_distribution" "default" {
   aliases = ["${var.aliases}"]
 
   origin {
-    domain_name = "${signum(length(var.custom_bucket_domain_name)) == 1 ? var.custom_bucket_domain_name : join("", aws_s3_bucket.origin.*.bucket_domain_name) }"
-    origin_id   = "${signum(length(var.custom_bucket_id)) == 1 ?  var.custom_bucket_id : aws_s3_bucket.origin.id}"
+    domain_name = "${null_resource.default.triggers.domain_name}"
+    origin_id   = "${module.distribution_label.id}"
     origin_path = "${var.origin_path}"
 
     s3_origin_config {
@@ -105,7 +104,7 @@ resource "aws_cloudfront_distribution" "default" {
   default_cache_behavior {
     allowed_methods  = "${var.allowed_methods}"
     cached_methods   = "${var.cached_methods}"
-    target_origin_id = "${signum(length(var.custom_bucket_id)) == 1 ?  var.custom_bucket_id : aws_s3_bucket.origin.id}"
+    target_origin_id = "${module.distribution_label.id}"
     compress         = "${var.compress}"
 
     forwarded_values {

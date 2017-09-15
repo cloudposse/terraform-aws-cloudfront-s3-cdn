@@ -10,6 +10,10 @@ variable "delimiter" {
   default = "-"
 }
 
+varaible "enabled" {
+  default = "true"
+}
+
 variable "acm_certificate_arn" {
   description = "Existing ACM Certificate ARN"
   default     = ""
