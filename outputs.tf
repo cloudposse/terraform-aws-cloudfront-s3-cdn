@@ -29,7 +29,3 @@ output "s3_bucket" {
 output "s3_bucket_domain_name" {
   value = "${null_resource.default.bucket_domain_name}"
 }
-
-output "s3_bucket_arn" {
-  value = "${aws_s3_bucket.origin.arn}"
-}

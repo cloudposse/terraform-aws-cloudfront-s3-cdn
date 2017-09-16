@@ -27,3 +27,13 @@ aws acm request-certificate --domain-name example.com --subject-alternative-name
 | Name              | Decription            |
 |:------------------|:----------------------|
 | id                | Disambiguated ID      |
+
+
+## Known Issues
+
+If the bucket is creatd in a region other than `us-east-1`, it will take a while for the distribution to become fully operational.
+
+> All buckets have at least two REST endpoint hostnames. In eu-west-1, they are example-bucket.s3-eu-west-1.amazonaws.com and example-bucket.s3.amazonaws.com. The first one will be immediately valid when the bucket is created. The second one -- sometimes referred to as the "global endpoint" -- which is the one CloudFront uses -- will not, unless the bucket is in us-east-1. Over a period of seconds to minutes, variable by location and other factors, it becomes globally accessible as well. Before that, the 307 redirect is returned. Hence, the bucket was not ready.
+
+Via: https://stackoverflow.com/questions/38706424/aws-cloudfront-returns-http-307-when-origin-is-s3-bucket
+ 

@@ -15,7 +15,7 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 data "aws_iam_policy_document" "origin" {
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::$${bucket_name}$${origin_path}*"]
+    resources = ["arn:aws:s3:::$${bucket_name}/$${origin_path}*"]
 
     principals {
       type        = "AWS"
@@ -53,13 +53,14 @@ resource "aws_s3_bucket" "origin" {
   bucket = "${module.origin_label.id}"
   acl    = "private"
   tags   = "${module.origin_label.tags}"
+  force_destroy = "${var.origin_force_destroy}"
 
   cors_rule {
-    allowed_headers = "${var.allowed_headers}"
-    allowed_methods = "${var.allowed_methods}"
-    allowed_origins = "${var.aliases}"
-    expose_headers  = ["${var.expose_headers}"]
-    max_age_seconds = "${var.max_age_seconds}"
+    allowed_headers = "${var.cors_allowed_headers}"
+    allowed_methods = "${var.cors_allowed_methods}"
+    allowed_origins = "${sort(distinct(compact(concat(var.cors_allowed_origins, var.aliases))))}"
+    expose_headers  = "${var.cors_expose_headers}"
+    max_age_seconds = "${var.cors_max_age_seconds}"
   }
 }
 
@@ -88,9 +89,12 @@ module "distribution_label" {
 
 resource "null_resource" "default" {
   triggers {
-    bucket             = "${signum(length(var.origin_bucket)) == 1 ? var.origin_bucket : join("", aws_s3_bucket.origin.*.id)}"
-    bucket_domain_name = "${signum(length(var.origin_bucket)) == 1 ? format("%s.s3.amazonaws.com", var.origin_bucket) : join("", aws_s3_bucket.origin.*.bucket_domain_name) }"
-    bucket_arn         = "${signum(length(var.origin_bucket)) == 1 ? "" : join("", aws_s3_bucket.origin.*.arn)}"
+    bucket             = "${signum(length(var.origin_bucket)) == 1 ? var.origin_bucket : element(aws_s3_bucket.origin.*.bucket, 0)}"
+    bucket_domain_name = "${format(var.bucket_domain_format, signum(length(var.origin_bucket)) == 1 ? format(var.bucket_domain_format, var.origin_bucket) : element(aws_s3_bucket.origin.*.bucket, 0))}"
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -100,6 +104,7 @@ resource "aws_cloudfront_distribution" "default" {
   comment             = "${var.comment}"
   default_root_object = "${var.default_root_object}"
   price_class         = "${var.price_class}"
+  depends_on          = ["aws_s3_bucket.origin"]
 
   logging_config = {
     include_cookies = "${var.log_include_cookies}"
@@ -110,7 +115,7 @@ resource "aws_cloudfront_distribution" "default" {
   aliases = "${var.aliases}"
 
   origin {
-    domain_name = "${null_resource.default.triggers.domain_name}"
+    domain_name = "${null_resource.default.triggers.bucket_domain_name}"
     origin_id   = "${module.distribution_label.id}"
     origin_path = "${var.origin_path}"
 
@@ -123,7 +128,7 @@ resource "aws_cloudfront_distribution" "default" {
     acm_certificate_arn            = "${var.acm_certificate_arn}"
     ssl_support_method             = "sni-only"
     minimum_protocol_version       = "TLSv1"
-    cloudfront_default_certificate = "${signum(length(var.acm_certificate_arn))}"
+    cloudfront_default_certificate = true
   }
 
   default_cache_behavior {
@@ -157,9 +162,10 @@ resource "aws_cloudfront_distribution" "default" {
 }
 
 module "dns" {
-  source          = "git::https://github.com/cloudposse/tf_vanity.git?ref=generalize"
-  aliases         = "${var.aliases}"
-  zone_id         = "${var.dns_zone_id}"
-  target_dns_name = "${aws_cloudfront_distribution.default.domain_name}"
-  target_zone_id  = "${aws_cloudfront_distribution.default.hosted_zone_id}"
+  source           = "git::https://github.com/cloudposse/tf_vanity.git?ref=generalize"
+  aliases          = "${var.aliases}"
+  parent_zone_id   = "${var.parent_zone_id}"
+  parent_zone_name = "${var.parent_zone_name}"
+  target_dns_name  = "${aws_cloudfront_distribution.default.domain_name}"
+  target_zone_id   = "${aws_cloudfront_distribution.default.hosted_zone_id}"
 }
