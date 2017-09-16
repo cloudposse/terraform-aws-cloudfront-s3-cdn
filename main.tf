@@ -15,7 +15,7 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 data "aws_iam_policy_document" "origin" {
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::${aws_s3_bucket.origin.bucket}${var.origin_path}*"]
+    resources = ["arn:aws:s3:::$${bucket_name}/$${origin_path}*"]
 
     principals {
       type        = "AWS"
@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "origin" {
 
   statement {
     actions   = ["s3:ListBucket"]
-    resources = ["arn:aws:s3:::${aws_s3_bucket.origin.bucket}"]
+    resources = ["arn:aws:s3:::$${bucket_name}"]
 
     principals {
       type        = "AWS"
@@ -34,15 +34,38 @@ data "aws_iam_policy_document" "origin" {
   }
 }
 
+data "template_file" "default" {
+  template = "${data.aws_iam_policy_document.origin.json}"
+
+  vars {
+    origin_path = "${var.origin_path}"
+    bucket_name = "${module.origin_label.id}"
+  }
+}
+
+resource "aws_s3_bucket_policy" "default" {
+  bucket = "${null_resource.default.triggers.bucket}"
+  policy = "${data.template_file.default.rendered}"
+}
+
 resource "aws_s3_bucket" "origin" {
+  count  = "${signum(length(var.origin_bucket)) == 1 ? 0 : 1}"
   bucket = "${module.origin_label.id}"
   acl    = "private"
-  policy = "${data.aws_iam_policy_document.origin.json}"
   tags   = "${module.origin_label.tags}"
+  force_destroy = "${var.origin_force_destroy}"
+
+  cors_rule {
+    allowed_headers = "${var.cors_allowed_headers}"
+    allowed_methods = "${var.cors_allowed_methods}"
+    allowed_origins = "${sort(distinct(compact(concat(var.cors_allowed_origins, var.aliases))))}"
+    expose_headers  = "${var.cors_expose_headers}"
+    max_age_seconds = "${var.cors_max_age_seconds}"
+  }
 }
 
 module "logs" {
-  source                   = "git::https://github.com/cloudposse/tf_log_storage.git?ref=init"
+  source                   = "git::https://github.com/cloudposse/tf_log_storage.git?ref=tags/0.1.0"
   namespace                = "${var.namespace}"
   stage                    = "${var.stage}"
   name                     = "${var.name}"
@@ -64,12 +87,24 @@ module "distribution_label" {
   tags      = "${var.tags}"
 }
 
+resource "null_resource" "default" {
+  triggers {
+    bucket             = "${element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0)}"
+    bucket_domain_name = "${format(var.bucket_domain_format, element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0))}"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "aws_cloudfront_distribution" "default" {
-  enabled             = "true"
+  enabled             = "${var.enabled}"
   is_ipv6_enabled     = "${var.is_ipv6_enabled}"
   comment             = "${var.comment}"
   default_root_object = "${var.default_root_object}"
   price_class         = "${var.price_class}"
+  depends_on          = ["aws_s3_bucket.origin"]
 
   logging_config = {
     include_cookies = "${var.log_include_cookies}"
@@ -77,11 +112,11 @@ resource "aws_cloudfront_distribution" "default" {
     prefix          = "${var.log_prefix}"
   }
 
-  aliases = ["${var.aliases}"]
+  aliases = "${var.aliases}"
 
   origin {
-    domain_name = "${aws_s3_bucket.origin.bucket_domain_name}"
-    origin_id   = "${aws_s3_bucket.origin.bucket}"
+    domain_name = "${null_resource.default.triggers.bucket_domain_name}"
+    origin_id   = "${module.distribution_label.id}"
     origin_path = "${var.origin_path}"
 
     s3_origin_config {
@@ -93,13 +128,13 @@ resource "aws_cloudfront_distribution" "default" {
     acm_certificate_arn            = "${var.acm_certificate_arn}"
     ssl_support_method             = "sni-only"
     minimum_protocol_version       = "TLSv1"
-    cloudfront_default_certificate = "${signum(length(var.acm_certificate_arn))}"
+    cloudfront_default_certificate = true
   }
 
   default_cache_behavior {
     allowed_methods  = "${var.allowed_methods}"
     cached_methods   = "${var.cached_methods}"
-    target_origin_id = "${aws_s3_bucket.origin.bucket}"
+    target_origin_id = "${module.distribution_label.id}"
     compress         = "${var.compress}"
 
     forwarded_values {
@@ -124,14 +159,13 @@ resource "aws_cloudfront_distribution" "default" {
   }
 
   tags = "${module.distribution_label.tags}"
-
-  depends_on = ["aws_s3_bucket.logs"]
 }
 
-module "dns_aliases" {
-  source          = "git::https://github.com/cloudposse/tf_vanity?ref=tags/0.2.0"
-  aliases         = ["${var.aliases}"]
-  zone_id         = "${var.dns_zone_id}"
-  target_dns_name = "${aws_elb.example.dns_name}"
-  target_zone_id  = "${aws_elb.example.zone_id}"
+module "dns" {
+  source           = "git::https://github.com/cloudposse/tf_vanity.git?ref=generalize"
+  aliases          = "${var.aliases}"
+  parent_zone_id   = "${var.parent_zone_id}"
+  parent_zone_name = "${var.parent_zone_name}"
+  target_dns_name  = "${aws_cloudfront_distribution.default.domain_name}"
+  target_zone_id   = "${aws_cloudfront_distribution.default.hosted_zone_id}"
 }

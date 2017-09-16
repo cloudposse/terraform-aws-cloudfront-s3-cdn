@@ -1,9 +1,17 @@
 variable "name" {}
-variable "namespage" {}
+variable "namespace" {}
 variable "stage" {}
 
 variable "tags" {
   default = {}
+}
+
+variable "delimiter" {
+  default = "-"
+}
+
+variable "enabled" {
+  default = "true"
 }
 
 variable "acm_certificate_arn" {
@@ -21,7 +29,15 @@ variable "origin_bucket" {
 }
 
 variable "origin_path" {
-  default = "/"
+  default = ""
+}
+
+variable "origin_force_destroy" {
+  default = "false"
+}
+
+variable "bucket_domain_format" {
+  default = "%s.s3.amazonaws.com"
 }
 
 variable "compress" {
@@ -65,6 +81,30 @@ variable "log_expiration_days" {
 
 variable "forward_query_string" {
   default = "false"
+}
+
+variable "cors_allowed_headers" {
+  type    = "list"
+  default = ["*"]
+}
+
+variable "cors_allowed_methods" {
+  type    = "list"
+  default = ["GET"]
+}
+
+variable "cors_allowed_origins" {
+  type    = "list"
+  default = []
+}
+
+variable "cors_expose_headers" {
+  type    = "list"
+  default = ["ETag"]
+}
+
+variable "cors_max_age_seconds" {
+  default = "3600"
 }
 
 variable "forward_cookies" {
@@ -112,4 +152,17 @@ variable "geo_restriction_locations" {
 
   # e.g. ["US", "CA", "GB", "DE"]
   default = []
+}
+
+variable "parent_zone_id" {
+  default = ""
+}
+
+variable "parent_zone_name" {
+  default = ""
+}
+
+variable "null" {
+  description = "an empty string"
+  default     = ""
 }
