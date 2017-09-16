@@ -89,8 +89,8 @@ module "distribution_label" {
 
 resource "null_resource" "default" {
   triggers {
-    bucket             = "${signum(length(var.origin_bucket)) == 1 ? var.origin_bucket : element(aws_s3_bucket.origin.*.bucket, 0)}"
-    bucket_domain_name = "${format(var.bucket_domain_format, signum(length(var.origin_bucket)) == 1 ? format(var.bucket_domain_format, var.origin_bucket) : element(aws_s3_bucket.origin.*.bucket, 0))}"
+    bucket             = "${element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0)}"
+    bucket_domain_name = "${format(var.bucket_domain_format, element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0))}"
   }
 
   lifecycle {
