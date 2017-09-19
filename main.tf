@@ -15,7 +15,7 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 data "aws_iam_policy_document" "origin" {
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::$${bucket_name}/$${origin_path}*"]
+    resources = ["arn:aws:s3:::$${bucket_name}$${origin_path}*"]
 
     principals {
       type        = "AWS"
