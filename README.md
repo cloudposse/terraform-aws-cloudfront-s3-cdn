@@ -10,7 +10,6 @@ module "cdn_s3" {
   stage            = "${var.stage}"
   name             = "${var.name}"
   aliases          = "${var.hostname}"
-  parent_zone_id   = "${var.parent_zone_id}"
   parent_zone_name = "${var.parent_zone_name}"
 }
 
