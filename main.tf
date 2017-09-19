@@ -39,7 +39,7 @@ data "template_file" "default" {
 
   vars {
     origin_path = "${var.origin_path}"
-    bucket_name = "${module.origin_label.id}"
+    bucket_name = "${null_resource.default.triggers.bucket}"
   }
 }
 
