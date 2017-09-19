@@ -112,7 +112,7 @@ resource "aws_cloudfront_distribution" "default" {
     prefix          = "${var.log_prefix}"
   }
 
-  aliases = "${var.aliases}"
+  aliases = ["${var.aliases}"]
 
   origin {
     domain_name = "${null_resource.default.triggers.bucket_domain_name}"
