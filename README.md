@@ -1,11 +1,11 @@
-# tf_cdn_s3
+# terraform-aws-cloudfront-s3-cdn
 
-Terraform module to easily provision CloudFront CDN with an S3 or custom origin.
+Terraform module to easily provision an AWS CloudFront CDN with an S3 or custom origin.
 
 ## Usage
 
-module "cdn_s3" {
-  source           = "git::https://github.com/cloudposse/tf_cdn_s3.git?ref=master"
+module "cdn" {
+  source           = "git::https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn.git?ref=master"
   namespace        = "${var.namespace}"
   stage            = "${var.stage}"
   name             = "${var.name}"
