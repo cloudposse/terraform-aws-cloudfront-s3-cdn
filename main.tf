@@ -38,7 +38,7 @@ data "template_file" "default" {
   template = "${data.aws_iam_policy_document.origin.json}"
 
   vars {
-    origin_path = "${var.origin_path}"
+    origin_path = "${coalesce(var.origin_path, "/")}"
     bucket_name = "${null_resource.default.triggers.bucket}"
   }
 }
@@ -162,7 +162,7 @@ resource "aws_cloudfront_distribution" "default" {
 }
 
 module "dns" {
-  source           = "git::https://github.com/cloudposse/tf_vanity.git?ref=tags/0.2.0"
+  source           = "git::https://github.com/cloudposse/tf_vanity.git?ref=tags/0.2.1"
   aliases          = "${var.aliases}"
   parent_zone_id   = "${var.parent_zone_id}"
   parent_zone_name = "${var.parent_zone_name}"
