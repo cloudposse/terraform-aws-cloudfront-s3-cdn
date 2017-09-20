@@ -1,5 +1,5 @@
 module "origin_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.2.0"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.2.1"
   namespace  = "${var.namespace}"
   stage      = "${var.stage}"
   name       = "${var.name}"
@@ -65,7 +65,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 module "logs" {
-  source                   = "git::https://github.com/cloudposse/terraform-aws-log-storage.git?ref=tags/0.1.0"
+  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.1.2"
   namespace                = "${var.namespace}"
   stage                    = "${var.stage}"
   name                     = "${var.name}"
@@ -79,7 +79,7 @@ module "logs" {
 }
 
 module "distribution_label" {
-  source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.2.0"
+  source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.2.1"
   namespace = "${var.namespace}"
   stage     = "${var.stage}"
   name      = "${var.name}"
