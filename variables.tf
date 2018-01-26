@@ -20,8 +20,9 @@ variable "acm_certificate_arn" {
 }
 
 variable "aliases" {
-  type    = "list"
-  default = []
+  type        = "list"
+  description = "List of FQDN's - Used to set the Alternate Domain Names (CNAMEs) setting on Cloudfront"
+  default     = []
 }
 
 variable "origin_bucket" {
