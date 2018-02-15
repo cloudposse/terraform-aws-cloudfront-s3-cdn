@@ -1,6 +1,7 @@
-# terraform-aws-cloudfront-s3-cdn
+# terraform-aws-cloudfront-s3-cdn [![Build Status](https://travis-ci.org/cloudposse/terraform-aws-cloudfront-s3-cdn.svg?branch=master)](https://travis-ci.org/cloudposse/terraform-aws-cloudfront-s3-cdn)
 
 Terraform module to easily provision an AWS CloudFront CDN with an S3 or custom origin.
+
 
 ## Usage
 
@@ -14,6 +15,7 @@ module "cdn" {
   parent_zone_name = "${var.parent_zone_name}"
 }
 ```
+
 
 ### Generating ACM Certificate
 
