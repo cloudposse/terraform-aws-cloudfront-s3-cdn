@@ -49,10 +49,10 @@ resource "aws_s3_bucket_policy" "default" {
 }
 
 resource "aws_s3_bucket" "origin" {
-  count  = "${signum(length(var.origin_bucket)) == 1 ? 0 : 1}"
-  bucket = "${module.origin_label.id}"
-  acl    = "private"
-  tags   = "${module.origin_label.tags}"
+  count         = "${signum(length(var.origin_bucket)) == 1 ? 0 : 1}"
+  bucket        = "${module.origin_label.id}"
+  acl           = "private"
+  tags          = "${module.origin_label.tags}"
   force_destroy = "${var.origin_force_destroy}"
 
   cors_rule {
