@@ -25,6 +25,21 @@ aws acm request-certificate --domain-name example.com --subject-alternative-name
 ```
 
 
+
+__NOTE__:
+
+Although AWS Certificate Manager is supported in many AWS regions, to use an SSL certificate with CloudFront, it should be requested only in US East (N. Virginia) region.
+
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html
+> If you want to require HTTPS between viewers and CloudFront, you must change the AWS region to US East (N. Virginia) in the AWS Certificate Manager console before you request or import a certificate.
+
+https://docs.aws.amazon.com/acm/latest/userguide/acm-regions.html
+> To use an ACM Certificate with Amazon CloudFront, you must request or import the certificate in the US East (N. Virginia) region. ACM Certificates in this region that are associated with a CloudFront distribution are distributed to all the geographic locations configured for that distribution.
+
+This is a fundamental requirement of CloudFront, and you''ll need to request the certificate in `us-east-1` region.
+
+
+
 ## Variables
 
 |  Name                          |  Default               |  Description                                                                                                                                                      | Required |
