@@ -36,7 +36,7 @@ https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-ht
 https://docs.aws.amazon.com/acm/latest/userguide/acm-regions.html
 > To use an ACM Certificate with Amazon CloudFront, you must request or import the certificate in the US East (N. Virginia) region. ACM Certificates in this region that are associated with a CloudFront distribution are distributed to all the geographic locations configured for that distribution.
 
-This is a fundamental requirement of CloudFront, and you''ll need to request the certificate in `us-east-1` region.
+This is a fundamental requirement of CloudFront, and you will need to request the certificate in `us-east-1` region.
 
 
 
