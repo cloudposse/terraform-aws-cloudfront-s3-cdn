@@ -1,14 +1,34 @@
-variable "name" {}
-variable "namespace" {}
-variable "stage" {}
+variable "namespace" {
+  description = "Namespace (e.g. `cp` or `cloudposse`)"
+  type        = "string"
+}
 
-variable "tags" {
-  type    = "map"
-  default = {}
+variable "stage" {
+  description = "Stage (e.g. `prod`, `dev`, `staging`)"
+  type        = "string"
+}
+
+variable "name" {
+  description = "Name  (e.g. `bastion` or `db`)"
+  type        = "string"
 }
 
 variable "delimiter" {
-  default = "-"
+  type        = "string"
+  default     = "-"
+  description = "Delimiter to be used between `name`, `namespace`, `stage`, etc."
+}
+
+variable "attributes" {
+  type        = "list"
+  default     = []
+  description = "Additional attributes (e.g. `policy` or `role`)"
+}
+
+variable "tags" {
+  type        = "map"
+  default     = {}
+  description = "Additional tags (e.g. map('BusinessUnit`,`XYZ`)"
 }
 
 variable "enabled" {

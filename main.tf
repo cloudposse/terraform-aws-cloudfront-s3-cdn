@@ -1,10 +1,10 @@
 module "origin_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.1"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.3"
   namespace  = "${var.namespace}"
   stage      = "${var.stage}"
   name       = "${var.name}"
   delimiter  = "${var.delimiter}"
-  attributes = ["origin"]
+  attributes = ["${compact(concat(var.attributes, list("origin")))}"]
   tags       = "${var.tags}"
 }
 
@@ -70,7 +70,7 @@ module "logs" {
   stage                    = "${var.stage}"
   name                     = "${var.name}"
   delimiter                = "${var.delimiter}"
-  attributes               = ["logs"]
+  attributes               = ["${compact(concat(var.attributes, list("logs")))}"]
   tags                     = "${var.tags}"
   prefix                   = "${var.log_prefix}"
   standard_transition_days = "${var.log_standard_transition_days}"
@@ -79,12 +79,13 @@ module "logs" {
 }
 
 module "distribution_label" {
-  source    = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.1"
-  namespace = "${var.namespace}"
-  stage     = "${var.stage}"
-  name      = "${var.name}"
-  delimiter = "${var.delimiter}"
-  tags      = "${var.tags}"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.3"
+  namespace  = "${var.namespace}"
+  stage      = "${var.stage}"
+  name       = "${var.name}"
+  delimiter  = "${var.delimiter}"
+  attributes = "${var.attributes}"
+  tags       = "${var.tags}"
 }
 
 resource "null_resource" "default" {
