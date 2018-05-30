@@ -29,3 +29,11 @@ output "s3_bucket" {
 output "s3_bucket_domain_name" {
   value = "${module.cdn.s3_bucket_domain_name}"
 }
+
+output "details" {
+  value = <<DOC
+When the `cf_status` changes to `Deployed` from `InProgress`
+(You can check it by doing an extra `terraform apply` every few minutes.)
+The site can be viewed at https://${module.cdn.cf_domain_name}
+DOC
+}
