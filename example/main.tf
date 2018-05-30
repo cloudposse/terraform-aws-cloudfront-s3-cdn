@@ -11,6 +11,7 @@ module "cdn" {
   aliases                  = ["assets.cloudposse-example.com"]
   parent_zone_id           = "${aws_route53_zone.primary.zone_id}"
   use_regional_s3_endpoint = "true"
+  origin_force_destroy     = "true"
 }
 
 resource "aws_s3_bucket_object" "index" {
