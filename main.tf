@@ -92,13 +92,15 @@ module "distribution_label" {
   tags       = "${var.tags}"
 }
 
+# ec2-downloads-windows is a bucket owned by amazon that will perminantly exist
+# It allows for the data source to be called during the destruction process without failing.
+# It doesn't get used for anything else.
 data "aws_s3_bucket" "selected" {
-  bucket     = "${local.bucket}"
-  depends_on = ["aws_s3_bucket.origin"]
+  bucket = "${local.bucket == "" ? "ec2-downloads-windows" : local.bucket}"
 }
 
 locals {
-  bucket               = "${element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0)}"
+  bucket               = "${join("", compact(concat(list(var.origin_bucket), concat(list(""),aws_s3_bucket.origin.*.bucket))))}"
   region_endpoint      = "${data.aws_s3_bucket.selected.region == "us-east-1" ? "s3" : "s3-${data.aws_s3_bucket.selected.region}" }"
   bucket_domain_format = "${var.use_regional_s3_endpoint == "true" ? "%s.${local.region_endpoint}.amazonaws.com" : var.bucket_domain_format }"
   bucket_domain_name   = "${format(local.bucket_domain_format, local.bucket)}"
