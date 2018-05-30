@@ -68,7 +68,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 module "logs" {
-  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.1.3"
+  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.2.0"
   namespace                = "${var.namespace}"
   stage                    = "${var.stage}"
   name                     = "${var.name}"
@@ -79,6 +79,7 @@ module "logs" {
   standard_transition_days = "${var.log_standard_transition_days}"
   glacier_transition_days  = "${var.log_glacier_transition_days}"
   expiration_days          = "${var.log_expiration_days}"
+  force_destroy            = "${var.origin_force_destroy}"
 }
 
 module "distribution_label" {
@@ -91,19 +92,9 @@ module "distribution_label" {
   tags       = "${var.tags}"
 }
 
-# resource "null_resource" "default" {
-#   triggers {
-#     bucket             = "${element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0)}"
-#     bucket_domain_name = "${format(var.bucket_domain_format, element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0))}"
-#   }
-
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-# }
-
 data "aws_s3_bucket" "selected" {
-  bucket = "${local.bucket}"
+  bucket     = "${local.bucket}"
+  depends_on = ["aws_s3_bucket.origin"]
 }
 
 locals {
