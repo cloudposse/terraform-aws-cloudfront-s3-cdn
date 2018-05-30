@@ -46,6 +46,12 @@ variable "aliases" {
   default     = []
 }
 
+variable "use_regional_s3_endpoint" {
+  type        = "string"
+  description = "When set to 'true' the s3 origin_bucket will use the regional endpoint address instead of the global endpoint address"
+  default     = "false"
+}
+
 variable "origin_bucket" {
   default = ""
 }

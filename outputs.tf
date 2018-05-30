@@ -23,9 +23,9 @@ output "cf_hosted_zone_id" {
 }
 
 output "s3_bucket" {
-  value = "${null_resource.default.triggers.bucket}"
+  value = "${local.bucket}"
 }
 
 output "s3_bucket_domain_name" {
-  value = "${null_resource.default.triggers.bucket_domain_name}"
+  value = "${local.bucket_domain_name}"
 }

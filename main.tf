@@ -1,5 +1,5 @@
 module "origin_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.3"
+  source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.1.2"
   namespace  = "${var.namespace}"
   stage      = "${var.stage}"
   name       = "${var.name}"
@@ -39,14 +39,16 @@ data "template_file" "default" {
 
   vars {
     origin_path = "${coalesce(var.origin_path, "/")}"
-    bucket_name = "${null_resource.default.triggers.bucket}"
+    bucket_name = "${local.bucket}"
   }
 }
 
 resource "aws_s3_bucket_policy" "default" {
-  bucket = "${null_resource.default.triggers.bucket}"
+  bucket = "${local.bucket}"
   policy = "${data.template_file.default.rendered}"
 }
+
+data "aws_region" "current" {}
 
 resource "aws_s3_bucket" "origin" {
   count         = "${signum(length(var.origin_bucket)) == 1 ? 0 : 1}"
@@ -54,6 +56,7 @@ resource "aws_s3_bucket" "origin" {
   acl           = "private"
   tags          = "${module.origin_label.tags}"
   force_destroy = "${var.origin_force_destroy}"
+  region        = "${data.aws_region.current.name}"
 
   cors_rule {
     allowed_headers = "${var.cors_allowed_headers}"
@@ -79,7 +82,7 @@ module "logs" {
 }
 
 module "distribution_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.3"
+  source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.1.2"
   namespace  = "${var.namespace}"
   stage      = "${var.stage}"
   name       = "${var.name}"
@@ -88,15 +91,26 @@ module "distribution_label" {
   tags       = "${var.tags}"
 }
 
-resource "null_resource" "default" {
-  triggers {
-    bucket             = "${element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0)}"
-    bucket_domain_name = "${format(var.bucket_domain_format, element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0))}"
-  }
+# resource "null_resource" "default" {
+#   triggers {
+#     bucket             = "${element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0)}"
+#     bucket_domain_name = "${format(var.bucket_domain_format, element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0))}"
+#   }
 
-  lifecycle {
-    create_before_destroy = true
-  }
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
+
+data "aws_s3_bucket" "selected" {
+  bucket = "${local.bucket}"
+}
+
+locals {
+  bucket               = "${element(compact(concat(list(var.origin_bucket), aws_s3_bucket.origin.*.bucket)), 0)}"
+  region_endpoint      = "${data.aws_s3_bucket.selected.region == "us-east-1" ? "s3" : "s3-${data.aws_s3_bucket.selected.region}" }"
+  bucket_domain_format = "${var.use_regional_s3_endpoint == "true" ? "%s.${local.region_endpoint}.amazonaws.com" : var.bucket_domain_format }"
+  bucket_domain_name   = "${format(local.bucket_domain_format, local.bucket)}"
 }
 
 resource "aws_cloudfront_distribution" "default" {
@@ -116,7 +130,7 @@ resource "aws_cloudfront_distribution" "default" {
   aliases = ["${var.aliases}"]
 
   origin {
-    domain_name = "${null_resource.default.triggers.bucket_domain_name}"
+    domain_name = "${local.bucket_domain_name}"
     origin_id   = "${module.distribution_label.id}"
     origin_path = "${var.origin_path}"
 
