@@ -39,7 +39,9 @@ https://docs.aws.amazon.com/acm/latest/userguide/acm-regions.html
 
 This is a fundamental requirement of CloudFront, and you will need to request the certificate in `us-east-1` region.
 
-
+If there are warnings around the outputs when destroying using this module.
+Then you can use this method for supressing the superfluous errors.
+`TF_WARN_OUTPUT_ERRORS=1 terraform destroy`
 
 ## Variables
 
@@ -86,7 +88,7 @@ This is a fundamental requirement of CloudFront, and you will need to request th
 | `origin_path`                  | ``                     | Element that causes CloudFront to request your content from a directory in your Amazon S3 bucket. Begins with `/`. CAUTION! Do not use bare `/` as `origin_path`. | No       |
 | `parent_zone_id`               | ``                     | ID of the hosted zone to contain this record  (or specify `parent_zone_name`)                                                                                     | Yes      |
 | `parent_zone_name`             | ``                     | Name of the hosted zone to contain this record (or specify `parent_zone_id`)                                                                                      | Yes      |
-| `use_regional_s3_endpoint`     | `"false"`              | Use a regional endpoint for the bucket instead of the global endpoint. Useful for speeding up the deploy process.                                                 | No       |
+| `use_regional_s3_endpoint`     | `"false"`              | Use a regional endpoint for the bucket instead of the global endpoint. Useful for speeding up the deploy process caused by the s3 replication latency             | No       |
 
 
 ## Outputs
@@ -113,4 +115,4 @@ Via: https://stackoverflow.com/questions/38706424/aws-cloudfront-returns-http-30
 
 ## Workaround for Known Issues
 
-To use the regional endpoint name instead of the global bucket name in this module, then set `use_regional_s3_endpoint = "true"` in the module.
+To use the regional endpoint name instead of the global bucket name in this module, set `use_regional_s3_endpoint = "true"` in the module.
