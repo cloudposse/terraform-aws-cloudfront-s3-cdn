@@ -1,5 +1,5 @@
 resource "aws_route53_zone" "primary" {
-  name          = "cloudposse-example.com"
+  name          = "cloudposse.com"
   force_destroy = "true"
 }
 
@@ -8,7 +8,7 @@ module "cdn" {
   namespace                = "cp"
   stage                    = "dev"
   name                     = "app-cdn"
-  aliases                  = ["assets.cloudposse-example.com"]
+  aliases                  = ["assets.cloudposse.com"]
   parent_zone_id           = "${aws_route53_zone.primary.zone_id}"
   use_regional_s3_endpoint = "true"
   origin_force_destroy     = "true"
