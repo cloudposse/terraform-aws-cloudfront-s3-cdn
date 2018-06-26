@@ -46,6 +46,12 @@ variable "aliases" {
   default     = []
 }
 
+variable "use_regional_s3_endpoint" {
+  type        = "string"
+  description = "When set to 'true' the s3 origin_bucket will use the regional endpoint address instead of the global endpoint address"
+  default     = "false"
+}
+
 variable "origin_bucket" {
   default = ""
 }
@@ -189,4 +195,18 @@ variable "parent_zone_name" {
 variable "null" {
   description = "an empty string"
   default     = ""
+}
+
+variable "static_s3_bucket" {
+  description = <<DOC
+aws-cli is a bucket owned by amazon that will perminantly exist
+It allows for the data source to be called during the destruction process without failing.
+It doesn't get used for anything else, this is a safe workaround for handling the fact that 
+if a data source like the one `aws_s3_bucket.selected` gets an error, you can't continue the terraform process
+which also includes the 'destroy' command, where is doesn't even need this data source!
+Don't change this bucket name, its a variable so that we can provide this description.
+And this works around a problem that is an edge case.
+DOC
+
+  default = "aws-cli"
 }

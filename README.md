@@ -16,6 +16,7 @@ module "cdn" {
 }
 ```
 
+Full working example can be found in [example](./example) folder.
 
 ### Generating ACM Certificate
 
@@ -38,7 +39,9 @@ https://docs.aws.amazon.com/acm/latest/userguide/acm-regions.html
 
 This is a fundamental requirement of CloudFront, and you will need to request the certificate in `us-east-1` region.
 
-
+If there are warnings around the outputs when destroying using this module.
+Then you can use this method for supressing the superfluous errors.
+`TF_WARN_OUTPUT_ERRORS=1 terraform destroy`
 
 ## Variables
 
@@ -85,6 +88,7 @@ This is a fundamental requirement of CloudFront, and you will need to request th
 | `origin_path`                  | ``                     | Element that causes CloudFront to request your content from a directory in your Amazon S3 bucket. Begins with `/`. CAUTION! Do not use bare `/` as `origin_path`. | No       |
 | `parent_zone_id`               | ``                     | ID of the hosted zone to contain this record  (or specify `parent_zone_name`)                                                                                     | Yes      |
 | `parent_zone_name`             | ``                     | Name of the hosted zone to contain this record (or specify `parent_zone_id`)                                                                                      | Yes      |
+| `use_regional_s3_endpoint`     | `"false"`              | Use a regional endpoint for the bucket instead of the global endpoint. Useful for speeding up the deploy process caused by the s3 replication latency             | No       |
 
 
 ## Outputs
@@ -108,3 +112,7 @@ If the bucket is created in a region other than `us-east-1`, it will take a whil
 > All buckets have at least two REST endpoint hostnames. In eu-west-1, they are example-bucket.s3-eu-west-1.amazonaws.com and example-bucket.s3.amazonaws.com. The first one will be immediately valid when the bucket is created. The second one -- sometimes referred to as the "global endpoint" -- which is the one CloudFront uses -- will not, unless the bucket is in us-east-1. Over a period of seconds to minutes, variable by location and other factors, it becomes globally accessible as well. Before that, the 307 redirect is returned. Hence, the bucket was not ready.
 
 Via: https://stackoverflow.com/questions/38706424/aws-cloudfront-returns-http-307-when-origin-is-s3-bucket
+
+## Workaround for Known Issues
+
+To use the regional endpoint name instead of the global bucket name in this module, set `use_regional_s3_endpoint = "true"` in the module.
