@@ -92,11 +92,13 @@ module "distribution_label" {
   tags       = "${var.tags}"
 }
 
-# ec2-downloads-windows is a bucket owned by amazon that will perminantly exist
+# aws-cli is a bucket owned by amazon that will perminantly exist
 # It allows for the data source to be called during the destruction process without failing.
-# It doesn't get used for anything else.
+# It doesn't get used for anything else, this is a safe workaround for handling the fact that 
+# if a data source like the one below gets an error, you can't continue the terraform process
+# which also includes the 'destroy' command, where is doesn't even need this data source!
 data "aws_s3_bucket" "selected" {
-  bucket = "${local.bucket == "" ? "ec2-downloads-windows" : local.bucket}"
+  bucket = "${local.bucket == "" ? "aws-cli" : local.bucket}"
 }
 
 locals {
