@@ -1,0 +1,95 @@
+---
+#
+# This is the canonical configuration for the `README.md`
+# Run `make readme` to rebuild the `README.md`
+#
+
+# Name of this project
+name: terraform-aws-cloudfront-s3-cdn
+
+# Logo for this project
+#logo: docs/logo.png
+
+# License of this project
+license: "APACHE2"
+
+# Canonical GitHub repo
+github_repo: cloudposse/terraform-aws-cloudfront-s3-cdn
+
+# Badges to display
+badges:
+  - name: "Build Status"
+    image: "https://travis-ci.org/cloudposse/terraform-aws-cloudfront-s3-cdn.svg?branch=master"
+    url: "https://travis-ci.org/cloudposse/terraform-aws-cloudfront-s3-cdn"
+  - name: "Latest Release"
+    image: "https://img.shields.io/github/release/cloudposse/terraform-aws-cloudfront-s3-cdn.svg"
+    url: "https://travis-ci.org/cloudposse/terraform-aws-cloudfront-s3-cdn/releases"
+  - name: "Slack Community"
+    image: "https://slack.cloudposse.com/badge.svg"
+    url: "https://slack.cloudposse.com"
+
+related:
+  - name: "terraform-aws-cloudfront-cdn"
+    description: "Terraform Module that implements a CloudFront Distribution (CDN) for a custom origin."
+    url: "https://github.com/cloudposse/terraform-aws-cloudfront-cdn"
+  - name: "terraform-aws-s3-log-storage"
+    description: "S3 bucket with built in IAM policy to allow CloudTrail logs"
+    url: "https://github.com/cloudposse/terraform-aws-s3-log-storage"
+
+# Short description of this project
+description: |-
+  Terraform module to easily provision an AWS CloudFront CDN with an S3 or custom origin.
+# How to use this project
+usage: |-
+  ```hcl
+  module "cdn" {
+    source           = "git::https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn.git?ref=master"
+    namespace        = "${var.namespace}"
+    stage            = "${var.stage}"
+    name             = "${var.name}"
+    aliases          = "${var.hostname}"
+    parent_zone_name = "${var.parent_zone_name}"
+  }
+  ```
+
+  Full working example can be found in [example](./example) folder.
+
+  ### Generating ACM Certificate
+
+  Use the AWS cli to [request new ACM certifiates](http://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request.html) (requires email validation)
+  ```
+  aws acm request-certificate --domain-name example.com --subject-alternative-names a.example.com b.example.com *.c.example.com
+  ```
+
+
+
+  __NOTE__:
+
+  Although AWS Certificate Manager is supported in many AWS regions, to use an SSL certificate with CloudFront, it should be requested only in US East (N. Virginia) region.
+
+  https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html
+  > If you want to require HTTPS between viewers and CloudFront, you must change the AWS region to US East (N. Virginia) in the AWS Certificate Manager console before you request or import a certificate.
+
+  https://docs.aws.amazon.com/acm/latest/userguide/acm-regions.html
+  > To use an ACM Certificate with Amazon CloudFront, you must request or import the certificate in the US East (N. Virginia) region. ACM Certificates in this region that are associated with a CloudFront distribution are distributed to all the geographic locations configured for that distribution.
+
+  This is a fundamental requirement of CloudFront, and you will need to request the certificate in `us-east-1` region.
+
+  If there are warnings around the outputs when destroying using this module.
+  Then you can use this method for supressing the superfluous errors.
+  `TF_WARN_OUTPUT_ERRORS=1 terraform destroy`
+
+include:
+  - "docs/targets.md"
+  - "docs/terraform.md"
+
+# Contributors to this project
+contributors:
+  - name: "Erik Osterman"
+    github: "osterman"
+  - name: "Andriy Knysh"
+    github: "aknysh"
+  - name: "Jamie Nelson"
+    github: "Jamie-BitFlight"
+  - name: "Clive Zagno"
+    github: "cliveza"
