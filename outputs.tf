@@ -5,7 +5,7 @@ output "cf_id" {
 
 output "cf_arn" {
   value       = "${aws_cloudfront_distribution.default.arn}"
-  description = "ID of AWS CloudFront distribution"
+  description = "ARN of AWS CloudFront distribution"
 }
 
 output "cf_status" {

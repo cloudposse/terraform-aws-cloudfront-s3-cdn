@@ -5,21 +5,21 @@
 |------|-------------|:----:|:-----:|:-----:|
 | acm_certificate_arn | Existing ACM Certificate ARN | string | `` | no |
 | aliases | List of FQDN's - Used to set the Alternate Domain Names (CNAMEs) setting on Cloudfront | list | `<list>` | no |
-| allowed_methods | List of allowed methods (e.g. ` GET, PUT, POST, DELETE, HEAD`) for AWS CloudFront | list | `<list>` | no |
+| allowed_methods | List of allowed methods (e.g. GET, PUT, POST, DELETE, HEAD) for AWS CloudFront | list | `<list>` | no |
 | attributes | Additional attributes (e.g. `policy` or `role`) | list | `<list>` | no |
 | bucket_domain_format | Format of bucket domain name | string | `%s.s3.amazonaws.com` | no |
-| cached_methods | List of cached methods (e.g. ` GET, PUT, POST, DELETE, HEAD`) | list | `<list>` | no |
+| cached_methods | List of cached methods (e.g. GET, PUT, POST, DELETE, HEAD) | list | `<list>` | no |
 | comment | Comment for the origin access identity | string | `Managed by Terraform` | no |
 | compress | Compress content for web requests that include Accept-Encoding: gzip in the request header | string | `false` | no |
-| cors_allowed_headers | List of allowed headers  for S3 bucket | list | `<list>` | no |
-| cors_allowed_methods | List of allowed methods (e.g. ` GET, PUT, POST, DELETE, HEAD`) for S3 bucket | list | `<list>` | no |
-| cors_allowed_origins | List of allowed origins (e.g. ` example.com, test.com`) for S3 bucket | list | `<list>` | no |
+| cors_allowed_headers | List of allowed headers for S3 bucket | list | `<list>` | no |
+| cors_allowed_methods | List of allowed methods (e.g. GET, PUT, POST, DELETE, HEAD) for S3 bucket | list | `<list>` | no |
+| cors_allowed_origins | List of allowed origins (e.g. example.com, test.com) for S3 bucket | list | `<list>` | no |
 | cors_expose_headers | List of expose header in the response for S3 bucket | list | `<list>` | no |
 | cors_max_age_seconds | Time in seconds that browser can cache the response for S3 bucket | string | `3600` | no |
 | default_root_object | Object that CloudFront return when requests the root URL | string | `index.html` | no |
 | default_ttl | Default amount of time (in seconds) that an object is in a CloudFront cache | string | `60` | no |
 | delimiter | Delimiter to be used between `name`, `namespace`, `stage`, etc. | string | `-` | no |
-| enabled | State of CloudFront | string | `true` | no |
+| enabled | Select Enabled if you want CloudFront to begin processing requests as soon as the distribution is created, or select Disabled if you do not want CloudFront to begin processing requests after the distribution is created. | string | `true` | no |
 | forward_cookies | Time in seconds that browser can cache the response for S3 bucket | string | `none` | no |
 | forward_query_string | Forward query strings to the origin that is associated with this cache behavior | string | `false` | no |
 | geo_restriction_locations | List of country codes for which  CloudFront either to distribute content (whitelist) or not distribute your content (blacklist) | list | `<list>` | no |
@@ -51,7 +51,7 @@
 
 | Name | Description |
 |------|-------------|
-| cf_arn | ID of AWS CloudFront distribution |
+| cf_arn | ARN of AWS CloudFront distribution |
 | cf_domain_name | Domain name corresponding to the distribution |
 | cf_etag | Current version of the distribution's information |
 | cf_hosted_zone_id | CloudFront Route 53 zone ID |

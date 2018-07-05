@@ -33,7 +33,7 @@ variable "tags" {
 
 variable "enabled" {
   default     = "true"
-  description = "State of CloudFront"
+  description = "Select Enabled if you want CloudFront to begin processing requests as soon as the distribution is created, or select Disabled if you do not want CloudFront to begin processing requests after the distribution is created."
 }
 
 variable "acm_certificate_arn" {
@@ -127,19 +127,19 @@ variable "forward_query_string" {
 variable "cors_allowed_headers" {
   type        = "list"
   default     = ["*"]
-  description = "List of allowed headers  for S3 bucket"
+  description = "List of allowed headers for S3 bucket"
 }
 
 variable "cors_allowed_methods" {
   type        = "list"
   default     = ["GET"]
-  description = "List of allowed methods (e.g. ` GET, PUT, POST, DELETE, HEAD`) for S3 bucket"
+  description = "List of allowed methods (e.g. GET, PUT, POST, DELETE, HEAD) for S3 bucket"
 }
 
 variable "cors_allowed_origins" {
   type        = "list"
   default     = []
-  description = "List of allowed origins (e.g. ` example.com, test.com`) for S3 bucket"
+  description = "List of allowed origins (e.g. example.com, test.com) for S3 bucket"
 }
 
 variable "cors_expose_headers" {
@@ -171,13 +171,13 @@ variable "viewer_protocol_policy" {
 variable "allowed_methods" {
   type        = "list"
   default     = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-  description = "List of allowed methods (e.g. ` GET, PUT, POST, DELETE, HEAD`) for AWS CloudFront"
+  description = "List of allowed methods (e.g. GET, PUT, POST, DELETE, HEAD) for AWS CloudFront"
 }
 
 variable "cached_methods" {
   type        = "list"
   default     = ["GET", "HEAD"]
-  description = "List of cached methods (e.g. ` GET, PUT, POST, DELETE, HEAD`)"
+  description = "List of cached methods (e.g. GET, PUT, POST, DELETE, HEAD)"
 }
 
 variable "default_ttl" {
