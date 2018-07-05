@@ -39,6 +39,7 @@ related:
 # Short description of this project
 description: |-
   Terraform module to easily provision an AWS CloudFront CDN with an S3 or custom origin.
+
 # How to use this project
 usage: |-
   ```hcl
