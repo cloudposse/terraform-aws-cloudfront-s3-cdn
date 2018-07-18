@@ -41,6 +41,11 @@ variable "acm_certificate_arn" {
   default     = ""
 }
 
+variable "minimum_protocol_version" {
+  description = "Cloudfront TLS minimum protocol version"
+  default     = "TLSv1"
+}
+
 variable "aliases" {
   type        = "list"
   description = "List of FQDN's - Used to set the Alternate Domain Names (CNAMEs) setting on Cloudfront"
