@@ -32,6 +32,7 @@
 | log_standard_transition_days | Number of days to persist in the standard storage tier before moving to the glacier tier | string | `30` | no |
 | max_ttl | Maximum amount of time (in seconds) that an object is in a CloudFront cache | string | `31536000` | no |
 | min_ttl | Minimum amount of time that you want objects to stay in CloudFront caches | string | `0` | no |
+| minimum_protocol_version | Cloudfront TLS minimum protocol version | string | `TLSv1` | no |
 | name | Name  (e.g. `bastion` or `db`) | string | - | yes |
 | namespace | Namespace (e.g. `cp` or `cloudposse`) | string | - | yes |
 | null | an empty string | string | `` | no |
