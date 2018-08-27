@@ -144,6 +144,7 @@ resource "aws_cloudfront_distribution" "default" {
 
     forwarded_values {
       query_string = "${var.forward_query_string}"
+      headers = ["Access-Control-Request-Headers", "Access-Control-Request-Method", "Origin"]
 
       cookies {
         forward = "${var.forward_cookies}"
