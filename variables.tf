@@ -163,6 +163,12 @@ variable "forward_cookies" {
   description = "Time in seconds that browser can cache the response for S3 bucket"
 }
 
+variable "forward_header_values" {
+  type        = "list"
+  description = "A list of whitelisted header values to forward to the origin"
+  default     = ["Access-Control-Request-Headers", "Access-Control-Request-Method", "Origin"]
+}
+
 variable "price_class" {
   default     = "PriceClass_100"
   description = "Price class for this distribution: `PriceClass_All`, `PriceClass_200`, `PriceClass_100`"

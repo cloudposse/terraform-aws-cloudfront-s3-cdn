@@ -21,6 +21,7 @@
 | delimiter | Delimiter to be used between `name`, `namespace`, `stage`, etc. | string | `-` | no |
 | enabled | Select Enabled if you want CloudFront to begin processing requests as soon as the distribution is created, or select Disabled if you do not want CloudFront to begin processing requests after the distribution is created. | string | `true` | no |
 | forward_cookies | Time in seconds that browser can cache the response for S3 bucket | string | `none` | no |
+| forward_header_values | A list of whitelisted header values to forward to the origin | list | `<list>` | no |
 | forward_query_string | Forward query strings to the origin that is associated with this cache behavior | string | `false` | no |
 | geo_restriction_locations | List of country codes for which  CloudFront either to distribute content (whitelist) or not distribute your content (blacklist) | list | `<list>` | no |
 | geo_restriction_type | Method that use to restrict distribution of your content by country: `none`, `whitelist`, or `blacklist` | string | `none` | no |

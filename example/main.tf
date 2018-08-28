@@ -12,6 +12,10 @@ module "cdn" {
   parent_zone_id           = "${aws_route53_zone.primary.zone_id}"
   use_regional_s3_endpoint = "true"
   origin_force_destroy     = "true"
+  cors_allowed_headers     = ["*"]
+  cors_allowed_methods     = ["GET", "HEAD", "PUT"]
+  cors_allowed_origins     = ["*.cloudposse.com"]
+  cors_expose_headers      = ["ETag"]
 }
 
 resource "aws_s3_bucket_object" "index" {
