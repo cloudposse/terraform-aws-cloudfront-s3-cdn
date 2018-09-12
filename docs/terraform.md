@@ -16,6 +16,7 @@
 | cors_allowed_origins | List of allowed origins (e.g. example.com, test.com) for S3 bucket | list | `<list>` | no |
 | cors_expose_headers | List of expose header in the response for S3 bucket | list | `<list>` | no |
 | cors_max_age_seconds | Time in seconds that browser can cache the response for S3 bucket | string | `3600` | no |
+| custom_error_response | (Optional) - List of one or more custom error response element maps | list | `<list>` | no |
 | default_root_object | Object that CloudFront return when requests the root URL | string | `index.html` | no |
 | default_ttl | Default amount of time (in seconds) that an object is in a CloudFront cache | string | `60` | no |
 | delimiter | Delimiter to be used between `name`, `namespace`, `stage`, etc. | string | `-` | no |
