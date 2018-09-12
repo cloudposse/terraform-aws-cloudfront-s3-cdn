@@ -92,6 +92,7 @@ Available targets:
 | cached_methods | List of cached methods (e.g. GET, PUT, POST, DELETE, HEAD) | list | `<list>` | no |
 | comment | Comment for the origin access identity | string | `Managed by Terraform` | no |
 | compress | Compress content for web requests that include Accept-Encoding: gzip in the request header | string | `false` | no |
+| custom_error_response | (Optional) - List of one or more custom error response element maps | list | `<list>` | no |
 | cors_allowed_headers | List of allowed headers for S3 bucket | list | `<list>` | no |
 | cors_allowed_methods | List of allowed methods (e.g. GET, PUT, POST, DELETE, HEAD) for S3 bucket | list | `<list>` | no |
 | cors_allowed_origins | List of allowed origins (e.g. example.com, test.com) for S3 bucket | list | `<list>` | no |
