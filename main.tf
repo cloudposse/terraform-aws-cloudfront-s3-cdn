@@ -163,6 +163,8 @@ resource "aws_cloudfront_distribution" "default" {
       locations        = "${var.geo_restriction_locations}"
     }
   }
+  
+  custom_error_response = ["${var.custom_error_response}"]
 
   tags = "${module.distribution_label.tags}"
 }
