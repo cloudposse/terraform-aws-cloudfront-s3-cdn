@@ -10,7 +10,7 @@ Terraform module to easily provision an AWS CloudFront CDN with an S3 or custom 
 
 ---
 
-This project is part of our comprehensive ["SweetOps"](https://docs.cloudposse.com) approach towards DevOps.
+This project is part of our comprehensive ["SweetOps"](https://docs.cloudposse.com) approach towards DevOps. 
 
 
 It's 100% Open Source and licensed under the [APACHE2](LICENSE).
@@ -97,6 +97,7 @@ Available targets:
 | cors_allowed_origins | List of allowed origins (e.g. example.com, test.com) for S3 bucket | list | `<list>` | no |
 | cors_expose_headers | List of expose header in the response for S3 bucket | list | `<list>` | no |
 | cors_max_age_seconds | Time in seconds that browser can cache the response for S3 bucket | string | `3600` | no |
+| custom_error_response | List of one or more custom error response element maps | list | `<list>` | no |
 | default_root_object | Object that CloudFront return when requests the root URL | string | `index.html` | no |
 | default_ttl | Default amount of time (in seconds) that an object is in a CloudFront cache | string | `60` | no |
 | delimiter | Delimiter to be used between `name`, `namespace`, `stage`, etc. | string | `-` | no |
@@ -120,7 +121,7 @@ Available targets:
 | null | an empty string | string | `` | no |
 | origin_bucket | Name of S3 bucket | string | `` | no |
 | origin_force_destroy | Delete all objects from the bucket  so that the bucket can be destroyed without error (e.g. `true` or `false`) | string | `false` | no |
-| origin_path | (Optional) - An optional element that causes CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a /. Do not add a / at the end of the path. | string | `` | no |
+| origin_path | When set, will cause CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a `/`. Do not add a `/` at the end of the path. | string | `` | no |
 | parent_zone_id | ID of the hosted zone to contain this record  (or specify `parent_zone_name`) | string | `` | no |
 | parent_zone_name | Name of the hosted zone to contain this record (or specify `parent_zone_id`) | string | `` | no |
 | price_class | Price class for this distribution: `PriceClass_All`, `PriceClass_200`, `PriceClass_100` | string | `PriceClass_100` | no |
@@ -163,9 +164,9 @@ File a GitHub [issue](https://github.com/cloudposse/terraform-aws-cloudfront-s3-
 
 ## Commercial Support
 
-Work directly with our team of DevOps experts via email, slack, and video conferencing.
+Work directly with our team of DevOps experts via email, slack, and video conferencing. 
 
-We provide [*commercial support*][commercial_support] for all of our [Open Source][github] projects. As a *Dedicated Support* customer, you have access to our team of subject matter experts at a fraction of the cost of a full-time engineer.
+We provide [*commercial support*][commercial_support] for all of our [Open Source][github] projects. As a *Dedicated Support* customer, you have access to our team of subject matter experts at a fraction of the cost of a full-time engineer. 
 
 [![E-Mail](https://img.shields.io/badge/email-hello@cloudposse.com-blue.svg)](mailto:hello@cloudposse.com)
 
@@ -175,7 +176,7 @@ We provide [*commercial support*][commercial_support] for all of our [Open Sourc
 - **Bug Fixes.** We'll rapidly work to fix any bugs in our projects.
 - **Build New Terraform Modules.** We'll develop original modules to provision infrastructure.
 - **Cloud Architecture.** We'll assist with your cloud strategy and design.
-- **Implementation.** We'll provide hands-on support to implement our reference architectures.
+- **Implementation.** We'll provide hands-on support to implement our reference architectures. 
 
 
 ## Community Forum
@@ -209,9 +210,9 @@ Copyright © 2017-2018 [Cloud Posse, LLC](https://cloudposse.com)
 
 
 
-## License
+## License 
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
 
 See [LICENSE](LICENSE) for full details.
 
@@ -252,7 +253,7 @@ This project is maintained and funded by [Cloud Posse, LLC][website]. Like it? P
 
 We're a [DevOps Professional Services][hire] company based in Los Angeles, CA. We love [Open Source Software](https://github.com/cloudposse/)!
 
-We offer paid support on all of our projects.
+We offer paid support on all of our projects.  
 
 Check out [our other projects][github], [apply for a job][jobs], or [hire us][hire] to help with your cloud strategy and implementation.
 

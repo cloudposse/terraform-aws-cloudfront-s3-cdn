@@ -40,7 +40,7 @@
 | null | an empty string | string | `` | no |
 | origin_bucket | Name of S3 bucket | string | `` | no |
 | origin_force_destroy | Delete all objects from the bucket  so that the bucket can be destroyed without error (e.g. `true` or `false`) | string | `false` | no |
-| origin_path | (Optional) - An optional element that causes CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a /. Do not add a / at the end of the path. | string | `` | no |
+| origin_path | When set, will cause CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a `/`. Do not add a `/` at the end of the path. | string | `` | no |
 | parent_zone_id | ID of the hosted zone to contain this record  (or specify `parent_zone_name`) | string | `` | no |
 | parent_zone_name | Name of the hosted zone to contain this record (or specify `parent_zone_id`) | string | `` | no |
 | price_class | Price class for this distribution: `PriceClass_All`, `PriceClass_200`, `PriceClass_100` | string | `PriceClass_100` | no |

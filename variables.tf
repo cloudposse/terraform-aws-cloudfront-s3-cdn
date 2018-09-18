@@ -65,7 +65,7 @@ variable "origin_bucket" {
 
 variable "origin_path" {
   # http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-values-specify.html#DownloadDistValuesOriginPath
-  description = "(Optional) - An optional element that causes CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a /. Do not add a / at the end of the path."
+  description = "When set, will cause CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a `/`. Do not add a `/` at the end of the path."
   default     = ""
 }
 
@@ -252,7 +252,7 @@ DOC
 variable "custom_error_response" {
   # http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages.html#custom-error-pages-procedure
   # https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#custom-error-response-arguments
-  description = "(Optional) - List of one or more custom error response element maps"
+  description = "List of one or more custom error response element maps"
 
   type    = "list"
   default = []
