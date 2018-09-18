@@ -164,6 +164,8 @@ resource "aws_cloudfront_distribution" "default" {
     }
   }
 
+  custom_error_response = ["${var.custom_error_response}"]
+
   tags = "${module.distribution_label.tags}"
 }
 
