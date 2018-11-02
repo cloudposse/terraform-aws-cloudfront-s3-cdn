@@ -1,5 +1,5 @@
 module "origin_label" {
-  source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.1.2"
+  source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.1.6"
   namespace  = "${var.namespace}"
   stage      = "${var.stage}"
   name       = "${var.name}"
@@ -83,7 +83,7 @@ module "logs" {
 }
 
 module "distribution_label" {
-  source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.1.2"
+  source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.1.6"
   namespace  = "${var.namespace}"
   stage      = "${var.stage}"
   name       = "${var.name}"
@@ -97,10 +97,8 @@ data "aws_s3_bucket" "selected" {
 }
 
 locals {
-  bucket               = "${join("", compact(concat(list(var.origin_bucket), concat(list(""),aws_s3_bucket.origin.*.bucket))))}"
-  region_endpoint      = "${data.aws_s3_bucket.selected.region == "us-east-1" ? "s3" : "s3-${data.aws_s3_bucket.selected.region}" }"
-  bucket_domain_format = "${var.use_regional_s3_endpoint == "true" ? "%s.${local.region_endpoint}.amazonaws.com" : var.bucket_domain_format }"
-  bucket_domain_name   = "${format(local.bucket_domain_format, local.bucket)}"
+  bucket             = "${join("", compact(concat(list(var.origin_bucket), concat(list(""), aws_s3_bucket.origin.*.bucket))))}"
+  bucket_domain_name = "${var.use_regional_s3_endpoint == "true" ? format("%s.s3-%s.amazonaws.com" , local.bucket, data.aws_s3_bucket.selected.region): format(var.bucket_domain_format, local.bucket)}"
 }
 
 resource "aws_cloudfront_distribution" "default" {
@@ -170,7 +168,8 @@ resource "aws_cloudfront_distribution" "default" {
 }
 
 module "dns" {
-  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.2.3"
+  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.2.5"
+  enabled          = "${var.enabled}"
   aliases          = "${var.aliases}"
   parent_zone_id   = "${var.parent_zone_id}"
   parent_zone_name = "${var.parent_zone_name}"

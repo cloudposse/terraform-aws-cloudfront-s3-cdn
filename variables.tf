@@ -1,5 +1,5 @@
 variable "namespace" {
-  description = "Namespace (e.g. `cp` or `cloudposse`)"
+  description = "Namespace (e.g. `eg` or `cp`)"
   type        = "string"
 }
 
@@ -9,26 +9,26 @@ variable "stage" {
 }
 
 variable "name" {
-  description = "Name  (e.g. `bastion` or `db`)"
+  description = "Name  (e.g. `bastion` or `app`)"
   type        = "string"
 }
 
 variable "delimiter" {
   type        = "string"
   default     = "-"
-  description = "Delimiter to be used between `name`, `namespace`, `stage`, etc."
+  description = "Delimiter to be used between `namespace`, `stage`, `name` and `attributes`"
 }
 
 variable "attributes" {
   type        = "list"
   default     = []
-  description = "Additional attributes (e.g. `policy` or `role`)"
+  description = "Additional attributes (e.g. `1`)"
 }
 
 variable "tags" {
   type        = "map"
   default     = {}
-  description = "Additional tags (e.g. map('BusinessUnit`,`XYZ`)"
+  description = "Additional tags (e.g. map(`BusinessUnit`,`XYZ`)"
 }
 
 variable "enabled" {
@@ -65,7 +65,7 @@ variable "origin_bucket" {
 
 variable "origin_path" {
   # http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-values-specify.html#DownloadDistValuesOriginPath
-  description = "When set, will cause CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a `/`. Do not add a `/` at the end of the path."
+  description = "An optional element that causes CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a /. Do not add a / at the end of the path."
   default     = ""
 }
 
@@ -237,12 +237,12 @@ variable "null" {
 
 variable "static_s3_bucket" {
   description = <<DOC
-aws-cli is a bucket owned by amazon that will perminantly exist
+aws-cli is a bucket owned by amazon that will perminantly exist.
 It allows for the data source to be called during the destruction process without failing.
-It doesn't get used for anything else, this is a safe workaround for handling the fact that 
+It doesn't get used for anything else, this is a safe workaround for handling the fact that
 if a data source like the one `aws_s3_bucket.selected` gets an error, you can't continue the terraform process
 which also includes the 'destroy' command, where is doesn't even need this data source!
-Don't change this bucket name, its a variable so that we can provide this description.
+Don't change this bucket name, it's a variable so that we can provide this description.
 And this works around a problem that is an edge case.
 DOC
 

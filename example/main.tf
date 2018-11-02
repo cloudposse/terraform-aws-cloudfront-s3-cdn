@@ -5,9 +5,9 @@ resource "aws_route53_zone" "primary" {
 
 module "cdn" {
   source                   = "../"
-  namespace                = "cp"
-  stage                    = "dev"
-  name                     = "app-cdn"
+  namespace                = "eg"
+  stage                    = "prod"
+  name                     = "app"
   aliases                  = ["assets.cloudposse.com"]
   parent_zone_id           = "${aws_route53_zone.primary.zone_id}"
   use_regional_s3_endpoint = "true"

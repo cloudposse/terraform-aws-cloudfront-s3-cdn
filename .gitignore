@@ -2,6 +2,7 @@
 **/*.tfstate
 **/*.tfstate.backup
 **/*.terraform.tfstate*
+
 # Module directory
 .idea
 *.iml
