@@ -49,6 +49,7 @@
 | tags | Additional tags (e.g. map(`BusinessUnit`,`XYZ`) | map | `<map>` | no |
 | use_regional_s3_endpoint | When set to 'true' the s3 origin_bucket will use the regional endpoint address instead of the global endpoint address | string | `false` | no |
 | viewer_protocol_policy | allow-all, redirect-to-https | string | `redirect-to-https` | no |
+| lambda_function_association | A config block that triggers a lambda function with specific actions | list | `<list>` | no |
 
 ## Outputs
 

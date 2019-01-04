@@ -257,3 +257,9 @@ variable "custom_error_response" {
   type    = "list"
   default = []
 }
+
+variable "lambda_function_association" {
+  type        = "list"
+  default     = []
+  description = "A config block that triggers a lambda function with specific actions"
+}

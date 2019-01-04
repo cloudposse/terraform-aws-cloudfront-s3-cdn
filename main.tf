@@ -153,6 +153,8 @@ resource "aws_cloudfront_distribution" "default" {
     default_ttl            = "${var.default_ttl}"
     min_ttl                = "${var.min_ttl}"
     max_ttl                = "${var.max_ttl}"
+
+    lambda_function_association = ["${var.lambda_function_association}"]
   }
 
   restrictions {
