@@ -263,3 +263,9 @@ variable "lambda_function_association" {
   default     = []
   description = "A config block that triggers a lambda function with specific actions"
 }
+
+variable "web_acl_id" {
+  type        = "string"
+  default     = ""
+  description = "ID of the AWS WAF web ACL that is associated with the distribution"
+}
