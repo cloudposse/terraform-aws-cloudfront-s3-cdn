@@ -165,6 +165,7 @@ resource "aws_cloudfront_distribution" "default" {
   }
 
   custom_error_response = ["${var.custom_error_response}"]
+  web_acl_id            = "${var.web_acl_id}"
 
   tags = "${module.distribution_label.tags}"
 }
