@@ -206,6 +206,12 @@ variable "max_ttl" {
   description = "Maximum amount of time (in seconds) that an object is in a CloudFront cache"
 }
 
+variable "trusted_signers" {
+  type        = "list"
+  default     = []
+  description = "The AWS accounts, if any, that you want to allow to create signed URLs for private content. 'self' is acceptable."
+}
+
 variable "geo_restriction_type" {
   # e.g. "whitelist"
   default     = "none"

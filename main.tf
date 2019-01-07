@@ -139,6 +139,7 @@ resource "aws_cloudfront_distribution" "default" {
     cached_methods   = "${var.cached_methods}"
     target_origin_id = "${module.distribution_label.id}"
     compress         = "${var.compress}"
+    trusted_signers  = "${var.trusted_signers}"
 
     forwarded_values {
       query_string = "${var.forward_query_string}"
