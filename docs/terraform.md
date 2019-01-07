@@ -1,4 +1,3 @@
-
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -27,6 +26,7 @@
 | geo_restriction_locations | List of country codes for which  CloudFront either to distribute content (whitelist) or not distribute your content (blacklist) | list | `<list>` | no |
 | geo_restriction_type | Method that use to restrict distribution of your content by country: `none`, `whitelist`, or `blacklist` | string | `none` | no |
 | is_ipv6_enabled | State of CloudFront IPv6 | string | `true` | no |
+| lambda_function_association | A config block that triggers a lambda function with specific actions | list | `<list>` | no |
 | log_expiration_days | Number of days after which to expunge the objects | string | `90` | no |
 | log_glacier_transition_days | Number of days after which to move the data to the glacier storage tier | string | `60` | no |
 | log_include_cookies | Include cookies in access logs | string | `false` | no |
@@ -47,9 +47,9 @@
 | stage | Stage (e.g. `prod`, `dev`, `staging`) | string | - | yes |
 | static_s3_bucket | aws-cli is a bucket owned by amazon that will perminantly exist. It allows for the data source to be called during the destruction process without failing. It doesn't get used for anything else, this is a safe workaround for handling the fact that if a data source like the one `aws_s3_bucket.selected` gets an error, you can't continue the terraform process which also includes the 'destroy' command, where is doesn't even need this data source! Don't change this bucket name, it's a variable so that we can provide this description. And this works around a problem that is an edge case. | string | `aws-cli` | no |
 | tags | Additional tags (e.g. map(`BusinessUnit`,`XYZ`) | map | `<map>` | no |
+| trusted_signers | The AWS accounts, if any, that you want to allow to create signed URLs for private content. 'self' is acceptable. | list | `<list>` | no |
 | use_regional_s3_endpoint | When set to 'true' the s3 origin_bucket will use the regional endpoint address instead of the global endpoint address | string | `false` | no |
 | viewer_protocol_policy | allow-all, redirect-to-https | string | `redirect-to-https` | no |
-| lambda_function_association | A config block that triggers a lambda function with specific actions | list | `<list>` | no |
 | web_acl_id | ID of the AWS WAF web ACL that is associated with the distribution | string | `` | no |
 
 ## Outputs
