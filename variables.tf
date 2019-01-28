@@ -275,3 +275,8 @@ variable "web_acl_id" {
   default     = ""
   description = "ID of the AWS WAF web ACL that is associated with the distribution"
 }
+
+variable "dns_enabled" {
+  default     = "true"
+  description = "Select Disabled if you do not want to create DNS config after the distribution is created"
+}
