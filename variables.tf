@@ -278,5 +278,5 @@ variable "web_acl_id" {
 
 variable "dns_enabled" {
   default     = "true"
-  description = "Select Disabled if you do not want to create DNS config after the distribution is created"
+  description = "Set to `false` if you do not want to create the DNS hostname after the distribution is created"
 }
