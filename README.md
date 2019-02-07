@@ -116,6 +116,7 @@ Available targets:
 | default_root_object | Object that CloudFront return when requests the root URL | string | `index.html` | no |
 | default_ttl | Default amount of time (in seconds) that an object is in a CloudFront cache | string | `60` | no |
 | delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | string | `-` | no |
+| dns_enabled | Set to `false` if you do not want to create the DNS hostname after the distribution is created | string | `true` | no |
 | enabled | Select Enabled if you want CloudFront to begin processing requests as soon as the distribution is created, or select Disabled if you do not want CloudFront to begin processing requests after the distribution is created. | string | `true` | no |
 | forward_cookies | Time in seconds that browser can cache the response for S3 bucket | string | `none` | no |
 | forward_header_values | A list of whitelisted header values to forward to the origin | list | `<list>` | no |
@@ -148,7 +149,6 @@ Available targets:
 | use_regional_s3_endpoint | When set to 'true' the s3 origin_bucket will use the regional endpoint address instead of the global endpoint address | string | `false` | no |
 | viewer_protocol_policy | allow-all, redirect-to-https | string | `redirect-to-https` | no |
 | web_acl_id | ID of the AWS WAF web ACL that is associated with the distribution | string | `` | no |
-| dns_enabled | Select Disabled if you do not want to create DNS config after the distribution is created | string | `true` | no |
 
 ## Outputs
 
