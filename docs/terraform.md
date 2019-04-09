@@ -50,6 +50,7 @@
 | trusted_signers | The AWS accounts, if any, that you want to allow to create signed URLs for private content. 'self' is acceptable. | list | `<list>` | no |
 | use_regional_s3_endpoint | When set to 'true' the s3 origin_bucket will use the regional endpoint address instead of the global endpoint address | string | `false` | no |
 | viewer_protocol_policy | allow-all, redirect-to-https | string | `redirect-to-https` | no |
+| wait_for_deployment | When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed | string | `true` | no |
 | web_acl_id | ID of the AWS WAF web ACL that is associated with the distribution | string | `` | no |
 
 ## Outputs

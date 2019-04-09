@@ -167,6 +167,7 @@ resource "aws_cloudfront_distribution" "default" {
 
   custom_error_response = ["${var.custom_error_response}"]
   web_acl_id            = "${var.web_acl_id}"
+  wait_for_deployment   = "${var.wait_for_deployment}"
 
   tags = "${module.distribution_label.tags}"
 }
