@@ -1,5 +1,5 @@
 module "origin_label" {
-  source     = "git::https://github.com/rverma-nikiai/terraform-null-label.git?ref=master"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=master"
   namespace  = var.namespace
   stage      = var.stage
   name       = var.name
@@ -71,7 +71,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 module "logs" {
-  source                   = "git::https://github.com/rverma-nikiai/terraform-aws-s3-log-storage.git?ref=master"
+  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=master"
   namespace                = var.namespace
   stage                    = var.stage
   name                     = var.name
@@ -86,7 +86,7 @@ module "logs" {
 }
 
 module "distribution_label" {
-  source     = "git::https://github.com/rverma-nikiai/terraform-null-label.git?ref=master"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=master"
   namespace  = var.namespace
   stage      = var.stage
   name       = var.name
@@ -210,7 +210,7 @@ resource "aws_cloudfront_distribution" "default" {
 }
 
 module "dns" {
-  source           = "git::https://github.com/rverma-nikiai/terraform-aws-route53-alias.git?ref=master"
+  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=master"
   enabled          = var.enabled == "true" && length(var.parent_zone_id) > 0 || length(var.parent_zone_name) > 0 ? "true" : "false"
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
