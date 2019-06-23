@@ -1,5 +1,5 @@
 module "origin_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=master"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.13.0"
   namespace  = var.namespace
   stage      = var.stage
   name       = var.name
@@ -86,7 +86,7 @@ module "logs" {
 }
 
 module "distribution_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=master"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.13.0"
   namespace  = var.namespace
   stage      = var.stage
   name       = var.name
