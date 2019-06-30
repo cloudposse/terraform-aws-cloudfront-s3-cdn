@@ -17,7 +17,3 @@ variable "stage" {
 variable "parent_zone_name" {
   type = string
 }
-
-variable "aliases" {
-  type = list(string)
-}
