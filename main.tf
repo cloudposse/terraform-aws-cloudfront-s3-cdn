@@ -169,7 +169,7 @@ resource "aws_cloudfront_distribution" "default" {
     max_ttl                = var.max_ttl
 
     dynamic "lambda_function_association" {
-      for_each = [var.lambda_function_association]
+      for_each = var.lambda_function_association
       content {
         event_type   = lambda_function_association.value.event_type
         include_body = lookup(lambda_function_association.value, "include_body", null)
@@ -186,7 +186,7 @@ resource "aws_cloudfront_distribution" "default" {
   }
 
   dynamic "custom_error_response" {
-    for_each = [var.custom_error_response]
+    for_each = var.custom_error_response
     content {
       error_caching_min_ttl = lookup(custom_error_response.value, "error_caching_min_ttl", null)
       error_code            = custom_error_response.value.error_code

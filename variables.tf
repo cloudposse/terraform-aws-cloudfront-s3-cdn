@@ -281,15 +281,26 @@ DOC
 variable "custom_error_response" {
   # http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages.html#custom-error-pages-procedure
   # https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#custom-error-response-arguments
+  type = list(object({
+    error_caching_min_ttl = string
+    error_code = string
+    response_code = string
+    response_page_path = string
+  }))
+
   description = "List of one or more custom error response element maps"
-  type = list(string)
   default = []
 }
 
 variable "lambda_function_association" {
-  type = list(string)
-  default = []
+  type = list(object({
+    event_type = string
+    include_body = bool
+    lambda_arn = string
+  }))
+
   description = "A config block that triggers a lambda function with specific actions"
+  default = []
 }
 
 variable "web_acl_id" {

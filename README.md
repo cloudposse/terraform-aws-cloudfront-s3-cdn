@@ -117,7 +117,7 @@ Available targets:
 | cors_allowed_origins | List of allowed origins (e.g. example.com, test.com) for S3 bucket | list(string) | `<list>` | no |
 | cors_expose_headers | List of expose header in the response for S3 bucket | list(string) | `<list>` | no |
 | cors_max_age_seconds | Time in seconds that browser can cache the response for S3 bucket | string | `3600` | no |
-| custom_error_response | List of one or more custom error response element maps | list(string) | `<list>` | no |
+| custom_error_response | List of one or more custom error response element maps | object | `<list>` | no |
 | default_root_object | Object that CloudFront return when requests the root URL | string | `index.html` | no |
 | default_ttl | Default amount of time (in seconds) that an object is in a CloudFront cache | string | `60` | no |
 | delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | string | `-` | no |
@@ -128,7 +128,7 @@ Available targets:
 | geo_restriction_locations | List of country codes for which  CloudFront either to distribute content (whitelist) or not distribute your content (blacklist) | list(string) | `<list>` | no |
 | geo_restriction_type | Method that use to restrict distribution of your content by country: `none`, `whitelist`, or `blacklist` | string | `none` | no |
 | is_ipv6_enabled | State of CloudFront IPv6 | bool | `true` | no |
-| lambda_function_association | A config block that triggers a lambda function with specific actions | list(string) | `<list>` | no |
+| lambda_function_association | A config block that triggers a lambda function with specific actions | object | `<list>` | no |
 | log_expiration_days | Number of days after which to expunge the objects | string | `90` | no |
 | log_glacier_transition_days | Number of days after which to move the data to the glacier storage tier | string | `60` | no |
 | log_include_cookies | Include cookies in access logs | bool | `false` | no |
