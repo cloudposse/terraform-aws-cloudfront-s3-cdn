@@ -26,11 +26,10 @@ func TestExamplesComplete(t *testing.T) {
 	terraform.InitAndApply(t, terraformOptions)
 
 	// Run `terraform output` to get the value of an output variable
-	cloudFrontId := terraform.Output(t, terraformOptions, "cf_id")
+	cfArn := terraform.Output(t, terraformOptions, "cf_arn")
 
-	expectedCloudFrontId := "eg-test-cloudfront-s3-cdn"
 	// Verify we're getting back the outputs we expect
-	assert.Equal(t, expectedCloudFrontId, cloudFrontId)
+	assert.Contains(t, cfArn, "arn:aws:cloudfront::126450723953:distribution/")
 
 	// Run `terraform output` to get the value of an output variable
 	s3BucketName := terraform.Output(t, terraformOptions, "s3_bucket")
