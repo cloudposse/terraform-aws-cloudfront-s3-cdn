@@ -12,42 +12,6 @@ resource "aws_cloudfront_origin_access_identity" "default" {
   comment = module.distribution_label.id
 }
 
-data "aws_iam_policy_document" "origin" {
-  statement {
-    actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::$${bucket_name}$${origin_path}*"]
-
-    principals {
-      type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.default.iam_arn]
-    }
-  }
-
-  statement {
-    actions   = ["s3:ListBucket"]
-    resources = ["arn:aws:s3:::$${bucket_name}"]
-
-    principals {
-      type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.default.iam_arn]
-    }
-  }
-}
-
-data "template_file" "default" {
-  template = data.aws_iam_policy_document.origin.json
-
-  vars = {
-    origin_path = coalesce(var.origin_path, "/")
-    bucket_name = local.bucket
-  }
-}
-
-resource "aws_s3_bucket_policy" "default" {
-  bucket = local.bucket
-  policy = data.template_file.default.rendered
-}
-
 data "aws_region" "current" {
 }
 
@@ -59,14 +23,224 @@ resource "aws_s3_bucket" "origin" {
   force_destroy = var.origin_force_destroy
   region        = data.aws_region.current.name
 
-  cors_rule {
-    allowed_headers = var.cors_allowed_headers
-    allowed_methods = var.cors_allowed_methods
-    allowed_origins = sort(
-      distinct(compact(concat(var.cors_allowed_origins, var.aliases))),
-    )
-    expose_headers  = var.cors_expose_headers
-    max_age_seconds = var.cors_max_age_seconds
+  dynamic "website" {
+    for_each = length(var.website_config) == 0 ? [] : list(var.website_config)
+    content {
+      error_document           = lookup(website.value, "error_document", null)
+      index_document           = lookup(website.value, "index_document", null)
+      redirect_all_requests_to = lookup(website.value, "redirect_all_requests_to", null)
+      routing_rules            = lookup(website.value, "routing_rules", null)
+    }
+  }
+
+  dynamic "cors_rule" {
+    for_each = length(distinct(compact(concat(var.cors_allowed_origins, var.aliases)))) != 0 ? [true] : []
+    content {
+      allowed_headers = var.cors_allowed_headers
+      allowed_methods = var.cors_allowed_methods
+      allowed_origins = sort(
+        distinct(compact(concat(var.cors_allowed_origins, var.aliases))),
+      )
+      expose_headers  = var.cors_expose_headers
+      max_age_seconds = var.cors_max_age_seconds
+    }
+  }
+
+  versioning {
+    enabled = var.versioning_enabled
+  }
+
+  dynamic "lifecycle_rule" {
+    for_each = var.lifecycle_rule_enabled == null ? [] : list(var.lifecycle_rule_enabled)
+
+    content {
+      id      = module.origin_label.id
+      enabled = lifecycle_rule.value
+      prefix  = var.lifecycle_rule_prefix
+      tags    = module.origin_label.tags
+
+      dynamic "transition" {
+        for_each = var.transition_config
+        content {
+          days          = lookup(transition.value, "days", 30)
+          storage_class = lookup(transition.value, "storage_class", "GLACIER")
+        }
+      }
+
+      dynamic "expiration" {
+        for_each = var.expiration_days == null ? [] : list(var.expiration_days)
+        content {
+          days = expiration.value
+        }
+      }
+
+      dynamic "noncurrent_version_transition" {
+        for_each = var.versioning_enabled && var.noncurrent_version_transition_config != [] ? var.noncurrent_version_transition_config : []
+        content {
+          days          = lookup(noncurrent_version_transition.value, "days", 30)
+          storage_class = lookup(noncurrent_version_transition.value, "storage_class", "GLACIER")
+        }
+      }
+
+      dynamic "noncurrent_version_expiration" {
+        for_each = var.versioning_enabled && var.noncurrent_version_expiration_days != null ? list(var.noncurrent_version_expiration_days) : []
+        content {
+          days = noncurrent_version_expiration.value
+        }
+      }
+    }
+  }
+}
+
+# AWS only supports a single bucket policy on a bucket. You can combine multiple Statements into a single policy, but not attach multiple policies.
+# https://github.com/hashicorp/terraform/issues/10543
+resource "aws_s3_bucket_policy" "default" {
+  bucket = data.aws_s3_bucket.origin.id
+  policy = data.aws_iam_policy_document.origin.json
+}
+
+data "aws_iam_policy_document" "origin" {
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["${data.aws_s3_bucket.origin.arn}${coalesce(var.origin_path, "/")}*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = [aws_cloudfront_origin_access_identity.default.iam_arn]
+    }
+  }
+
+  statement {
+    actions   = ["s3:ListBucket"]
+    resources = ["${data.aws_s3_bucket.origin.arn}"]
+
+    principals {
+      type        = "AWS"
+      identifiers = [aws_cloudfront_origin_access_identity.default.iam_arn]
+    }
+  }
+
+  # Support replication ARNs
+  dynamic "statement" {
+    for_each = flatten(data.aws_iam_policy_document.replication.*.statement)
+    content {
+      actions       = lookup(statement.value, "actions", null)
+      effect        = lookup(statement.value, "effect", null)
+      not_actions   = lookup(statement.value, "not_actions", null)
+      not_resources = lookup(statement.value, "not_resources", null)
+      resources     = lookup(statement.value, "resources", null)
+      sid           = lookup(statement.value, "sid", null)
+
+      dynamic "condition" {
+        for_each = lookup(statement.value, "condition", [])
+        content {
+          test     = condition.value.test
+          values   = condition.value.values
+          variable = condition.value.variable
+        }
+      }
+
+      dynamic "not_principals" {
+        for_each = lookup(statement.value, "not_principals", [])
+        content {
+          identifiers = not_principals.value.identifiers
+          type        = not_principals.value.type
+        }
+      }
+
+      dynamic "principals" {
+        for_each = lookup(statement.value, "principals", [])
+        content {
+          identifiers = principals.value.identifiers
+          type        = principals.value.type
+        }
+      }
+    }
+  }
+
+  # Support deployment ARNs
+  dynamic "statement" {
+    for_each = flatten(data.aws_iam_policy_document.deployment.*.statement)
+    content {
+      actions       = lookup(statement.value, "actions", null)
+      effect        = lookup(statement.value, "effect", null)
+      not_actions   = lookup(statement.value, "not_actions", null)
+      not_resources = lookup(statement.value, "not_resources", null)
+      resources     = lookup(statement.value, "resources", null)
+      sid           = lookup(statement.value, "sid", null)
+
+      dynamic "condition" {
+        for_each = lookup(statement.value, "condition", [])
+        content {
+          test     = condition.value.test
+          values   = condition.value.values
+          variable = condition.value.variable
+        }
+      }
+
+      dynamic "not_principals" {
+        for_each = lookup(statement.value, "not_principals", [])
+        content {
+          identifiers = not_principals.value.identifiers
+          type        = not_principals.value.type
+        }
+      }
+
+      dynamic "principals" {
+        for_each = lookup(statement.value, "principals", [])
+        content {
+          identifiers = principals.value.identifiers
+          type        = principals.value.type
+        }
+      }
+    }
+  }
+}
+
+data "aws_iam_policy_document" "replication" {
+  count = signum(length(var.replication_source_principal_arns))
+
+  statement {
+    principals {
+      type        = "AWS"
+      identifiers = var.replication_source_principal_arns
+    }
+
+    actions = [
+      "s3:GetBucketVersioning",
+      "s3:PutBucketVersioning",
+      "s3:ReplicateObject",
+      "s3:ReplicateDelete"
+    ]
+
+    resources = [
+      data.aws_s3_bucket.origin.arn,
+      "${data.aws_s3_bucket.origin.arn}/*"
+    ]
+  }
+}
+
+data "aws_iam_policy_document" "deployment" {
+  count = length(keys(var.deployment_arns))
+
+  statement {
+    actions = var.deployment_actions
+
+    resources = flatten([
+      formatlist(
+        "${data.aws_s3_bucket.origin.arn}%s",
+        var.deployment_arns[keys(var.deployment_arns)[count.index]]
+      ),
+      formatlist(
+        "${data.aws_s3_bucket.origin.arn}%s/*",
+        var.deployment_arns[keys(var.deployment_arns)[count.index]]
+      )
+    ])
+
+    principals {
+      type        = "AWS"
+      identifiers = [keys(var.deployment_arns)[count.index]]
+    }
   }
 }
 
@@ -107,11 +281,15 @@ locals {
     ),
   )
 
-  bucket_domain_name = var.use_regional_s3_endpoint ? format(
+  bucket_domain_name = length(var.website_config) != 0 ? data.aws_s3_bucket.origin.website_endpoint : (var.use_regional_s3_endpoint ? format(
     "%s.s3-%s.amazonaws.com",
     local.bucket,
     data.aws_s3_bucket.selected.region,
-  ) : format(var.bucket_domain_format, local.bucket)
+  ) : format(var.bucket_domain_format, local.bucket))
+}
+
+data "aws_s3_bucket" "origin" {
+  bucket = local.bucket
 }
 
 resource "aws_cloudfront_distribution" "default" {
@@ -135,8 +313,23 @@ resource "aws_cloudfront_distribution" "default" {
     origin_id   = module.distribution_label.id
     origin_path = var.origin_path
 
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.default.cloudfront_access_identity_path
+    dynamic "s3_origin_config" {
+      for_each = length(var.website_config) == 0 ? [true] : []
+      content {
+        origin_access_identity = aws_cloudfront_origin_access_identity.default.cloudfront_access_identity_path
+      }
+    }
+
+    dynamic "custom_origin_config" {
+      for_each = length(var.website_config) == 0 ? [] : list(var.website_config)
+      content {
+        http_port                = var.origin_http_port
+        https_port               = var.origin_https_port
+        origin_protocol_policy   = var.origin_protocol_policy
+        origin_ssl_protocols     = var.origin_ssl_protocols
+        origin_keepalive_timeout = var.origin_keepalive_timeout
+        origin_read_timeout      = var.origin_read_timeout
+      }
     }
   }
 

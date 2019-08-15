@@ -59,7 +59,7 @@ variable "aliases" {
 
 variable "use_regional_s3_endpoint" {
   type        = bool
-  description = "When set to 'true' the s3 origin_bucket will use the regional endpoint address instead of the global endpoint address"
+  description = "When set to 'true' the s3 origin_bucket will use the regional endpoint address instead of the global endpoint address unless a website_config is provided. If a website_config is set, it will use the s3 website endpoint."
   default     = false
 }
 
@@ -283,34 +283,137 @@ variable "custom_error_response" {
   # https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#custom-error-response-arguments
   type = list(object({
     error_caching_min_ttl = string
-    error_code = string
-    response_code = string
-    response_page_path = string
+    error_code            = string
+    response_code         = string
+    response_page_path    = string
   }))
 
   description = "List of one or more custom error response element maps"
-  default = []
+  default     = []
 }
 
 variable "lambda_function_association" {
   type = list(object({
-    event_type = string
+    event_type   = string
     include_body = bool
-    lambda_arn = string
+    lambda_arn   = string
   }))
 
   description = "A config block that triggers a lambda function with specific actions"
-  default = []
+  default     = []
 }
 
 variable "web_acl_id" {
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   description = "ID of the AWS WAF web ACL that is associated with the distribution"
 }
 
 variable "wait_for_deployment" {
-  type = bool
-  default = true
+  type        = bool
+  default     = true
   description = "When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed"
+}
+
+variable "website_config" {
+  type        = map(any)
+  default     = {}
+  description = "(Optional) A list of website configs to configure the s3 bucket as a static s3 website. See: https://www.terraform.io/docs/providers/aws/r/s3_bucket.html#website"
+}
+
+variable "versioning_enabled" {
+  type        = bool
+  default     = false
+  description = "Enable or disable versioning"
+}
+
+variable "lifecycle_rule_enabled" {
+  type        = bool
+  default     = null
+  description = "(Optional) Enable or disable lifecycle rule, set to false to create the rules but keep them disabled. Default behavior is dont create the rules."
+}
+
+variable "lifecycle_rule_prefix" {
+  type        = string
+  default     = ""
+  description = "(Optional) Prefix identifying one or more objects to which the lifecyle rule applies"
+}
+
+variable "noncurrent_version_transition_config" {
+  type = list(object({
+    days          = number
+    storage_class = string
+  }))
+  default     = []
+  description = "(Optional) An S3 bucket noncurrent_version_transition config, see: https://www.terraform.io/docs/providers/aws/r/s3_bucket.html#noncurrent_version_transition"
+}
+
+variable "noncurrent_version_expiration_days" {
+  type        = number
+  default     = null
+  description = "(Optional) Specifies when noncurrent object versions expire, default is don't expire noncurrent object versions."
+}
+
+variable "transition_config" {
+  type = list(object({
+    days          = number
+    storage_class = string
+  }))
+  default     = []
+  description = "(Optional) An S3 bucket transition config, see: https://www.terraform.io/docs/providers/aws/r/s3_bucket.html#noncurrent_version_transition"
+}
+
+variable "expiration_days" {
+  type        = number
+  default     = null
+  description = "(Optional) Specifies when objects expire, default is don't expire objects."
+}
+
+variable "replication_source_principal_arns" {
+  type        = list(string)
+  default     = []
+  description = "(Optional) List of principal ARNs to grant replication access from different AWS accounts"
+}
+
+variable "deployment_arns" {
+  type        = map(any)
+  default     = {}
+  description = "(Optional) Map of deployment ARNs to lists of S3 path prefixes to grant `deployment_actions` permissions"
+}
+
+variable "deployment_actions" {
+  type        = list(string)
+  default     = ["s3:PutObject", "s3:PutObjectAcl", "s3:GetObject", "s3:DeleteObject", "s3:ListBucket", "s3:ListBucketMultipartUploads", "s3:GetBucketLocation", "s3:AbortMultipartUpload"]
+  description = "List of actions to permit deployment ARNs to perform"
+}
+
+variable "origin_http_port" {
+  description = "(Optional) - The HTTP port the custom origin listens on. Ignored if not configured with a static s3 website endpoint - i.e. website_config is set."
+  default     = "80"
+}
+
+variable "origin_https_port" {
+  description = "(Optional) - The HTTPS port the custom origin listens on. Ignored if not configured with a static s3 website endpoint - i.e. website_config is set."
+  default     = "443"
+}
+
+variable "origin_protocol_policy" {
+  description = "(Optional) - The origin protocol policy to apply to your origin. One of http-only, https-only, or match-viewer. Ignored if not configured with a static s3 website endpoint - i.e. website_config is set."
+  default     = "match-viewer"
+}
+
+variable "origin_ssl_protocols" {
+  description = "(Optional) - The SSL/TLS protocols that you want CloudFront to use when communicating with your origin over HTTPS. Ignored if not configured with a static s3 website endpoint - i.e. website_config is set."
+  type        = list(string)
+  default     = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+}
+
+variable "origin_keepalive_timeout" {
+  description = "(Optional) The Custom KeepAlive timeout, in seconds. By default, AWS enforces a limit of 60. But you can request an increase. Ignored if not configured with a static s3 website endpoint - i.e. website_config is set."
+  default     = "60"
+}
+
+variable "origin_read_timeout" {
+  description = "(Optional) The Custom Read timeout, in seconds. By default, AWS enforces a limit of 60. But you can request an increase. Ignored if not configured with a static s3 website endpoint - i.e. website_config is set."
+  default     = "60"
 }
