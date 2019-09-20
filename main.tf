@@ -18,8 +18,8 @@ data "aws_iam_policy_document" "origin" {
     resources = ["arn:aws:s3:::$${bucket_name}$${origin_path}*"]
 
     principals {
-      type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.default.iam_arn]
+      type        = "CanonicalUser"
+      identifiers = [aws_cloudfront_origin_access_identity.default.s3_canonical_user_id]
     }
   }
 
@@ -28,8 +28,8 @@ data "aws_iam_policy_document" "origin" {
     resources = ["arn:aws:s3:::$${bucket_name}"]
 
     principals {
-      type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.default.iam_arn]
+      type        = "CanonicalUser"
+      identifiers = [aws_cloudfront_origin_access_identity.default.s3_canonical_user_id]
     }
   }
 }
