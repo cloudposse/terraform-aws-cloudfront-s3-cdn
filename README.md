@@ -308,13 +308,13 @@ Check out [our other projects][github], [follow us on twitter][twitter], [apply 
 |---|---|---|---|
 
   [osterman_homepage]: https://github.com/osterman
-  [osterman_avatar]: https://github.com/osterman.png?size=150
+  [osterman_avatar]: https://img.cloudposse.com/150x150/https://github.com/osterman.png
   [aknysh_homepage]: https://github.com/aknysh
-  [aknysh_avatar]: https://github.com/aknysh.png?size=150
+  [aknysh_avatar]: https://img.cloudposse.com/150x150/https://github.com/aknysh.png
   [Jamie-BitFlight_homepage]: https://github.com/Jamie-BitFlight
-  [Jamie-BitFlight_avatar]: https://github.com/Jamie-BitFlight.png?size=150
+  [Jamie-BitFlight_avatar]: https://img.cloudposse.com/150x150/https://github.com/Jamie-BitFlight.png
   [cliveza_homepage]: https://github.com/cliveza
-  [cliveza_avatar]: https://github.com/cliveza.png?size=150
+  [cliveza_avatar]: https://img.cloudposse.com/150x150/https://github.com/cliveza.png
 
 
 
