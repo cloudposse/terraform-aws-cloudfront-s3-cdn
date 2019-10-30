@@ -38,6 +38,7 @@
 | name | Name  (e.g. `bastion` or `app`) | string | - | yes |
 | namespace | Namespace (e.g. `eg` or `cp`) | string | `` | no |
 | null | an empty string | string | `` | no |
+| additional_bucket_policy | Additional policies for the bucket. The variables $${bucket_name} and $${origin_path} will be substituted. | string | `{}` | no |
 | origin_bucket | Origin S3 bucket name | string | `` | no |
 | origin_force_destroy | Delete all objects from the bucket  so that the bucket can be destroyed without error (e.g. `true` or `false`) | bool | `false` | no |
 | origin_path | An optional element that causes CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a /. Do not add a / at the end of the path. | string | `` | no |
