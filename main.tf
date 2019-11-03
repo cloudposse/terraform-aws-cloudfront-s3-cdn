@@ -13,9 +13,11 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 }
 
 data "aws_iam_policy_document" "origin" {
-  source_json = var.additional_bucket_policy
+  override_json = var.additional_bucket_policy
 
   statement {
+    sid = "S3GetObjectForCloudFront"
+
     actions   = ["s3:GetObject"]
     resources = ["arn:aws:s3:::$${bucket_name}$${origin_path}*"]
 
@@ -26,6 +28,8 @@ data "aws_iam_policy_document" "origin" {
   }
 
   statement {
+    sid = "S3ListBucketForCloudFront"
+
     actions   = ["s3:ListBucket"]
     resources = ["arn:aws:s3:::$${bucket_name}"]
 

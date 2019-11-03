@@ -66,7 +66,7 @@ variable "use_regional_s3_endpoint" {
 variable "additional_bucket_policy" {
   type        = string
   default     = "{}"
-  description = "Additional policies for the bucket. The variables $${bucket_name} and $${origin_path} will be substituted."
+  description = "Additional policies for the bucket. If included in the policies, the variables `$${bucket_name}` and `$${origin_path}` will be substituted. It is also possible to override the default policy statements by providing statements with `S3GetObjectForCloudFront` and `S3ListBucketForCloudFront` sid."
 }
 
 variable "origin_bucket" {
