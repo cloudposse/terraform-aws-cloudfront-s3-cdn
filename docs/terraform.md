@@ -3,7 +3,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
 | acm_certificate_arn | Existing ACM Certificate ARN | string | `` | no |
-| additional_bucket_policy | Additional policies for the bucket. If included in the policies, the variables `$${bucket_name}` and `$${origin_path}` will be substituted. It is also possible to override the default policy statements by providing statements with `S3GetObjectForCloudFront` and `S3ListBucketForCloudFront` sid. | string | `{}` | no |
+| additional_bucket_policy | Additional policies for the bucket. If included in the policies, the variables `$${bucket_name}`, `$${origin_path}` and `$${cloudfront_origin_access_identity_iam_arn}` will be substituted. It is also possible to override the default policy statements by providing statements with `S3GetObjectForCloudFront` and `S3ListBucketForCloudFront` sid. | string | `{}` | no |
 | aliases | List of FQDN's - Used to set the Alternate Domain Names (CNAMEs) setting on Cloudfront | list(string) | `<list>` | no |
 | allowed_methods | List of allowed methods (e.g. GET, PUT, POST, DELETE, HEAD) for AWS CloudFront | list(string) | `<list>` | no |
 | attributes | Additional attributes (e.g. `1`) | list(string) | `<list>` | no |

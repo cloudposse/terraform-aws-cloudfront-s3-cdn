@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "origin" {
 
     principals {
       type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.default.iam_arn]
+      identifiers = ["$${cloudfront_origin_access_identity_iam_arn}"]
     }
   }
 
@@ -35,7 +35,7 @@ data "aws_iam_policy_document" "origin" {
 
     principals {
       type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.default.iam_arn]
+      identifiers = ["$${cloudfront_origin_access_identity_iam_arn}"]
     }
   }
 }
@@ -44,8 +44,9 @@ data "template_file" "default" {
   template = data.aws_iam_policy_document.origin.json
 
   vars = {
-    origin_path = coalesce(var.origin_path, "/")
-    bucket_name = local.bucket
+    origin_path                               = coalesce(var.origin_path, "/")
+    bucket_name                               = local.bucket
+    cloudfront_origin_access_identity_iam_arn = aws_cloudfront_origin_access_identity.default.iam_arn
   }
 }
 
