@@ -105,6 +105,7 @@ Available targets:
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-----:|:-----:|
 | acm_certificate_arn | Existing ACM Certificate ARN | string | `` | no |
+| additional_bucket_policy | Additional policies for the bucket. If included in the policies, the variables `$${bucket_name}`, `$${origin_path}` and `$${cloudfront_origin_access_identity_iam_arn}` will be substituted. It is also possible to override the default policy statements by providing statements with `S3GetObjectForCloudFront` and `S3ListBucketForCloudFront` sid. | string | `{}` | no |
 | aliases | List of FQDN's - Used to set the Alternate Domain Names (CNAMEs) setting on Cloudfront | list(string) | `<list>` | no |
 | allowed_methods | List of allowed methods (e.g. GET, PUT, POST, DELETE, HEAD) for AWS CloudFront | list(string) | `<list>` | no |
 | attributes | Additional attributes (e.g. `1`) | list(string) | `<list>` | no |
@@ -308,13 +309,13 @@ Check out [our other projects][github], [follow us on twitter][twitter], [apply 
 |---|---|---|---|
 
   [osterman_homepage]: https://github.com/osterman
-  [osterman_avatar]: https://github.com/osterman.png?size=150
+  [osterman_avatar]: https://img.cloudposse.com/150x150/https://github.com/osterman.png
   [aknysh_homepage]: https://github.com/aknysh
-  [aknysh_avatar]: https://github.com/aknysh.png?size=150
+  [aknysh_avatar]: https://img.cloudposse.com/150x150/https://github.com/aknysh.png
   [Jamie-BitFlight_homepage]: https://github.com/Jamie-BitFlight
-  [Jamie-BitFlight_avatar]: https://github.com/Jamie-BitFlight.png?size=150
+  [Jamie-BitFlight_avatar]: https://img.cloudposse.com/150x150/https://github.com/Jamie-BitFlight.png
   [cliveza_homepage]: https://github.com/cliveza
-  [cliveza_avatar]: https://github.com/cliveza.png?size=150
+  [cliveza_avatar]: https://img.cloudposse.com/150x150/https://github.com/cliveza.png
 
 
 
