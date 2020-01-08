@@ -37,3 +37,8 @@ output "s3_bucket_domain_name" {
   value       = local.bucket_domain_name
   description = "Domain of S3 bucket"
 }
+
+output "aliases" {
+  value       = var.aliases
+  description = "Aliases of the CloudFront distibution"
+}
