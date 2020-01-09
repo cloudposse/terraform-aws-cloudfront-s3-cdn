@@ -66,6 +66,18 @@ resource "aws_s3_bucket" "origin" {
   force_destroy = var.origin_force_destroy
   region        = data.aws_region.current.name
 
+  dynamic "server_side_encryption_configuration" {
+    for_each = var.encryption_enabled ? ["true"] : []
+
+    content {
+      rule {
+        apply_server_side_encryption_by_default {
+          sse_algorithm = "AES256"
+        }
+      }
+    }
+  }
+
   cors_rule {
     allowed_headers = var.cors_allowed_headers
     allowed_methods = var.cors_allowed_methods
