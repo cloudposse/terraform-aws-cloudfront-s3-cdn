@@ -204,6 +204,12 @@ variable "viewer_protocol_policy" {
   default     = "redirect-to-https"
 }
 
+variable "caching_blacklist" {
+  type        = set(string)
+  default     = []
+  description = "Paths of objects that should never be cached for any HTTP methods"
+}
+
 variable "allowed_methods" {
   type        = list(string)
   default     = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]

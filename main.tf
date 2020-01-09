@@ -185,6 +185,32 @@ resource "aws_cloudfront_distribution" "default" {
     }
   }
 
+  dynamic "ordered_cache_behavior" {
+    for_each = var.caching_blacklist
+    content {
+      path_pattern     = ordered_cache_behavior.value
+      allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+      cached_methods   = ["GET", "HEAD", "OPTIONS"]
+      target_origin_id = module.distribution_label.id
+      compress         = var.compress
+      trusted_signers  = var.trusted_signers
+
+      forwarded_values {
+        query_string = var.forward_query_string
+        headers      = var.forward_header_values
+
+        cookies {
+          forward = var.forward_cookies
+        }
+      }
+
+      viewer_protocol_policy = var.viewer_protocol_policy
+      default_ttl            = 0
+      min_ttl                = 0
+      max_ttl                = 0
+    }
+  }
+
   restrictions {
     geo_restriction {
       restriction_type = var.geo_restriction_type

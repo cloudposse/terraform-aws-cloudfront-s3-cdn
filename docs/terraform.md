@@ -9,6 +9,7 @@
 | attributes | Additional attributes (e.g. `1`) | list(string) | `<list>` | no |
 | bucket_domain_format | Format of bucket domain name | string | `%s.s3.amazonaws.com` | no |
 | cached_methods | List of cached methods (e.g. GET, PUT, POST, DELETE, HEAD) | list(string) | `<list>` | no |
+| caching_blacklist | Paths of objects that should never be cached for any HTTP methods | set(string) | `<list>` | no |
 | comment | Comment for the origin access identity | string | `Managed by Terraform` | no |
 | compress | Compress content for web requests that include Accept-Encoding: gzip in the request header | bool | `false` | no |
 | cors_allowed_headers | List of allowed headers for S3 bucket | list(string) | `<list>` | no |
