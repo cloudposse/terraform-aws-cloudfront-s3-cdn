@@ -27,6 +27,18 @@ variable "attributes" {
   description = "Additional attributes (e.g. `1`)"
 }
 
+variable "extra_origin_attributes" {
+  type        = list(string)
+  default     = ["origin"]
+  description = "Additional attributes to put onto the origin label"
+}
+
+variable "extra_logs_attributes" {
+  type        = list(string)
+  default     = ["logs"]
+  description = "Additional attributes to put onto the log bucket label"
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}
