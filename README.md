@@ -202,6 +202,7 @@ Available targets:
 
 | Name | Description |
 |------|-------------|
+| aliases | Aliases of the CloudFront distibution |
 | cf_arn | ARN of AWS CloudFront distribution |
 | cf_domain_name | Domain name corresponding to the distribution |
 | cf_etag | Current version of the distribution's information |
