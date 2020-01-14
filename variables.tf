@@ -332,3 +332,9 @@ variable "wait_for_deployment" {
   default     = true
   description = "When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed"
 }
+
+variable "encryption_enabled" {
+  type        = bool
+  default     = false
+  description = "When set to 'true' the resource will have aes256 encryption enabled by default"
+}
