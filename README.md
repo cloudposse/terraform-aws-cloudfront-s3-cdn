@@ -97,7 +97,7 @@ module "cdn" {
 }
 ```
 
-Full working example can be found in [example](./example) folder.
+Full working example can be found in [examples](./examples) folder.
 
 ### Generating ACM Certificate
 
