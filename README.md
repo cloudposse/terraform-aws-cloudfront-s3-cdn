@@ -163,6 +163,8 @@ Available targets:
 | default_ttl | Default amount of time (in seconds) that an object is in a CloudFront cache | string | `60` | no |
 | delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | string | `-` | no |
 | enabled | Select Enabled if you want CloudFront to begin processing requests as soon as the distribution is created, or select Disabled if you do not want CloudFront to begin processing requests after the distribution is created. | bool | `true` | no |
+| encryption_enabled | When set to 'true' the resource will have aes256 encryption enabled by default | bool | `false` | no |
+| error_document | An absolute path to the document to return in case of a 4XX error | string | `` | no |
 | extra_logs_attributes | Additional attributes to put onto the log bucket label | list(string) | `<list>` | no |
 | extra_origin_attributes | Additional attributes to put onto the origin label | list(string) | `<list>` | no |
 | forward_cookies | Time in seconds that browser can cache the response for S3 bucket | string | `none` | no |
@@ -170,6 +172,7 @@ Available targets:
 | forward_query_string | Forward query strings to the origin that is associated with this cache behavior | bool | `false` | no |
 | geo_restriction_locations | List of country codes for which  CloudFront either to distribute content (whitelist) or not distribute your content (blacklist) | list(string) | `<list>` | no |
 | geo_restriction_type | Method that use to restrict distribution of your content by country: `none`, `whitelist`, or `blacklist` | string | `none` | no |
+| index_document | Amazon S3 returns this index document when requests are made to the root domain or any of the subfolders | string | `` | no |
 | is_ipv6_enabled | State of CloudFront IPv6 | bool | `true` | no |
 | lambda_function_association | A config block that triggers a lambda function with specific actions | object | `<list>` | no |
 | log_expiration_days | Number of days after which to expunge the objects | string | `90` | no |
@@ -189,6 +192,8 @@ Available targets:
 | parent_zone_id | ID of the hosted zone to contain this record  (or specify `parent_zone_name`) | string | `` | no |
 | parent_zone_name | Name of the hosted zone to contain this record (or specify `parent_zone_id`) | string | `` | no |
 | price_class | Price class for this distribution: `PriceClass_All`, `PriceClass_200`, `PriceClass_100` | string | `PriceClass_100` | no |
+| redirect_all_requests_to | A hostname to redirect all website requests for this distribution to. If this is set, it overrides other website settings | string | `` | no |
+| routing_rules | A json array containing routing rules describing redirect behavior and when redirects are applied | string | `` | no |
 | stage | Stage (e.g. `prod`, `dev`, `staging`) | string | `` | no |
 | static_s3_bucket | aws-cli is a bucket owned by amazon that will perminantly exist. It allows for the data source to be called during the destruction process without failing. It doesn't get used for anything else, this is a safe workaround for handling the fact that if a data source like the one `aws_s3_bucket.selected` gets an error, you can't continue the terraform process which also includes the 'destroy' command, where is doesn't even need this data source! Don't change this bucket name, it's a variable so that we can provide this description. And this works around a problem that is an edge case. | string | `aws-cli` | no |
 | tags | Additional tags (e.g. map(`BusinessUnit`,`XYZ`) | map(string) | `<map>` | no |

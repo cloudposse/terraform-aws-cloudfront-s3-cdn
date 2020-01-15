@@ -1,3 +1,21 @@
+locals {
+  website_enabled = var.redirect_all_requests_to != "" || var.index_document != "" || var.error_document != "" || var.routing_rules != ""
+  website_config = {
+    redirect_all = [
+      {
+        redirect_all_requests_to = var.redirect_all_requests_to
+      }
+    ]
+    default = [
+      {
+        index_document = var.index_document
+        error_document = var.error_document
+        routing_rules  = var.routing_rules
+      }
+    ]
+  }
+}
+
 module "origin_label" {
   source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.4.0"
   namespace  = var.namespace
@@ -65,6 +83,28 @@ resource "aws_s3_bucket" "origin" {
   tags          = module.origin_label.tags
   force_destroy = var.origin_force_destroy
   region        = data.aws_region.current.name
+
+  dynamic "server_side_encryption_configuration" {
+    for_each = var.encryption_enabled ? ["true"] : []
+
+    content {
+      rule {
+        apply_server_side_encryption_by_default {
+          sse_algorithm = "AES256"
+        }
+      }
+    }
+  }
+
+  dynamic "website" {
+    for_each = local.website_enabled ? local.website_config[var.redirect_all_requests_to == "" ? "default" : "redirect_all"] : []
+    content {
+      error_document           = lookup(website.value, "error_document", null)
+      index_document           = lookup(website.value, "index_document", null)
+      redirect_all_requests_to = lookup(website.value, "redirect_all_requests_to", null)
+      routing_rules            = lookup(website.value, "routing_rules", null)
+    }
+  }
 
   cors_rule {
     allowed_headers = var.cors_allowed_headers

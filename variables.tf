@@ -338,3 +338,33 @@ variable "wait_for_deployment" {
   default     = true
   description = "When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed"
 }
+
+variable "encryption_enabled" {
+  type        = bool
+  default     = false
+  description = "When set to 'true' the resource will have aes256 encryption enabled by default"
+}
+
+variable "index_document" {
+  type        = string
+  default     = ""
+  description = "Amazon S3 returns this index document when requests are made to the root domain or any of the subfolders"
+}
+
+variable "redirect_all_requests_to" {
+  type        = string
+  default     = ""
+  description = "A hostname to redirect all website requests for this distribution to. If this is set, it overrides other website settings"
+}
+
+variable "error_document" {
+  type        = string
+  default     = ""
+  description = "An absolute path to the document to return in case of a 4XX error"
+}
+
+variable "routing_rules" {
+  type        = string
+  default     = ""
+  description = "A json array containing routing rules describing redirect behavior and when redirects are applied"
+}
