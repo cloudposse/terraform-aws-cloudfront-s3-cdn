@@ -31,6 +31,7 @@
 | geo_restriction_locations | List of country codes for which  CloudFront either to distribute content (whitelist) or not distribute your content (blacklist) | list(string) | `<list>` | no |
 | geo_restriction_type | Method that use to restrict distribution of your content by country: `none`, `whitelist`, or `blacklist` | string | `none` | no |
 | index_document | Amazon S3 returns this index document when requests are made to the root domain or any of the subfolders | string | `` | no |
+| ipv6_enabled | Set to true to enable an AAAA DNS record to be set as well as the A record | bool | `false` | no |
 | is_ipv6_enabled | State of CloudFront IPv6 | bool | `true` | no |
 | lambda_function_association | A config block that triggers a lambda function with specific actions | object | `<list>` | no |
 | log_expiration_days | Number of days after which to expunge the objects | string | `90` | no |
