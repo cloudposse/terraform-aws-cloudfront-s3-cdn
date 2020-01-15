@@ -1,10 +1,28 @@
+locals {
+  website_enabled = var.redirect_all_requests_to != "" || var.index_document != "" || var.error_document != "" || var.routing_rules != ""
+  website_config = {
+    redirect_all = [
+      {
+        redirect_all_requests_to = var.redirect_all_requests_to
+      }
+    ]
+    default = [
+      {
+        index_document = var.index_document
+        error_document = var.error_document
+        routing_rules  = var.routing_rules
+      }
+    ]
+  }
+}
+
 module "origin_label" {
   source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.4.0"
   namespace  = var.namespace
   stage      = var.stage
   name       = var.name
   delimiter  = var.delimiter
-  attributes = compact(concat(var.attributes, ["origin"]))
+  attributes = compact(concat(var.attributes, var.extra_origin_attributes))
   tags       = var.tags
 }
 
@@ -13,23 +31,29 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 }
 
 data "aws_iam_policy_document" "origin" {
+  override_json = var.additional_bucket_policy
+
   statement {
+    sid = "S3GetObjectForCloudFront"
+
     actions   = ["s3:GetObject"]
     resources = ["arn:aws:s3:::$${bucket_name}$${origin_path}*"]
 
     principals {
       type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.default.iam_arn]
+      identifiers = ["$${cloudfront_origin_access_identity_iam_arn}"]
     }
   }
 
   statement {
+    sid = "S3ListBucketForCloudFront"
+
     actions   = ["s3:ListBucket"]
     resources = ["arn:aws:s3:::$${bucket_name}"]
 
     principals {
       type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.default.iam_arn]
+      identifiers = ["$${cloudfront_origin_access_identity_iam_arn}"]
     }
   }
 }
@@ -38,8 +62,9 @@ data "template_file" "default" {
   template = data.aws_iam_policy_document.origin.json
 
   vars = {
-    origin_path = coalesce(var.origin_path, "/")
-    bucket_name = local.bucket
+    origin_path                               = coalesce(var.origin_path, "/")
+    bucket_name                               = local.bucket
+    cloudfront_origin_access_identity_iam_arn = aws_cloudfront_origin_access_identity.default.iam_arn
   }
 }
 
@@ -59,6 +84,28 @@ resource "aws_s3_bucket" "origin" {
   force_destroy = var.origin_force_destroy
   region        = data.aws_region.current.name
 
+  dynamic "server_side_encryption_configuration" {
+    for_each = var.encryption_enabled ? ["true"] : []
+
+    content {
+      rule {
+        apply_server_side_encryption_by_default {
+          sse_algorithm = "AES256"
+        }
+      }
+    }
+  }
+
+  dynamic "website" {
+    for_each = local.website_enabled ? local.website_config[var.redirect_all_requests_to == "" ? "default" : "redirect_all"] : []
+    content {
+      error_document           = lookup(website.value, "error_document", null)
+      index_document           = lookup(website.value, "index_document", null)
+      redirect_all_requests_to = lookup(website.value, "redirect_all_requests_to", null)
+      routing_rules            = lookup(website.value, "routing_rules", null)
+    }
+  }
+
   cors_rule {
     allowed_headers = var.cors_allowed_headers
     allowed_methods = var.cors_allowed_methods
@@ -76,7 +123,7 @@ module "logs" {
   stage                    = var.stage
   name                     = var.name
   delimiter                = var.delimiter
-  attributes               = compact(concat(var.attributes, ["logs"]))
+  attributes               = compact(concat(var.attributes, var.extra_logs_attributes))
   tags                     = var.tags
   lifecycle_prefix         = var.log_prefix
   standard_transition_days = var.log_standard_transition_days
@@ -203,7 +250,7 @@ resource "aws_cloudfront_distribution" "default" {
 
 module "dns" {
   source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.3.0"
-  enabled          = var.enabled == "true" && length(var.parent_zone_id) > 0 || length(var.parent_zone_name) > 0 ? "true" : "false"
+  enabled          = var.enabled && length(var.parent_zone_id) > 0 || length(var.parent_zone_name) > 0 ? true : false
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
   parent_zone_name = var.parent_zone_name

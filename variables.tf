@@ -27,6 +27,18 @@ variable "attributes" {
   description = "Additional attributes (e.g. `1`)"
 }
 
+variable "extra_origin_attributes" {
+  type        = list(string)
+  default     = ["origin"]
+  description = "Additional attributes to put onto the origin label"
+}
+
+variable "extra_logs_attributes" {
+  type        = list(string)
+  default     = ["logs"]
+  description = "Additional attributes to put onto the log bucket label"
+}
+
 variable "tags" {
   type        = map(string)
   default     = {}
@@ -61,6 +73,12 @@ variable "use_regional_s3_endpoint" {
   type        = bool
   description = "When set to 'true' the s3 origin_bucket will use the regional endpoint address instead of the global endpoint address"
   default     = false
+}
+
+variable "additional_bucket_policy" {
+  type        = string
+  default     = "{}"
+  description = "Additional policies for the bucket. If included in the policies, the variables `$${bucket_name}`, `$${origin_path}` and `$${cloudfront_origin_access_identity_iam_arn}` will be substituted. It is also possible to override the default policy statements by providing statements with `S3GetObjectForCloudFront` and `S3ListBucketForCloudFront` sid."
 }
 
 variable "origin_bucket" {
@@ -283,34 +301,64 @@ variable "custom_error_response" {
   # https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#custom-error-response-arguments
   type = list(object({
     error_caching_min_ttl = string
-    error_code = string
-    response_code = string
-    response_page_path = string
+    error_code            = string
+    response_code         = string
+    response_page_path    = string
   }))
 
   description = "List of one or more custom error response element maps"
-  default = []
+  default     = []
 }
 
 variable "lambda_function_association" {
   type = list(object({
-    event_type = string
+    event_type   = string
     include_body = bool
-    lambda_arn = string
+    lambda_arn   = string
   }))
 
   description = "A config block that triggers a lambda function with specific actions"
-  default = []
+  default     = []
 }
 
 variable "web_acl_id" {
-  type = string
-  default = ""
+  type        = string
+  default     = ""
   description = "ID of the AWS WAF web ACL that is associated with the distribution"
 }
 
 variable "wait_for_deployment" {
-  type = bool
-  default = true
+  type        = bool
+  default     = true
   description = "When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed"
+}
+
+variable "encryption_enabled" {
+  type        = bool
+  default     = false
+  description = "When set to 'true' the resource will have aes256 encryption enabled by default"
+}
+
+variable "index_document" {
+  type        = string
+  default     = ""
+  description = "Amazon S3 returns this index document when requests are made to the root domain or any of the subfolders"
+}
+
+variable "redirect_all_requests_to" {
+  type        = string
+  default     = ""
+  description = "A hostname to redirect all website requests for this distribution to. If this is set, it overrides other website settings"
+}
+
+variable "error_document" {
+  type        = string
+  default     = ""
+  description = "An absolute path to the document to return in case of a 4XX error"
+}
+
+variable "routing_rules" {
+  type        = string
+  default     = ""
+  description = "A json array containing routing rules describing redirect behavior and when redirects are applied"
 }
