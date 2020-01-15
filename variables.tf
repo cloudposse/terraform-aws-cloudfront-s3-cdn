@@ -81,6 +81,12 @@ variable "additional_bucket_policy" {
   description = "Additional policies for the bucket. If included in the policies, the variables `$${bucket_name}`, `$${origin_path}` and `$${cloudfront_origin_access_identity_iam_arn}` will be substituted. It is also possible to override the default policy statements by providing statements with `S3GetObjectForCloudFront` and `S3ListBucketForCloudFront` sid."
 }
 
+variable "override_origin_bucket_policy" {
+  type        = bool
+  default     = true
+  description = "When using an existing origin bucket (through var.origin_bucket), setting this to 'false' will make it so the existing bucket policy will not be overriden"
+}
+
 variable "origin_bucket" {
   type        = string
   default     = ""
@@ -97,7 +103,7 @@ variable "origin_path" {
 variable "origin_force_destroy" {
   type        = bool
   default     = false
-  description = "Delete all objects from the bucket  so that the bucket can be destroyed without error (e.g. `true` or `false`)"
+  description = "Delete all objects from the bucket so that the bucket can be destroyed without error (e.g. `true` or `false`)"
 }
 
 variable "bucket_domain_format" {
