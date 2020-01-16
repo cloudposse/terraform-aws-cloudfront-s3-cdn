@@ -86,6 +86,11 @@ We literally have [*hundreds of terraform modules*][terraform_modules] that are 
 Instead pin to the release tag (e.g. `?ref=tags/x.y.z`) of one of our [latest releases](https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn/releases).
 
 
+
+For a complete example, see [examples/complete](examples/complete).
+
+For automated tests of the complete example using [bats](https://github.com/bats-core/bats-core) and [Terratest](https://github.com/gruntwork-io/terratest) (which tests and deploys the example on AWS), see [test](test).
+
 ```hcl
 module "cdn" {
   source           = "git::https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn.git?ref=master"
@@ -96,8 +101,6 @@ module "cdn" {
   parent_zone_name = "cloudposse.com"
 }
 ```
-
-Full working example can be found in [examples](./examples) folder.
 
 ### Generating ACM Certificate
 
@@ -156,10 +159,10 @@ Available targets:
 | cors_allowed_methods | List of allowed methods (e.g. GET, PUT, POST, DELETE, HEAD) for S3 bucket | list(string) | `<list>` | no |
 | cors_allowed_origins | List of allowed origins (e.g. example.com, test.com) for S3 bucket | list(string) | `<list>` | no |
 | cors_expose_headers | List of expose header in the response for S3 bucket | list(string) | `<list>` | no |
-| cors_max_age_seconds | Time in seconds that browser can cache the response for S3 bucket | string | `3600` | no |
+| cors_max_age_seconds | Time in seconds that browser can cache the response for S3 bucket | number | `3600` | no |
 | custom_error_response | List of one or more custom error response element maps | object | `<list>` | no |
 | default_root_object | Object that CloudFront return when requests the root URL | string | `index.html` | no |
-| default_ttl | Default amount of time (in seconds) that an object is in a CloudFront cache | string | `60` | no |
+| default_ttl | Default amount of time (in seconds) that an object is in a CloudFront cache | number | `60` | no |
 | delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | string | `-` | no |
 | enabled | Select Enabled if you want CloudFront to begin processing requests as soon as the distribution is created, or select Disabled if you do not want CloudFront to begin processing requests after the distribution is created. | bool | `true` | no |
 | encryption_enabled | When set to 'true' the resource will have aes256 encryption enabled by default | bool | `false` | no |
@@ -172,20 +175,18 @@ Available targets:
 | geo_restriction_locations | List of country codes for which  CloudFront either to distribute content (whitelist) or not distribute your content (blacklist) | list(string) | `<list>` | no |
 | geo_restriction_type | Method that use to restrict distribution of your content by country: `none`, `whitelist`, or `blacklist` | string | `none` | no |
 | index_document | Amazon S3 returns this index document when requests are made to the root domain or any of the subfolders | string | `` | no |
-| ipv6_enabled | Set to true to enable an AAAA DNS record to be set as well as the A record | bool | `false` | no |
-| is_ipv6_enabled | State of CloudFront IPv6 | bool | `true` | no |
+| ipv6_enabled | Set to true to enable an AAAA DNS record to be set as well as the A record | bool | `true` | no |
 | lambda_function_association | A config block that triggers a lambda function with specific actions | object | `<list>` | no |
-| log_expiration_days | Number of days after which to expunge the objects | string | `90` | no |
-| log_glacier_transition_days | Number of days after which to move the data to the glacier storage tier | string | `60` | no |
+| log_expiration_days | Number of days after which to expunge the objects | number | `90` | no |
+| log_glacier_transition_days | Number of days after which to move the data to the glacier storage tier | number | `60` | no |
 | log_include_cookies | Include cookies in access logs | bool | `false` | no |
 | log_prefix | Path of logs in S3 bucket | string | `` | no |
-| log_standard_transition_days | Number of days to persist in the standard storage tier before moving to the glacier tier | string | `30` | no |
-| max_ttl | Maximum amount of time (in seconds) that an object is in a CloudFront cache | string | `31536000` | no |
-| min_ttl | Minimum amount of time that you want objects to stay in CloudFront caches | string | `0` | no |
+| log_standard_transition_days | Number of days to persist in the standard storage tier before moving to the glacier tier | number | `30` | no |
+| max_ttl | Maximum amount of time (in seconds) that an object is in a CloudFront cache | number | `31536000` | no |
+| min_ttl | Minimum amount of time that you want objects to stay in CloudFront caches | number | `0` | no |
 | minimum_protocol_version | Cloudfront TLS minimum protocol version | string | `TLSv1` | no |
 | name | Name  (e.g. `bastion` or `app`) | string | - | yes |
 | namespace | Namespace (e.g. `eg` or `cp`) | string | `` | no |
-| null | an empty string | string | `` | no |
 | origin_bucket | Origin S3 bucket name | string | `` | no |
 | origin_force_destroy | Delete all objects from the bucket  so that the bucket can be destroyed without error (e.g. `true` or `false`) | bool | `false` | no |
 | origin_path | An optional element that causes CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a /. Do not add a / at the end of the path. | string | `` | no |
