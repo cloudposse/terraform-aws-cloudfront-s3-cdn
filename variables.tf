@@ -124,6 +124,12 @@ variable "comment" {
   description = "Comment for the origin access identity"
 }
 
+variable "logging_enabled" {
+  type        = bool
+  default     = true
+  description = "When true, access logs will be sent to a newly created s3 bucket"
+}
+
 variable "log_include_cookies" {
   type        = bool
   default     = false
