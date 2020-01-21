@@ -174,7 +174,7 @@ resource "aws_cloudfront_distribution" "default" {
     prefix          = var.log_prefix
   }
 
-  aliases = var.aliases
+  aliases = var.acm_certificate_arn != "" ? var.aliases : []
 
   origin {
     domain_name = local.bucket_domain_name
