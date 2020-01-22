@@ -182,6 +182,7 @@ Available targets:
 | log_include_cookies | Include cookies in access logs | bool | `false` | no |
 | log_prefix | Path of logs in S3 bucket | string | `` | no |
 | log_standard_transition_days | Number of days to persist in the standard storage tier before moving to the glacier tier | number | `30` | no |
+| logging_enabled | When true, access logs will be sent to a newly created s3 bucket | bool | `true` | no |
 | max_ttl | Maximum amount of time (in seconds) that an object is in a CloudFront cache | number | `31536000` | no |
 | min_ttl | Minimum amount of time that you want objects to stay in CloudFront caches | number | `0` | no |
 | minimum_protocol_version | Cloudfront TLS minimum protocol version | string | `TLSv1` | no |
@@ -360,8 +361,8 @@ Check out [our other projects][github], [follow us on twitter][twitter], [apply 
 
 ### Contributors
 
-|  [![Erik Osterman][osterman_avatar]][osterman_homepage]<br/>[Erik Osterman][osterman_homepage] | [![Andriy Knysh][aknysh_avatar]][aknysh_homepage]<br/>[Andriy Knysh][aknysh_homepage] | [![Jamie Nelson][Jamie-BitFlight_avatar]][Jamie-BitFlight_homepage]<br/>[Jamie Nelson][Jamie-BitFlight_homepage] | [![Clive Zagno][cliveza_avatar]][cliveza_homepage]<br/>[Clive Zagno][cliveza_homepage] |
-|---|---|---|---|
+|  [![Erik Osterman][osterman_avatar]][osterman_homepage]<br/>[Erik Osterman][osterman_homepage] | [![Andriy Knysh][aknysh_avatar]][aknysh_homepage]<br/>[Andriy Knysh][aknysh_homepage] | [![Jamie Nelson][Jamie-BitFlight_avatar]][Jamie-BitFlight_homepage]<br/>[Jamie Nelson][Jamie-BitFlight_homepage] | [![Clive Zagno][cliveza_avatar]][cliveza_homepage]<br/>[Clive Zagno][cliveza_homepage] | [![David Mattia][dmattia_avatar]][dmattia_homepage]<br/>[David Mattia][dmattia_homepage] |
+|---|---|---|---|---|
 
   [osterman_homepage]: https://github.com/osterman
   [osterman_avatar]: https://img.cloudposse.com/150x150/https://github.com/osterman.png
@@ -371,6 +372,8 @@ Check out [our other projects][github], [follow us on twitter][twitter], [apply 
   [Jamie-BitFlight_avatar]: https://img.cloudposse.com/150x150/https://github.com/Jamie-BitFlight.png
   [cliveza_homepage]: https://github.com/cliveza
   [cliveza_avatar]: https://img.cloudposse.com/150x150/https://github.com/cliveza.png
+  [dmattia_homepage]: https://github.com/dmattia
+  [dmattia_avatar]: https://img.cloudposse.com/150x150/https://github.com/dmattia.png
 
 [![README Footer][readme_footer_img]][readme_footer_link]
 [![Beacon][beacon]][website]

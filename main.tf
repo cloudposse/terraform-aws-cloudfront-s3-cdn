@@ -119,6 +119,7 @@ resource "aws_s3_bucket" "origin" {
 
 module "logs" {
   source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.7.0"
+  enabled                  = var.logging_enabled
   namespace                = var.namespace
   stage                    = var.stage
   name                     = var.name
@@ -168,10 +169,13 @@ resource "aws_cloudfront_distribution" "default" {
   price_class         = var.price_class
   depends_on          = [aws_s3_bucket.origin]
 
-  logging_config {
-    include_cookies = var.log_include_cookies
-    bucket          = module.logs.bucket_domain_name
-    prefix          = var.log_prefix
+  dynamic "logging_config" {
+    for_each = var.logging_enabled ? ["true"] : []
+    content {
+      include_cookies = var.log_include_cookies
+      bucket          = module.logs.bucket_domain_name
+      prefix          = var.log_prefix
+    }
   }
 
   aliases = var.acm_certificate_arn != "" ? var.aliases : []
