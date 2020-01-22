@@ -344,7 +344,7 @@ variable "encryption_enabled" {
 
 variable "index_document" {
   type        = string
-  default     = ""
+  default     = "index.html"
   description = "Amazon S3 returns this index document when requests are made to the root domain or any of the subfolders"
 }
 
@@ -370,4 +370,10 @@ variable "ipv6_enabled" {
   type        = bool
   default     = true
   description = "Set to true to enable an AAAA DNS record to be set as well as the A record"
+}
+
+variable "website_enabled" {
+  type        = bool
+  default     = false
+  description = "Set to true to use an S3 static website as origin"
 }

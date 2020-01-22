@@ -1,5 +1,4 @@
 locals {
-  website_enabled = var.redirect_all_requests_to != "" || var.index_document != "" || var.error_document != "" || var.routing_rules != ""
   website_config = {
     redirect_all = [
       {
@@ -58,8 +57,24 @@ data "aws_iam_policy_document" "origin" {
   }
 }
 
+data "aws_iam_policy_document" "origin_website" {
+  override_json = var.additional_bucket_policy
+
+  statement {
+    sid = "S3GetObjectForCloudFront"
+
+    actions   = ["s3:GetObject"]
+    resources = ["arn:aws:s3:::$${bucket_name}$${origin_path}*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+}
+
 data "template_file" "default" {
-  template = data.aws_iam_policy_document.origin.json
+  template = var.website_enabled ? data.aws_iam_policy_document.origin_website.json : data.aws_iam_policy_document.origin.json
 
   vars = {
     origin_path                               = coalesce(var.origin_path, "/")
@@ -97,7 +112,7 @@ resource "aws_s3_bucket" "origin" {
   }
 
   dynamic "website" {
-    for_each = local.website_enabled ? local.website_config[var.redirect_all_requests_to == "" ? "default" : "redirect_all"] : []
+    for_each = var.website_enabled ? local.website_config[var.redirect_all_requests_to == "" ? "default" : "redirect_all"] : []
     content {
       error_document           = lookup(website.value, "error_document", null)
       index_document           = lookup(website.value, "index_document", null)
@@ -154,8 +169,8 @@ locals {
     )
   )
 
-  bucket_domain_name = var.use_regional_s3_endpoint ? format(
-    "%s.s3-%s.amazonaws.com",
+  bucket_domain_name = (var.use_regional_s3_endpoint || var.website_enabled) ? format(
+    var.website_enabled ? "%s.s3-website-%s.amazonaws.com" : "%s.s3-%s.amazonaws.com",
     local.bucket,
     data.aws_s3_bucket.selected.region,
   ) : format(var.bucket_domain_format, local.bucket)
@@ -185,8 +200,21 @@ resource "aws_cloudfront_distribution" "default" {
     origin_id   = module.distribution_label.id
     origin_path = var.origin_path
 
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.default.cloudfront_access_identity_path
+    dynamic "s3_origin_config" {
+      for_each = ! var.website_enabled ? [1] : []
+      content {
+        origin_access_identity = aws_cloudfront_origin_access_identity.default.cloudfront_access_identity_path
+      }
+    }
+
+    dynamic "custom_origin_config" {
+      for_each = var.website_enabled ? [1] : []
+      content {
+        http_port              = 80
+        https_port             = 443
+        origin_protocol_policy = "http-only"
+        origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+      }
     }
   }
 
