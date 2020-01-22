@@ -1,18 +1,18 @@
 variable "namespace" {
-  description = "Namespace (e.g. `eg` or `cp`)"
   type        = string
+  description = "Namespace (e.g. `eg` or `cp`)"
   default     = ""
 }
 
 variable "stage" {
-  description = "Stage (e.g. `prod`, `dev`, `staging`)"
   type        = string
+  description = "Stage (e.g. `prod`, `dev`, `staging`)"
   default     = ""
 }
 
 variable "name" {
-  description = "Name  (e.g. `bastion` or `app`)"
   type        = string
+  description = "Name  (e.g. `bastion` or `app`)"
 }
 
 variable "delimiter" {
@@ -112,12 +112,6 @@ variable "compress" {
   description = "Compress content for web requests that include Accept-Encoding: gzip in the request header"
 }
 
-variable "is_ipv6_enabled" {
-  type        = bool
-  default     = true
-  description = "State of CloudFront IPv6"
-}
-
 variable "default_root_object" {
   type        = string
   default     = "index.html"
@@ -128,6 +122,12 @@ variable "comment" {
   type        = string
   default     = "Managed by Terraform"
   description = "Comment for the origin access identity"
+}
+
+variable "logging_enabled" {
+  type        = bool
+  default     = true
+  description = "When true, access logs will be sent to a newly created s3 bucket"
 }
 
 variable "log_include_cookies" {
@@ -143,16 +143,19 @@ variable "log_prefix" {
 }
 
 variable "log_standard_transition_days" {
+  type        = number
   description = "Number of days to persist in the standard storage tier before moving to the glacier tier"
   default     = 30
 }
 
 variable "log_glacier_transition_days" {
+  type        = number
   description = "Number of days after which to move the data to the glacier storage tier"
   default     = 60
 }
 
 variable "log_expiration_days" {
+  type        = number
   description = "Number of days after which to expunge the objects"
   default     = 90
 }
@@ -188,6 +191,7 @@ variable "cors_expose_headers" {
 }
 
 variable "cors_max_age_seconds" {
+  type        = number
   default     = 3600
   description = "Time in seconds that browser can cache the response for S3 bucket"
 }
@@ -235,16 +239,19 @@ variable "cached_methods" {
 }
 
 variable "default_ttl" {
+  type        = number
   default     = 60
   description = "Default amount of time (in seconds) that an object is in a CloudFront cache"
 }
 
 variable "min_ttl" {
+  type        = number
   default     = 0
   description = "Minimum amount of time that you want objects to stay in CloudFront caches"
 }
 
 variable "max_ttl" {
+  type        = number
   default     = 31536000
   description = "Maximum amount of time (in seconds) that an object is in a CloudFront cache"
 }
@@ -256,10 +263,11 @@ variable "trusted_signers" {
 }
 
 variable "geo_restriction_type" {
+  type = string
+
   # e.g. "whitelist"
   default     = "none"
   description = "Method that use to restrict distribution of your content by country: `none`, `whitelist`, or `blacklist`"
-  type        = string
 }
 
 variable "geo_restriction_locations" {
@@ -280,11 +288,6 @@ variable "parent_zone_name" {
   type        = string
   default     = ""
   description = "Name of the hosted zone to contain this record (or specify `parent_zone_id`)"
-}
-
-variable "null" {
-  description = "an empty string"
-  default     = ""
 }
 
 variable "static_s3_bucket" {
@@ -367,4 +370,10 @@ variable "routing_rules" {
   type        = string
   default     = ""
   description = "A json array containing routing rules describing redirect behavior and when redirects are applied"
+}
+
+variable "ipv6_enabled" {
+  type        = bool
+  default     = true
+  description = "Set to true to enable an AAAA DNS record to be set as well as the A record"
 }

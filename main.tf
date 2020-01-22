@@ -17,7 +17,7 @@ locals {
 }
 
 module "origin_label" {
-  source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.4.0"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
   namespace  = var.namespace
   stage      = var.stage
   name       = var.name
@@ -110,7 +110,7 @@ resource "aws_s3_bucket" "origin" {
     allowed_headers = var.cors_allowed_headers
     allowed_methods = var.cors_allowed_methods
     allowed_origins = sort(
-      distinct(compact(concat(var.cors_allowed_origins, var.aliases))),
+      distinct(compact(concat(var.cors_allowed_origins, var.aliases)))
     )
     expose_headers  = var.cors_expose_headers
     max_age_seconds = var.cors_max_age_seconds
@@ -118,7 +118,8 @@ resource "aws_s3_bucket" "origin" {
 }
 
 module "logs" {
-  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.5.0"
+  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.7.0"
+  enabled                  = var.logging_enabled
   namespace                = var.namespace
   stage                    = var.stage
   name                     = var.name
@@ -133,7 +134,7 @@ module "logs" {
 }
 
 module "distribution_label" {
-  source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.4.0"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
   namespace  = var.namespace
   stage      = var.stage
   name       = var.name
@@ -147,11 +148,10 @@ data "aws_s3_bucket" "selected" {
 }
 
 locals {
-  bucket = join(
-    "",
+  bucket = join("",
     compact(
-      concat([var.origin_bucket], concat([""], aws_s3_bucket.origin.*.id)),
-    ),
+      concat([var.origin_bucket], concat([""], aws_s3_bucket.origin.*.id))
+    )
   )
 
   bucket_domain_name = var.use_regional_s3_endpoint ? format(
@@ -163,19 +163,22 @@ locals {
 
 resource "aws_cloudfront_distribution" "default" {
   enabled             = var.enabled
-  is_ipv6_enabled     = var.is_ipv6_enabled
+  is_ipv6_enabled     = var.ipv6_enabled
   comment             = var.comment
   default_root_object = var.default_root_object
   price_class         = var.price_class
   depends_on          = [aws_s3_bucket.origin]
 
-  logging_config {
-    include_cookies = var.log_include_cookies
-    bucket          = module.logs.bucket_domain_name
-    prefix          = var.log_prefix
+  dynamic "logging_config" {
+    for_each = var.logging_enabled ? ["true"] : []
+    content {
+      include_cookies = var.log_include_cookies
+      bucket          = module.logs.bucket_domain_name
+      prefix          = var.log_prefix
+    }
   }
 
-  aliases = var.aliases
+  aliases = var.acm_certificate_arn != "" ? var.aliases : []
 
   origin {
     domain_name = local.bucket_domain_name
@@ -189,7 +192,7 @@ resource "aws_cloudfront_distribution" "default" {
 
   viewer_certificate {
     acm_certificate_arn            = var.acm_certificate_arn
-    ssl_support_method             = "sni-only"
+    ssl_support_method             = var.acm_certificate_arn == "" ? "" : "sni-only"
     minimum_protocol_version       = var.minimum_protocol_version
     cloudfront_default_certificate = var.acm_certificate_arn == "" ? true : false
   }
@@ -275,11 +278,12 @@ resource "aws_cloudfront_distribution" "default" {
 }
 
 module "dns" {
-  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.3.0"
-  enabled          = var.enabled && length(var.parent_zone_id) > 0 || length(var.parent_zone_name) > 0 ? true : false
+  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.4.0"
+  enabled          = var.enabled && (var.parent_zone_id != "" || var.parent_zone_name != "") ? true : false
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
   parent_zone_name = var.parent_zone_name
   target_dns_name  = aws_cloudfront_distribution.default.domain_name
   target_zone_id   = aws_cloudfront_distribution.default.hosted_zone_id
+  ipv6_enabled     = var.ipv6_enabled
 }
