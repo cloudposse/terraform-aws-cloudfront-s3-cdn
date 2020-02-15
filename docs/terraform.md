@@ -30,7 +30,7 @@
 | forward_query_string | Forward query strings to the origin that is associated with this cache behavior | bool | `false` | no |
 | geo_restriction_locations | List of country codes for which  CloudFront either to distribute content (whitelist) or not distribute your content (blacklist) | list(string) | `<list>` | no |
 | geo_restriction_type | Method that use to restrict distribution of your content by country: `none`, `whitelist`, or `blacklist` | string | `none` | no |
-| index_document | Amazon S3 returns this index document when requests are made to the root domain or any of the subfolders | string | `` | no |
+| index_document | Amazon S3 returns this index document when requests are made to the root domain or any of the subfolders | string | `index.html` | no |
 | ipv6_enabled | Set to true to enable an AAAA DNS record to be set as well as the A record | bool | `true` | no |
 | lambda_function_association | A config block that triggers a lambda function with specific actions | object | `<list>` | no |
 | log_expiration_days | Number of days after which to expunge the objects | number | `90` | no |
@@ -60,6 +60,7 @@
 | viewer_protocol_policy | allow-all, redirect-to-https | string | `redirect-to-https` | no |
 | wait_for_deployment | When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed | bool | `true` | no |
 | web_acl_id | ID of the AWS WAF web ACL that is associated with the distribution | string | `` | no |
+| website_enabled | Set to true to use an S3 static website as origin | bool | `false` | no |
 
 ## Outputs
 
