@@ -170,7 +170,7 @@ locals {
   )
 
   bucket_domain_name = (var.use_regional_s3_endpoint || var.website_enabled) ? format(
-    var.website_enabled ? "%s.s3-website-%s.amazonaws.com" : "%s.s3-%s.amazonaws.com",
+    var.website_enabled ? "%s.s3-website.%s.amazonaws.com" : "%s.s3.%s.amazonaws.com",
     local.bucket,
     data.aws_s3_bucket.selected.region,
   ) : format(var.bucket_domain_format, local.bucket)
