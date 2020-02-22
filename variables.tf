@@ -402,6 +402,7 @@ The fields can be described by the other variables in this file. For example, th
 a description in var.lambda_function_association variable earlier in this file. The only difference is that fields on this object are in ordered caches, whereas the rest
 of the vars in this file apply only to the default cache.
 DESCRIPTION
+}
 
 variable "website_enabled" {
   type        = bool
