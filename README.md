@@ -205,6 +205,7 @@ Available targets:
 | viewer_protocol_policy | allow-all, redirect-to-https | string | `redirect-to-https` | no |
 | wait_for_deployment | When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed | bool | `true` | no |
 | web_acl_id | ID of the AWS WAF web ACL that is associated with the distribution | string | `` | no |
+| website_enabled | Set to true to use an S3 static website as origin | bool | `false` | no |
 
 ## Outputs
 
