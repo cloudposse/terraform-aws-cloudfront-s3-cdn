@@ -344,7 +344,7 @@ variable "encryption_enabled" {
 
 variable "index_document" {
   type        = string
-  default     = ""
+  default     = "index.html"
   description = "Amazon S3 returns this index document when requests are made to the root domain or any of the subfolders"
 }
 
@@ -397,10 +397,14 @@ variable "ordered_cache" {
   }))
   default     = []
   description = <<DESCRIPTION
-  An ordered list of cache behaviors resource for this distribution. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0.
+An ordered list of cache behaviors resource for this distribution. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0.
+The fields can be described by the other variables in this file. For example, the field 'lambda_function_association' in this object has
+a description in var.lambda_function_association variable earlier in this file. The only difference is that fields on this object are in ordered caches, whereas the rest
+of the vars in this file apply only to the default cache.
+DESCRIPTION
 
-  The fields can be described by the other variables in this file. For example, the field 'lambda_function_association' in this object has
-  a description in var.lambda_function_association variable earlier in this file. The only difference is that fields on this object are in ordered caches, whereas the rest
-  of the vars in this file apply only to the default cache.
-  DESCRIPTION
+variable "website_enabled" {
+  type        = bool
+  default     = false
+  description = "Set to true to use an S3 static website as origin"
 }
