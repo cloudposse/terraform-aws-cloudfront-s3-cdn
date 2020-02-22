@@ -44,7 +44,7 @@
 | minimum_protocol_version | Cloudfront TLS minimum protocol version | string | `TLSv1` | no |
 | name | Name  (e.g. `bastion` or `app`) | string | - | yes |
 | namespace | Namespace (e.g. `eg` or `cp`) | string | `` | no |
-| ordered_cache | An ordered list of cache behaviors resource for this distribution. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0.<br><br>  The fields can be described by the other variables in this file. For example, the field 'lambda_function_association' in this object has   a description in var.lambda_function_association variable earlier in this file. The only difference is that fields on this object are in ordered caches, whereas the rest   of the vars in this file apply only to the default cache. | object | `<list>` | no |
+| ordered_cache | An ordered list of cache behaviors resource for this distribution. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0. The fields can be described by the other variables in this file. For example, the field 'lambda_function_association' in this object has a description in var.lambda_function_association variable earlier in this file. The only difference is that fields on this object are in ordered caches, whereas the rest of the vars in this file apply only to the default cache. | object | `<list>` | no |
 | origin_bucket | Origin S3 bucket name | string | `` | no |
 | origin_force_destroy | Delete all objects from the bucket  so that the bucket can be destroyed without error (e.g. `true` or `false`) | bool | `false` | no |
 | origin_path | An optional element that causes CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a /. Do not add a / at the end of the path. | string | `` | no |
@@ -61,7 +61,6 @@
 | viewer_protocol_policy | allow-all, redirect-to-https | string | `redirect-to-https` | no |
 | wait_for_deployment | When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed | bool | `true` | no |
 | web_acl_id | ID of the AWS WAF web ACL that is associated with the distribution | string | `` | no |
-| website_enabled | Set to true to use an S3 static website as origin | bool | `false` | no |
 
 ## Outputs
 
