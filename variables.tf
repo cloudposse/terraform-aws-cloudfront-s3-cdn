@@ -381,9 +381,9 @@ variable "ordered_cache" {
     compress        = bool
 
     viewer_protocol_policy = string
-    min_ttl     = number
-    default_ttl = number
-    max_ttl     = number
+    min_ttl                = number
+    default_ttl            = number
+    max_ttl                = number
 
     forward_query_string  = bool
     forward_header_values = list(string)
