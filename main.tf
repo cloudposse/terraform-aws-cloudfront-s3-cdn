@@ -1,5 +1,4 @@
 locals {
-  website_enabled = var.redirect_all_requests_to != "" || var.index_document != "" || var.error_document != "" || var.routing_rules != ""
   website_config = {
     redirect_all = [
       {
@@ -14,6 +13,16 @@ locals {
       }
     ]
   }
+
+  regions_s3_website_use_dash = [
+    "us-east-1",
+    "us-west-1",
+    "us-west-2",
+    "ap-southeast-1",
+    "ap-southeast-2",
+    "ap-northeast-1",
+    "sa-east-1"
+  ]
 }
 
 module "origin_label" {
@@ -58,8 +67,24 @@ data "aws_iam_policy_document" "origin" {
   }
 }
 
+data "aws_iam_policy_document" "origin_website" {
+  override_json = var.additional_bucket_policy
+
+  statement {
+    sid = "S3GetObjectForCloudFront"
+
+    actions   = ["s3:GetObject"]
+    resources = ["arn:aws:s3:::$${bucket_name}$${origin_path}*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+}
+
 data "template_file" "default" {
-  template = data.aws_iam_policy_document.origin.json
+  template = var.website_enabled ? data.aws_iam_policy_document.origin_website.json : data.aws_iam_policy_document.origin.json
 
   vars = {
     origin_path                               = coalesce(var.origin_path, "/")
@@ -98,7 +123,7 @@ resource "aws_s3_bucket" "origin" {
   }
 
   dynamic "website" {
-    for_each = local.website_enabled ? local.website_config[var.redirect_all_requests_to == "" ? "default" : "redirect_all"] : []
+    for_each = var.website_enabled ? local.website_config[var.redirect_all_requests_to == "" ? "default" : "redirect_all"] : []
     content {
       error_document           = lookup(website.value, "error_document", null)
       index_document           = lookup(website.value, "index_document", null)
@@ -157,9 +182,10 @@ locals {
     )
   )
 
-  bucket_domain_name = var.use_regional_s3_endpoint ? format(
-    "%s.s3-%s.amazonaws.com",
+  bucket_domain_name = (var.use_regional_s3_endpoint || var.website_enabled) ? format(
+    var.website_enabled ? "%s.s3-website%s%s.amazonaws.com" : "%s.s3%s%s.amazonaws.com",
     local.bucket,
+    (var.website_enabled && contains(local.regions_s3_website_use_dash, data.aws_s3_bucket.selected.region)) ? "-" : ".",
     data.aws_s3_bucket.selected.region,
   ) : format(var.bucket_domain_format, local.bucket)
 }
@@ -188,8 +214,21 @@ resource "aws_cloudfront_distribution" "default" {
     origin_id   = module.distribution_label.id
     origin_path = var.origin_path
 
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.default.cloudfront_access_identity_path
+    dynamic "s3_origin_config" {
+      for_each = ! var.website_enabled ? [1] : []
+      content {
+        origin_access_identity = aws_cloudfront_origin_access_identity.default.cloudfront_access_identity_path
+      }
+    }
+
+    dynamic "custom_origin_config" {
+      for_each = var.website_enabled ? [1] : []
+      content {
+        http_port              = 80
+        https_port             = 443
+        origin_protocol_policy = "http-only"
+        origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+      }
     }
   }
 
@@ -227,6 +266,43 @@ resource "aws_cloudfront_distribution" "default" {
         event_type   = lambda_function_association.value.event_type
         include_body = lookup(lambda_function_association.value, "include_body", null)
         lambda_arn   = lambda_function_association.value.lambda_arn
+      }
+    }
+  }
+
+  dynamic "ordered_cache_behavior" {
+    for_each = var.ordered_cache
+
+    content {
+      path_pattern = ordered_cache_behavior.value.path_pattern
+
+      allowed_methods  = ordered_cache_behavior.value.allowed_methods
+      cached_methods   = ordered_cache_behavior.value.cached_methods
+      target_origin_id = module.distribution_label.id
+      compress         = ordered_cache_behavior.value.compress
+      trusted_signers  = ordered_cache_behavior.value.trusted_signers
+
+      forwarded_values {
+        query_string = ordered_cache_behavior.value.forward_query_string
+        headers      = ordered_cache_behavior.value.forward_header_values
+
+        cookies {
+          forward = ordered_cache_behavior.value.forward_cookies
+        }
+      }
+
+      viewer_protocol_policy = ordered_cache_behavior.value.viewer_protocol_policy
+      default_ttl            = ordered_cache_behavior.value.default_ttl
+      min_ttl                = ordered_cache_behavior.value.min_ttl
+      max_ttl                = ordered_cache_behavior.value.max_ttl
+
+      dynamic "lambda_function_association" {
+        for_each = ordered_cache_behavior.value.lambda_function_association
+        content {
+          event_type   = lambda_function_association.value.event_type
+          include_body = lookup(lambda_function_association.value, "include_body", null)
+          lambda_arn   = lambda_function_association.value.lambda_arn
+        }
       }
     }
   }
