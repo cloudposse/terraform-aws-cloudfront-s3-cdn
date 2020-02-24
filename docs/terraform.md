@@ -25,7 +25,7 @@
 | error_document | An absolute path to the document to return in case of a 4XX error | string | `` | no |
 | extra_logs_attributes | Additional attributes to put onto the log bucket label | list(string) | `<list>` | no |
 | extra_origin_attributes | Additional attributes to put onto the origin label | list(string) | `<list>` | no |
-| forward_cookies | Time in seconds that browser can cache the response for S3 bucket | string | `none` | no |
+| forward_cookies | Specifies whether you want CloudFront to forward all or no cookies to the origin. Can be 'all' or 'none' | string | `none` | no |
 | forward_header_values | A list of whitelisted header values to forward to the origin | list(string) | `<list>` | no |
 | forward_query_string | Forward query strings to the origin that is associated with this cache behavior | bool | `false` | no |
 | geo_restriction_locations | List of country codes for which  CloudFront either to distribute content (whitelist) or not distribute your content (blacklist) | list(string) | `<list>` | no |
@@ -44,6 +44,7 @@
 | minimum_protocol_version | Cloudfront TLS minimum protocol version | string | `TLSv1` | no |
 | name | Name  (e.g. `bastion` or `app`) | string | - | yes |
 | namespace | Namespace (e.g. `eg` or `cp`) | string | `` | no |
+| ordered_cache | An ordered list of cache behaviors resource for this distribution. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0. The fields can be described by the other variables in this file. For example, the field 'lambda_function_association' in this object has a description in var.lambda_function_association variable earlier in this file. The only difference is that fields on this object are in ordered caches, whereas the rest of the vars in this file apply only to the default cache. | object | `<list>` | no |
 | origin_bucket | Origin S3 bucket name | string | `` | no |
 | origin_force_destroy | Delete all objects from the bucket  so that the bucket can be destroyed without error (e.g. `true` or `false`) | bool | `false` | no |
 | origin_path | An optional element that causes CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a /. Do not add a / at the end of the path. | string | `` | no |

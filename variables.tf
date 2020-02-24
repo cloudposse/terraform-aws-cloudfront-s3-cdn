@@ -199,7 +199,7 @@ variable "cors_max_age_seconds" {
 variable "forward_cookies" {
   type        = string
   default     = "none"
-  description = "Time in seconds that browser can cache the response for S3 bucket"
+  description = "Specifies whether you want CloudFront to forward all or no cookies to the origin. Can be 'all' or 'none'"
 }
 
 variable "forward_header_values" {
@@ -370,6 +370,38 @@ variable "ipv6_enabled" {
   type        = bool
   default     = true
   description = "Set to true to enable an AAAA DNS record to be set as well as the A record"
+}
+
+variable "ordered_cache" {
+  type = list(object({
+    path_pattern = string
+
+    allowed_methods = list(string)
+    cached_methods  = list(string)
+    compress        = bool
+
+    viewer_protocol_policy = string
+    min_ttl                = number
+    default_ttl            = number
+    max_ttl                = number
+
+    forward_query_string  = bool
+    forward_header_values = list(string)
+    forward_cookies       = string
+
+    lambda_function_association = list(object({
+      event_type   = string
+      include_body = bool
+      lambda_arn   = string
+    }))
+  }))
+  default     = []
+  description = <<DESCRIPTION
+An ordered list of cache behaviors resource for this distribution. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0.
+The fields can be described by the other variables in this file. For example, the field 'lambda_function_association' in this object has
+a description in var.lambda_function_association variable earlier in this file. The only difference is that fields on this object are in ordered caches, whereas the rest
+of the vars in this file apply only to the default cache.
+DESCRIPTION
 }
 
 variable "website_enabled" {
