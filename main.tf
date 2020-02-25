@@ -94,6 +94,7 @@ data "template_file" "default" {
 }
 
 resource "aws_s3_bucket_policy" "default" {
+  count  = ! local.using_existing_origin || var.override_origin_bucket_policy ? 1 : 0
   bucket = local.bucket
   policy = data.template_file.default.rendered
 }
@@ -102,7 +103,7 @@ data "aws_region" "current" {
 }
 
 resource "aws_s3_bucket" "origin" {
-  count         = signum(length(var.origin_bucket)) == 1 ? 0 : 1
+  count         = local.using_existing_origin ? 0 : 1
   bucket        = module.origin_label.id
   acl           = "private"
   tags          = module.origin_label.tags
@@ -173,6 +174,8 @@ data "aws_s3_bucket" "selected" {
 }
 
 locals {
+  using_existing_origin = signum(length(var.origin_bucket)) == 1
+
   bucket = join("",
     compact(
       concat([var.origin_bucket], concat([""], aws_s3_bucket.origin.*.id))
