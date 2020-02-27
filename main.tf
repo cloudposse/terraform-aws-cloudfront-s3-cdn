@@ -280,7 +280,7 @@ resource "aws_cloudfront_distribution" "default" {
       cached_methods   = ordered_cache_behavior.value.cached_methods
       target_origin_id = module.distribution_label.id
       compress         = ordered_cache_behavior.value.compress
-      trusted_signers  = ordered_cache_behavior.value.trusted_signers
+      trusted_signers  = var.trusted_signers
 
       forwarded_values {
         query_string = ordered_cache_behavior.value.forward_query_string
