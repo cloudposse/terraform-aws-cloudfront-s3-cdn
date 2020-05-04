@@ -221,6 +221,7 @@ Available targets:
 | cf_status | Current status of the distribution |
 | s3_bucket | Name of S3 bucket |
 | s3_bucket_domain_name | Domain of S3 bucket |
+| logs | Logs Resource |
 
 
 
