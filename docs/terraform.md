@@ -75,6 +75,7 @@
 | cf_hosted_zone_id | CloudFront Route 53 zone ID |
 | cf_id | ID of AWS CloudFront distribution |
 | cf_status | Current status of the distribution |
+| logs | Logs resource |
 | s3_bucket | Name of S3 bucket |
 | s3_bucket_domain_name | Domain of S3 bucket |
 
