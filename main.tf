@@ -137,7 +137,7 @@ resource "aws_s3_bucket" "origin" {
     content {
       allowed_headers = var.cors_allowed_headers
       allowed_methods = var.cors_allowed_methods
-      allowed_origins = cors_rule.value
+      allowed_origins = [cors_rule.value]
       expose_headers  = var.cors_expose_headers
       max_age_seconds = var.cors_max_age_seconds
     }
