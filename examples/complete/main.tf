@@ -7,6 +7,7 @@ module "cloudfront_s3_cdn" {
   namespace                = var.namespace
   stage                    = var.stage
   name                     = var.name
+  attributes               = var.attributes
   parent_zone_name         = var.parent_zone_name
   use_regional_s3_endpoint = true
   origin_force_destroy     = true

@@ -17,3 +17,7 @@ variable "stage" {
 variable "parent_zone_name" {
   type = string
 }
+
+variable "attributes" {
+  type = string
+}
