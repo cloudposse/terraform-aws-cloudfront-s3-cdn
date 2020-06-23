@@ -19,5 +19,6 @@ variable "parent_zone_name" {
 }
 
 variable "attributes" {
-  type = list(string)
+  default = []
+  type    = list(string)
 }
