@@ -19,5 +19,5 @@ variable "parent_zone_name" {
 }
 
 variable "attributes" {
-  type = string
+  type = list(string)
 }
