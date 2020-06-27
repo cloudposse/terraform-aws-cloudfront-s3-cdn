@@ -4,6 +4,12 @@ variable "namespace" {
   default     = ""
 }
 
+variable "environment" {
+  type        = string
+  default     = ""
+  description = "Environment, e.g. 'prod', 'staging', 'dev', 'pre-prod', 'UAT'"
+}
+
 variable "stage" {
   type        = string
   description = "Stage (e.g. `prod`, `dev`, `staging`)"
