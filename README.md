@@ -231,6 +231,15 @@ Available targets:
 | Name | Description |
 |------|-------------|
 | aliases | Aliases of the CloudFront distibution |
+| cf\_arn | ARN of AWS CloudFront distribution |
+| cf\_domain\_name | Domain name corresponding to the distribution |
+| cf\_etag | Current version of the distribution's information |
+| cf\_hosted\_zone\_id | CloudFront Route 53 zone ID |
+| cf\_id | ID of AWS CloudFront distribution |
+| cf\_status | Current status of the distribution |
+| s3\_bucket | Name of S3 bucket |
+| s3\_bucket\_arn | ARN of S3 bucket |
+| s3\_bucket\_domain\_name | Domain of S3 bucket |
 
 
 
