@@ -26,13 +26,14 @@ locals {
 }
 
 module "origin_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
-  namespace  = var.namespace
-  stage      = var.stage
-  name       = var.name
-  delimiter  = var.delimiter
-  attributes = compact(concat(var.attributes, var.extra_origin_attributes))
-  tags       = var.tags
+  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  namespace   = var.namespace
+  environment = var.environment
+  stage       = var.stage
+  name        = var.name
+  delimiter   = var.delimiter
+  attributes  = compact(concat(var.attributes, var.extra_origin_attributes))
+  tags        = var.tags
 }
 
 resource "aws_cloudfront_origin_access_identity" "default" {
@@ -145,9 +146,10 @@ resource "aws_s3_bucket" "origin" {
 }
 
 module "logs" {
-  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.7.0"
+  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.9.0"
   enabled                  = var.logging_enabled
   namespace                = var.namespace
+  environment              = var.environment
   stage                    = var.stage
   name                     = var.name
   delimiter                = var.delimiter
@@ -161,13 +163,14 @@ module "logs" {
 }
 
 module "distribution_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
-  namespace  = var.namespace
-  stage      = var.stage
-  name       = var.name
-  delimiter  = var.delimiter
-  attributes = var.attributes
-  tags       = var.tags
+  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.16.0"
+  namespace   = var.namespace
+  environment = var.environment
+  stage       = var.stage
+  name        = var.name
+  delimiter   = var.delimiter
+  attributes  = var.attributes
+  tags        = var.tags
 }
 
 data "aws_s3_bucket" "selected" {

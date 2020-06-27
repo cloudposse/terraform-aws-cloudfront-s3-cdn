@@ -183,6 +183,7 @@ Available targets:
 | delimiter | Delimiter to be used between `namespace`, `stage`, `name` and `attributes` | `string` | `"-"` | no |
 | enabled | Select Enabled if you want CloudFront to begin processing requests as soon as the distribution is created, or select Disabled if you do not want CloudFront to begin processing requests after the distribution is created. | `bool` | `true` | no |
 | encryption\_enabled | When set to 'true' the resource will have aes256 encryption enabled by default | `bool` | `false` | no |
+| environment | Environment, e.g. 'prod', 'staging', 'dev', 'pre-prod', 'UAT' | `string` | `""` | no |
 | error\_document | An absolute path to the document to return in case of a 4XX error | `string` | `""` | no |
 | extra\_logs\_attributes | Additional attributes to put onto the log bucket label | `list(string)` | <pre>[<br>  "logs"<br>]</pre> | no |
 | extra\_origin\_attributes | Additional attributes to put onto the origin label | `list(string)` | <pre>[<br>  "origin"<br>]</pre> | no |
