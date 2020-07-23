@@ -444,5 +444,5 @@ variable "website_enabled" {
 variable "versioning_enabled" {
   type        = bool
   default     = false
-  description = "When set to 'true' the s3 origin\_bucket will have versioning enabled"
+  description = "When set to 'true' the s3 origin bucket will have versioning enabled"
 }
