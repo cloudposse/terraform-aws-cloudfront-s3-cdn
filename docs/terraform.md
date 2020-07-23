@@ -78,7 +78,7 @@
 | tags | Additional tags (e.g. map(`BusinessUnit`,`XYZ`) | `map(string)` | `{}` | no |
 | trusted\_signers | The AWS accounts, if any, that you want to allow to create signed URLs for private content. 'self' is acceptable. | `list(string)` | `[]` | no |
 | use\_regional\_s3\_endpoint | When set to 'true' the s3 origin\_bucket will use the regional endpoint address instead of the global endpoint address | `bool` | `false` | no |
-| versioning_enabled | When set to 'true' the s3 origin\_bucket will have versioning enabled | `bool` | `false` | no |
+| versioning_enabled | When set to 'true' the s3 origin bucket will have versioning enabled | `bool` | `false` | no |
 | viewer\_protocol\_policy | allow-all, redirect-to-https | `string` | `"redirect-to-https"` | no |
 | wait\_for\_deployment | When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed | `bool` | `true` | no |
 | web\_acl\_id | ID of the AWS WAF web ACL that is associated with the distribution | `string` | `""` | no |
