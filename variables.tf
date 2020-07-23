@@ -440,3 +440,9 @@ variable "website_enabled" {
   default     = false
   description = "Set to true to use an S3 static website as origin"
 }
+
+variable "versioning_enabled" {
+  type        = bool
+  default     = false
+  description = "When set to 'true' the s3 origin\_bucket will have versioning enabled"
+}
