@@ -152,6 +152,8 @@ Available targets:
 | attributes | Additional attributes (e.g. `1`) | `list(string)` | `[]` | no |
 | bucket\_domain\_format | Format of bucket domain name | `string` | `"%s.s3.amazonaws.com"` | no |
 | cached\_methods | List of cached methods (e.g. GET, PUT, POST, DELETE, HEAD) | `list(string)` | <pre>[<br>  "GET",<br>  "HEAD"<br>]</pre> | no |
+| cloudfront\_origin\_access\_identity\_iam\_arn | Existing cloudfront origin access identity iam arn that is supplied in the s3 bucket policy | `string` | `""` | no |
+| cloudfront\_origin\_access\_identity\_path | Existing cloudfront origin access identity path used in the cloudfront distribution's s3\_origin\_config content | `string` | `""` | no |
 | comment | Comment for the origin access identity | `string` | `"Managed by Terraform"` | no |
 | compress | Compress content for web requests that include Accept-Encoding: gzip in the request header | `bool` | `false` | no |
 | cors\_allowed\_headers | List of allowed headers for S3 bucket | `list(string)` | <pre>[<br>  "*"<br>]</pre> | no |
