@@ -440,3 +440,15 @@ variable "website_enabled" {
   default     = false
   description = "Set to true to use an S3 static website as origin"
 }
+
+variable "cloudfront_origin_access_identity_iam_arn" {
+  type        = string
+  default     = ""
+  description = "Existing cloudfront origin access identity iam arn that is supplied in the s3 bucket policy"
+}
+
+variable "cloudfront_origin_access_identity_path" {
+  type        = string
+  default     = ""
+  description = "Existing cloudfront origin access identity path used in the cloudfront distribution's s3_origin_config content"
+}
