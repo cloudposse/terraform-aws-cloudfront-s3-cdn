@@ -182,7 +182,7 @@ data "aws_s3_bucket" "selected" {
 locals {
   using_existing_origin = signum(length(var.origin_bucket)) == 1
 
-  using_existing_cloudfront_origin = var.cloudfront_origin_access_identity_iam_arn != "" && var.cloudfront_access_identity_path != ""
+  using_existing_cloudfront_origin = var.cloudfront_origin_access_identity_iam_arn != "" && var.cloudfront_origin_access_identity_path != ""
 
   bucket = join("",
     compact(
@@ -225,7 +225,7 @@ resource "aws_cloudfront_distribution" "default" {
     dynamic "s3_origin_config" {
       for_each = ! var.website_enabled ? [1] : []
       content {
-        origin_access_identity = local.using_existing_cloudfront_origin ? var.cloudfront_access_identity_path : join("", aws_cloudfront_origin_access_identity.default.*.cloudfront_access_identity_path)
+        origin_access_identity = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_path : join("", aws_cloudfront_origin_access_identity.default.*.cloudfront_access_identity_path)
       }
     }
 
