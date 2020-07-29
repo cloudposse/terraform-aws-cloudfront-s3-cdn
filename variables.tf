@@ -386,7 +386,8 @@ variable "ipv6_enabled" {
 
 variable "ordered_cache" {
   type = list(object({
-    path_pattern = string
+    target_origin_id = string
+    path_pattern     = string
 
     allowed_methods = list(string)
     cached_methods  = list(string)
@@ -412,8 +413,26 @@ variable "ordered_cache" {
 An ordered list of cache behaviors resource for this distribution. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0.
 The fields can be described by the other variables in this file. For example, the field 'lambda_function_association' in this object has
 a description in var.lambda_function_association variable earlier in this file. The only difference is that fields on this object are in ordered caches, whereas the rest
-of the vars in this file apply only to the default cache.
+of the vars in this file apply only to the default cache. Put value `""` on field `target_origin_id` to specify default s3 bucket origin.
 DESCRIPTION
+}
+
+variable "custom_origins" {
+  type = list(object({
+    domain_name = string
+    origin_id   = string
+    origin_path = string
+    custom_origin_config = object({
+      http_port                = number
+      https_port               = number
+      origin_protocol_policy   = string
+      origin_ssl_protocols     = list(string)
+      origin_keepalive_timeout = number
+      origin_read_timeout      = number
+    })
+  }))
+  default     = []
+  description = "One or more custom origins for this distribution (multiples allowed). See documentation for configuration options description https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments"
 }
 
 variable "website_enabled" {

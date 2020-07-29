@@ -42,6 +42,11 @@ output "s3_bucket_arn" {
   value       = join("", aws_s3_bucket.origin.*.arn)
   description = "ARN of S3 bucket"
 }
+  
+output "logs" {
+  value       = module.logs
+  description = "Logs resource"
+}
 
 output "aliases" {
   value       = var.aliases
