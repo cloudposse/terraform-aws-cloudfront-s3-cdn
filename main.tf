@@ -124,10 +124,10 @@ resource "aws_s3_bucket" "origin" {
   }
 
   dynamic "versioning" {
-    for_each = var.versioning_enabled ? ["true"] : []
+    for_each = [var.versioning_enabled]
 
     content {
-      enabled = var.versioning_enabled
+      enabled = versioning.value
     }
   }
 
