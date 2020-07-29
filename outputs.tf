@@ -38,6 +38,11 @@ output "s3_bucket_domain_name" {
   description = "Domain of S3 bucket"
 }
 
+output "logs" {
+  value       = module.logs
+  description = "Logs resource"
+}
+
 output "aliases" {
   value       = var.aliases
   description = "Aliases of the CloudFront distibution"

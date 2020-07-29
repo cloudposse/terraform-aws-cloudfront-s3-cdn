@@ -446,3 +446,15 @@ variable "versioning_enabled" {
   default     = false
   description = "When set to 'true' the s3 origin bucket will have versioning enabled"
 }
+
+variable "cloudfront_origin_access_identity_iam_arn" {
+  type        = string
+  default     = ""
+  description = "Existing cloudfront origin access identity iam arn that is supplied in the s3 bucket policy"
+}
+
+variable "cloudfront_origin_access_identity_path" {
+  type        = string
+  default     = ""
+  description = "Existing cloudfront origin access identity path used in the cloudfront distribution's s3_origin_config content"
+}
