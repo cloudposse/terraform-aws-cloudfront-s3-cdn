@@ -148,7 +148,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 module "logs" {
-  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.12.0"
+  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.13.1"
   enabled                  = var.logging_enabled
   namespace                = var.namespace
   environment              = var.environment
@@ -356,7 +356,7 @@ resource "aws_cloudfront_distribution" "default" {
 }
 
 module "dns" {
-  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.4.0"
+  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.8.0"
   enabled          = var.enabled && (var.parent_zone_id != "" || var.parent_zone_name != "") ? true : false
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
