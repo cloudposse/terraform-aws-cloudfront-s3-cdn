@@ -125,6 +125,14 @@ resource "aws_s3_bucket" "origin" {
     }
   }
 
+  dynamic "versioning" {
+    for_each = [var.versioning_enabled]
+
+    content {
+      enabled = versioning.value
+    }
+  }
+
   dynamic "website" {
     for_each = var.website_enabled ? local.website_config[var.redirect_all_requests_to == "" ? "default" : "redirect_all"] : []
     content {
