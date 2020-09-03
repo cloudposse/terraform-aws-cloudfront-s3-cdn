@@ -364,7 +364,7 @@ resource "aws_cloudfront_distribution" "default" {
 }
 
 module "dns" {
-  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.8.0"
+  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.9.0"
   enabled          = var.enabled && (var.parent_zone_id != "" || var.parent_zone_name != "") ? true : false
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
