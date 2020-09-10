@@ -75,6 +75,12 @@ variable "aliases" {
   default     = []
 }
 
+variable "create_route53_entries" {
+  type        = bool
+  description = "When set to 'false' the Route53 entries will not be created from aliases"
+  default     = true
+}
+
 variable "use_regional_s3_endpoint" {
   type        = bool
   description = "When set to 'true' the s3 origin_bucket will use the regional endpoint address instead of the global endpoint address"
