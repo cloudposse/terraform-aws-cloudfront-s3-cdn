@@ -124,22 +124,23 @@ Available targets:
 
 ```
 <!-- markdownlint-restore -->
+<!-- markdownlint-disable -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
 | terraform | >= 0.12.0 |
-| aws | ~> 2.0 |
-| local | ~> 1.2 |
-| null | ~> 2.0 |
-| template | ~> 2.0 |
+| aws | >= 2.0 |
+| local | >= 1.2 |
+| null | >= 2.0 |
+| template | >= 2.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws | ~> 2.0 |
-| template | ~> 2.0 |
+| aws | >= 2.0 |
+| template | >= 2.0 |
 
 ## Inputs
 
@@ -228,6 +229,7 @@ Available targets:
 | s3\_bucket\_arn | ARN of S3 bucket |
 | s3\_bucket\_domain\_name | Domain of S3 bucket |
 
+<!-- markdownlint-restore -->
 
 
 
