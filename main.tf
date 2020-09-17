@@ -102,16 +102,12 @@ resource "aws_s3_bucket_policy" "default" {
   policy = data.template_file.default.rendered
 }
 
-data "aws_region" "current" {
-}
-
 resource "aws_s3_bucket" "origin" {
   count         = local.using_existing_origin ? 0 : 1
   bucket        = module.origin_label.id
   acl           = "private"
   tags          = module.origin_label.tags
   force_destroy = var.origin_force_destroy
-  region        = data.aws_region.current.name
 
   dynamic "server_side_encryption_configuration" {
     for_each = var.encryption_enabled ? ["true"] : []
@@ -156,7 +152,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 module "logs" {
-  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.13.1"
+  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.14.0"
   enabled                  = var.logging_enabled
   namespace                = var.namespace
   environment              = var.environment
@@ -364,8 +360,8 @@ resource "aws_cloudfront_distribution" "default" {
 }
 
 module "dns" {
-  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.8.0"
-  enabled          = var.enabled && (var.parent_zone_id != "" || var.parent_zone_name != "") && var.create_route53_entries ? true : false
+  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.8.2"
+  enabled          = var.enabled && (var.parent_zone_id != "" || var.parent_zone_name != "") ? true : false
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
   parent_zone_name = var.parent_zone_name
