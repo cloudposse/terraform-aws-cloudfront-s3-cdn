@@ -1,38 +1,3 @@
-variable "namespace" {
-  type        = string
-  description = "Namespace (e.g. `eg` or `cp`)"
-  default     = ""
-}
-
-variable "environment" {
-  type        = string
-  default     = ""
-  description = "Environment, e.g. 'prod', 'staging', 'dev', 'pre-prod', 'UAT'"
-}
-
-variable "stage" {
-  type        = string
-  description = "Stage (e.g. `prod`, `dev`, `staging`)"
-  default     = ""
-}
-
-variable "name" {
-  type        = string
-  description = "Name  (e.g. `bastion` or `app`)"
-}
-
-variable "delimiter" {
-  type        = string
-  default     = "-"
-  description = "Delimiter to be used between `namespace`, `stage`, `name` and `attributes`"
-}
-
-variable "attributes" {
-  type        = list(string)
-  default     = []
-  description = "Additional attributes (e.g. `1`)"
-}
-
 variable "extra_origin_attributes" {
   type        = list(string)
   default     = ["origin"]
@@ -43,18 +8,6 @@ variable "extra_logs_attributes" {
   type        = list(string)
   default     = ["logs"]
   description = "Additional attributes to put onto the log bucket label"
-}
-
-variable "tags" {
-  type        = map(string)
-  default     = {}
-  description = "Additional tags (e.g. map(`BusinessUnit`,`XYZ`)"
-}
-
-variable "enabled" {
-  type        = bool
-  default     = true
-  description = "Select Enabled if you want CloudFront to begin processing requests as soon as the distribution is created, or select Disabled if you do not want CloudFront to begin processing requests after the distribution is created."
 }
 
 variable "acm_certificate_arn" {
