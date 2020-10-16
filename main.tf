@@ -221,6 +221,13 @@ resource "aws_cloudfront_distribution" "default" {
         origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
       }
     }
+    dynamic "custom_header" {
+      for_each = var.custom_origin_headers
+      content {
+        name  = custom_header.value["name"]
+        value = custom_header.value["value"]
+      }
+    }
   }
 
   dynamic "origin" {
