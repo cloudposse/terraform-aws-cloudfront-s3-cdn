@@ -417,3 +417,9 @@ variable "cloudfront_origin_access_identity_path" {
   default     = ""
   description = "Existing cloudfront origin access identity path used in the cloudfront distribution's s3_origin_config content"
 }
+
+variable "origin_ssl_protocols" {
+  type        = list(string)
+  default     = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+  description = "The SSL/TLS protocols that you want CloudFront to use when communicating with your origin over HTTPS."
+}
