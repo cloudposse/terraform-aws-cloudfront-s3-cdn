@@ -146,6 +146,15 @@ resource "aws_s3_bucket" "origin" {
   }
 }
 
+resource "aws_s3_bucket_public_access_block" "origin" {
+  count                   = ! local.using_existing_origin && var.block_origin_public_access_enabled ? 1 : 0
+  bucket                  = local.bucket
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 module "logs" {
   source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.15.0"
   enabled                  = var.logging_enabled
