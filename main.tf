@@ -147,9 +147,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 module "logs" {
-  # TODO: merge https://github.com/cloudposse/terraform-aws-s3-log-storage/pull/42 before submitting, update tag
-  # source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.14.0"
-  source                   = "git::https://github.com/dmattia/terraform-aws-s3-log-storage.git?ref=patch-1"
+  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.15.0"
   enabled                  = var.logging_enabled
   context                  = module.this.context
   attributes               = compact(concat(var.attributes, var.extra_logs_attributes))
