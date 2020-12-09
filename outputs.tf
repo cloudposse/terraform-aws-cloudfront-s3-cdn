@@ -28,6 +28,11 @@ output "cf_hosted_zone_id" {
   description = "CloudFront Route 53 zone ID"
 }
 
+output "cf_identity_iam_arn" {
+  value       = try(aws_cloudfront_origin_access_identity.default[0].iam_arn, "")
+  description = "CloudFront Origin Access Identity IAM ARN"
+}
+
 output "s3_bucket" {
   value       = local.bucket
   description = "Name of S3 bucket"
