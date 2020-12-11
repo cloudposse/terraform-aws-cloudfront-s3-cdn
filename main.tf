@@ -26,7 +26,7 @@ locals {
 }
 
 module "origin_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.19.2"
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.22.0"
   context    = module.this.context
   attributes = compact(concat(var.attributes, var.extra_origin_attributes))
 }
@@ -147,7 +147,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 module "logs" {
-  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.14.0"
+  source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.15.0"
   enabled                  = var.logging_enabled
   context                  = module.this.context
   attributes               = compact(concat(var.attributes, var.extra_logs_attributes))
