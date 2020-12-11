@@ -29,8 +29,13 @@ output "cf_hosted_zone_id" {
 }
 
 output "cf_identity_iam_arn" {
-  value       = try(aws_cloudfront_origin_access_identity.default[0].iam_arn, "")
+  value       = module.cloudfront_s3_cdn.cf_identity_iam_arn
   description = "CloudFront Origin Access Identity IAM ARN"
+}
+
+output "cf_s3_canonical_user_id" {
+  value       = module.cloudfront_s3_cdn.cf_s3_canonical_user_id
+  description = "Canonical user ID for CloudFront Origin Access Identity"
 }
 
 output "s3_bucket" {

@@ -64,8 +64,15 @@ We literally have [*hundreds of terraform modules*][terraform_modules] that are 
 ## Usage
 
 
-**IMPORTANT:** The `master` branch is used in `source` just as an example. In your code, do not pin to `master` because there may be breaking changes between releases.
-Instead pin to the release tag (e.g. `?ref=tags/x.y.z`) of one of our [latest releases](https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn/releases).
+**IMPORTANT:** We do not pin modules to versions in our examples because of the
+difficulty of keeping the versions in the documentation in sync with the latest released versions.
+We highly recommend that in your code you pin the version to the exact version you are
+using so that your infrastructure remains stable, and update versions in a
+systematic way so that they do not catch you by surprise.
+
+Also, because of a bug in the Terraform registry ([hashicorp/terraform#21417](https://github.com/hashicorp/terraform/issues/21417)),
+the registry shows many of our inputs as required when in fact they are optional.
+The table below correctly indicates which inputs are required.
 
 
 
@@ -233,6 +240,8 @@ Available targets:
 | cf\_etag | Current version of the distribution's information |
 | cf\_hosted\_zone\_id | CloudFront Route 53 zone ID |
 | cf\_id | ID of AWS CloudFront distribution |
+| cf\_identity\_iam\_arn | CloudFront Origin Access Identity IAM ARN |
+| cf\_s3\_canonical\_user\_id | Canonical user ID for CloudFront Origin Access Identity |
 | cf\_status | Current status of the distribution |
 | logs | Logs resource |
 | s3\_bucket | Name of S3 bucket |
