@@ -9,6 +9,7 @@ module "cloudfront_s3_cdn" {
   name                     = var.name
   attributes               = var.attributes
   parent_zone_name         = var.parent_zone_name
+  dns_alias_enabled        = true
   use_regional_s3_endpoint = true
   origin_force_destroy     = true
   cors_allowed_headers     = ["*"]

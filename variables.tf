@@ -1,38 +1,3 @@
-variable "namespace" {
-  type        = string
-  description = "Namespace (e.g. `eg` or `cp`)"
-  default     = ""
-}
-
-variable "environment" {
-  type        = string
-  default     = ""
-  description = "Environment, e.g. 'prod', 'staging', 'dev', 'pre-prod', 'UAT'"
-}
-
-variable "stage" {
-  type        = string
-  description = "Stage (e.g. `prod`, `dev`, `staging`)"
-  default     = ""
-}
-
-variable "name" {
-  type        = string
-  description = "Name  (e.g. `bastion` or `app`)"
-}
-
-variable "delimiter" {
-  type        = string
-  default     = "-"
-  description = "Delimiter to be used between `namespace`, `stage`, `name` and `attributes`"
-}
-
-variable "attributes" {
-  type        = list(string)
-  default     = []
-  description = "Additional attributes (e.g. `1`)"
-}
-
 variable "extra_origin_attributes" {
   type        = list(string)
   default     = ["origin"]
@@ -43,18 +8,6 @@ variable "extra_logs_attributes" {
   type        = list(string)
   default     = ["logs"]
   description = "Additional attributes to put onto the log bucket label"
-}
-
-variable "tags" {
-  type        = map(string)
-  default     = {}
-  description = "Additional tags (e.g. map(`BusinessUnit`,`XYZ`)"
-}
-
-variable "enabled" {
-  type        = bool
-  default     = true
-  description = "Select Enabled if you want CloudFront to begin processing requests as soon as the distribution is created, or select Disabled if you do not want CloudFront to begin processing requests after the distribution is created."
 }
 
 variable "acm_certificate_arn" {
@@ -296,6 +249,12 @@ variable "parent_zone_name" {
   description = "Name of the hosted zone to contain this record (or specify `parent_zone_id`)"
 }
 
+variable "dns_alias_enabled" {
+  type        = bool
+  default     = false
+  description = "Explicitly opt into DNS aliasing the CDN."
+}
+
 variable "static_s3_bucket" {
   type    = string
   default = "aws-cli"
@@ -457,4 +416,16 @@ variable "cloudfront_origin_access_identity_path" {
   type        = string
   default     = ""
   description = "Existing cloudfront origin access identity path used in the cloudfront distribution's s3_origin_config content"
+}
+
+variable "custom_origin_headers" {
+  type        = list(object({ name = string, value = string }))
+  default     = []
+  description = "A list of origin header parameters that will be sent to origin"
+}
+
+variable "origin_ssl_protocols" {
+  type        = list(string)
+  default     = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+  description = "The SSL/TLS protocols that you want CloudFront to use when communicating with your origin over HTTPS."
 }

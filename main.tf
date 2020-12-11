@@ -26,20 +26,15 @@ locals {
 }
 
 module "origin_label" {
-  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.17.0"
-  namespace   = var.namespace
-  environment = var.environment
-  stage       = var.stage
-  name        = var.name
-  delimiter   = var.delimiter
-  attributes  = compact(concat(var.attributes, var.extra_origin_attributes))
-  tags        = var.tags
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.19.2"
+  context    = module.this.context
+  attributes = compact(concat(var.attributes, var.extra_origin_attributes))
 }
 
 resource "aws_cloudfront_origin_access_identity" "default" {
   count = local.using_existing_cloudfront_origin ? 0 : 1
 
-  comment = module.distribution_label.id
+  comment = module.this.id
 }
 
 data "aws_iam_policy_document" "origin" {
@@ -97,7 +92,7 @@ data "template_file" "default" {
 }
 
 resource "aws_s3_bucket_policy" "default" {
-  count  = ! local.using_existing_origin || var.override_origin_bucket_policy ? 1 : 0
+  count  = !local.using_existing_origin || var.override_origin_bucket_policy ? 1 : 0
   bucket = local.bucket
   policy = data.template_file.default.rendered
 }
@@ -154,29 +149,13 @@ resource "aws_s3_bucket" "origin" {
 module "logs" {
   source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.14.0"
   enabled                  = var.logging_enabled
-  namespace                = var.namespace
-  environment              = var.environment
-  stage                    = var.stage
-  name                     = var.name
-  delimiter                = var.delimiter
+  context                  = module.this.context
   attributes               = compact(concat(var.attributes, var.extra_logs_attributes))
-  tags                     = var.tags
   lifecycle_prefix         = var.log_prefix
   standard_transition_days = var.log_standard_transition_days
   glacier_transition_days  = var.log_glacier_transition_days
   expiration_days          = var.log_expiration_days
   force_destroy            = var.origin_force_destroy
-}
-
-module "distribution_label" {
-  source      = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.17.0"
-  namespace   = var.namespace
-  environment = var.environment
-  stage       = var.stage
-  name        = var.name
-  delimiter   = var.delimiter
-  attributes  = var.attributes
-  tags        = var.tags
 }
 
 data "aws_s3_bucket" "selected" {
@@ -203,7 +182,7 @@ locals {
 }
 
 resource "aws_cloudfront_distribution" "default" {
-  enabled             = var.enabled
+  enabled             = module.this.enabled
   is_ipv6_enabled     = var.ipv6_enabled
   comment             = var.comment
   default_root_object = var.default_root_object
@@ -223,11 +202,11 @@ resource "aws_cloudfront_distribution" "default" {
 
   origin {
     domain_name = local.bucket_domain_name
-    origin_id   = module.distribution_label.id
+    origin_id   = module.this.id
     origin_path = var.origin_path
 
     dynamic "s3_origin_config" {
-      for_each = ! var.website_enabled ? [1] : []
+      for_each = !var.website_enabled ? [1] : []
       content {
         origin_access_identity = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_path : join("", aws_cloudfront_origin_access_identity.default.*.cloudfront_access_identity_path)
       }
@@ -239,7 +218,14 @@ resource "aws_cloudfront_distribution" "default" {
         http_port              = 80
         https_port             = 443
         origin_protocol_policy = "http-only"
-        origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+        origin_ssl_protocols   = var.origin_ssl_protocols
+      }
+    }
+    dynamic "custom_header" {
+      for_each = var.custom_origin_headers
+      content {
+        name  = custom_header.value["name"]
+        value = custom_header.value["value"]
       }
     }
   }
@@ -271,7 +257,7 @@ resource "aws_cloudfront_distribution" "default" {
   default_cache_behavior {
     allowed_methods  = var.allowed_methods
     cached_methods   = var.cached_methods
-    target_origin_id = module.distribution_label.id
+    target_origin_id = module.this.id
     compress         = var.compress
     trusted_signers  = var.trusted_signers
 
@@ -307,7 +293,7 @@ resource "aws_cloudfront_distribution" "default" {
 
       allowed_methods  = ordered_cache_behavior.value.allowed_methods
       cached_methods   = ordered_cache_behavior.value.cached_methods
-      target_origin_id = ordered_cache_behavior.value.target_origin_id == "" ? module.distribution_label.id : ordered_cache_behavior.value.target_origin_id
+      target_origin_id = ordered_cache_behavior.value.target_origin_id == "" ? module.this.id : ordered_cache_behavior.value.target_origin_id
       compress         = ordered_cache_behavior.value.compress
       trusted_signers  = var.trusted_signers
 
@@ -356,12 +342,12 @@ resource "aws_cloudfront_distribution" "default" {
   web_acl_id          = var.web_acl_id
   wait_for_deployment = var.wait_for_deployment
 
-  tags = module.distribution_label.tags
+  tags = module.this.tags
 }
 
 module "dns" {
   source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.8.2"
-  enabled          = var.enabled && (var.parent_zone_id != "" || var.parent_zone_name != "") ? true : false
+  enabled          = module.this.enabled && var.dns_alias_enabled ? true : false
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
   parent_zone_name = var.parent_zone_name
