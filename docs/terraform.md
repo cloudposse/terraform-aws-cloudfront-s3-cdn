@@ -105,6 +105,8 @@
 | cf\_etag | Current version of the distribution's information |
 | cf\_hosted\_zone\_id | CloudFront Route 53 zone ID |
 | cf\_id | ID of AWS CloudFront distribution |
+| cf\_identity\_iam\_arn | CloudFront Origin Access Identity IAM ARN |
+| cf\_s3\_canonical\_user\_id | Canonical user ID for CloudFront Origin Access Identity |
 | cf\_status | Current status of the distribution |
 | logs | Logs resource |
 | s3\_bucket | Name of S3 bucket |

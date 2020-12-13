@@ -28,6 +28,16 @@ output "cf_hosted_zone_id" {
   description = "CloudFront Route 53 zone ID"
 }
 
+output "cf_identity_iam_arn" {
+  value       = module.cloudfront_s3_cdn.cf_identity_iam_arn
+  description = "CloudFront Origin Access Identity IAM ARN"
+}
+
+output "cf_s3_canonical_user_id" {
+  value       = module.cloudfront_s3_cdn.cf_s3_canonical_user_id
+  description = "Canonical user ID for CloudFront Origin Access Identity"
+}
+
 output "s3_bucket" {
   value       = module.cloudfront_s3_cdn.s3_bucket
   description = "Name of S3 bucket"
