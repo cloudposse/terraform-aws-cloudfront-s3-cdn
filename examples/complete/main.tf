@@ -4,7 +4,7 @@ provider "aws" {
 
 module "cloudfront_s3_cdn" {
   source                   = "../../"
-  namespace                = module.this.namespace
+  context                = module.this.context
   stage                    = module.this.stage
   name                     = module.this.name
   attributes               = module.this.attributes
