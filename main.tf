@@ -28,7 +28,7 @@ locals {
 module "origin_label" {
   source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.22.0"
   context    = module.this.context
-  attributes = compact(concat(var.attributes, var.extra_origin_attributes))
+  attributes = compact(concat(module.this.attributes, var.extra_origin_attributes))
 }
 
 resource "aws_cloudfront_origin_access_identity" "default" {
@@ -150,7 +150,7 @@ module "logs" {
   source                   = "git::https://github.com/cloudposse/terraform-aws-s3-log-storage.git?ref=tags/0.15.0"
   enabled                  = var.logging_enabled
   context                  = module.this.context
-  attributes               = compact(concat(var.attributes, var.extra_logs_attributes))
+  attributes               = compact(concat(module.this.attributes, var.extra_logs_attributes))
   lifecycle_prefix         = var.log_prefix
   standard_transition_days = var.log_standard_transition_days
   glacier_transition_days  = var.log_glacier_transition_days
