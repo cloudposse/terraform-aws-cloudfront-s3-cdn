@@ -4,10 +4,7 @@ provider "aws" {
 
 module "cloudfront_s3_cdn" {
   source                   = "../../"
-  context                = module.this.context
-  stage                    = module.this.stage
-  name                     = module.this.name
-  attributes               = module.this.attributes
+  context                  = module.this.context
   parent_zone_name         = var.parent_zone_name
   dns_alias_enabled        = true
   use_regional_s3_endpoint = true
