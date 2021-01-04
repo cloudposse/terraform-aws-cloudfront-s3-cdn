@@ -82,7 +82,9 @@ For automated tests of the complete example using [bats](https://github.com/bats
 
 ```hcl
 module "cdn" {
-  source           = "git::https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn.git?ref=master"
+  source = "cloudposse/cloudfront-s3-cdn/aws"
+  # Cloud Posse recommends pinning every module to a specific version
+  # version     = "x.x.x"
   namespace        = "eg"
   stage            = "prod"
   name             = "app"
@@ -339,7 +341,7 @@ In general, PRs are welcome. We follow the typical "fork-and-pull" Git workflow.
 
 ## Copyright
 
-Copyright © 2017-2020 [Cloud Posse, LLC](https://cpco.io/copyright)
+Copyright © 2017-2021 [Cloud Posse, LLC](https://cpco.io/copyright)
 
 
 
