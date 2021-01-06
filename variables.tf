@@ -429,3 +429,9 @@ variable "origin_ssl_protocols" {
   default     = ["TLSv1", "TLSv1.1", "TLSv1.2"]
   description = "The SSL/TLS protocols that you want CloudFront to use when communicating with your origin over HTTPS."
 }
+
+variable "block_origin_public_access_enabled" {
+  type        = bool
+  default     = false
+  description = "When set to 'true' the s3 origin bucket will have public access block enabled"
+}
