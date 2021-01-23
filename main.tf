@@ -27,7 +27,7 @@ locals {
 
 module "origin_label" {
   source     = "cloudposse/label/null"
-  version    = "0.22.0"
+  version    = "0.22.1"
   context    = module.this.context
   attributes = compact(concat(module.this.attributes, var.extra_origin_attributes))
 }
