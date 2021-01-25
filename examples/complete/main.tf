@@ -22,4 +22,5 @@ resource "aws_s3_bucket_object" "index" {
   source       = "${path.module}/index.html"
   content_type = "text/html"
   etag         = md5(file("${path.module}/index.html"))
+  tags         = module.this.tags
 }
