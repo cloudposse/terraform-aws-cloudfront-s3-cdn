@@ -167,7 +167,6 @@ module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
   version                  = "0.17.0"
   enabled                  = var.logging_enabled
-  context                  = module.this.context
   attributes               = compact(concat(module.this.attributes, var.extra_logs_attributes))
   lifecycle_prefix         = var.log_prefix
   standard_transition_days = var.log_standard_transition_days
