@@ -93,12 +93,14 @@ data "template_file" "default" {
 }
 
 resource "aws_s3_bucket_policy" "default" {
-  count  = ! local.using_existing_origin || var.override_origin_bucket_policy ? 1 : 0
+  count  = !local.using_existing_origin || var.override_origin_bucket_policy ? 1 : 0
   bucket = local.bucket
   policy = data.template_file.default.rendered
 }
 
 resource "aws_s3_bucket" "origin" {
+  #bridgecrew:skip=BC_AWS_S3_13:Skipping `Enable S3 Bucket Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
+  #bridgecrew:skip=BC_AWS_S3_14:Skipping `Ensure all data stored in the S3 bucket is securely encrypted at rest` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   count         = local.using_existing_origin ? 0 : 1
   bucket        = module.origin_label.id
   acl           = "private"
@@ -117,11 +119,16 @@ resource "aws_s3_bucket" "origin" {
     }
   }
 
-  dynamic "versioning" {
-    for_each = [var.versioning_enabled]
+  versioning {
+    enabled    = var.versioning_enabled
+    mfa_delete = var.mfa_delete
+  }
 
+  dynamic "logging" {
+    for_each = var.access_log_bucket_name != "" ? [1] : []
     content {
-      enabled = versioning.value
+      target_bucket = var.access_log_bucket_name
+      target_prefix = "logs/${module.this.id}/"
     }
   }
 
@@ -148,7 +155,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
-  count                   = ! local.using_existing_origin && var.block_origin_public_access_enabled ? 1 : 0
+  count                   = !local.using_existing_origin && var.block_origin_public_access_enabled ? 1 : 0
   bucket                  = local.bucket
   block_public_acls       = true
   block_public_policy     = true
@@ -158,7 +165,7 @@ resource "aws_s3_bucket_public_access_block" "origin" {
 
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
-  version                  = "0.15.0"
+  version                  = "0.17.0"
   enabled                  = var.logging_enabled
   context                  = module.this.context
   attributes               = compact(concat(module.this.attributes, var.extra_logs_attributes))
@@ -167,6 +174,8 @@ module "logs" {
   glacier_transition_days  = var.log_glacier_transition_days
   expiration_days          = var.log_expiration_days
   force_destroy            = var.origin_force_destroy
+
+  context = module.this.context
 }
 
 data "aws_s3_bucket" "selected" {
@@ -193,6 +202,7 @@ locals {
 }
 
 resource "aws_cloudfront_distribution" "default" {
+  #bridgecrew:skip=BC_AWS_LOGGING_20:Skipping `CloudFront Access Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   enabled             = module.this.enabled
   is_ipv6_enabled     = var.ipv6_enabled
   comment             = var.comment
@@ -217,7 +227,7 @@ resource "aws_cloudfront_distribution" "default" {
     origin_path = var.origin_path
 
     dynamic "s3_origin_config" {
-      for_each = ! var.website_enabled ? [1] : []
+      for_each = !var.website_enabled ? [1] : []
       content {
         origin_access_identity = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_path : join("", aws_cloudfront_origin_access_identity.default.*.cloudfront_access_identity_path)
       }
@@ -366,4 +376,6 @@ module "dns" {
   target_dns_name  = aws_cloudfront_distribution.default.domain_name
   target_zone_id   = aws_cloudfront_distribution.default.hosted_zone_id
   ipv6_enabled     = var.ipv6_enabled
+
+  context = module.this.context
 }

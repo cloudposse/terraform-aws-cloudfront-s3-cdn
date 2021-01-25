@@ -309,7 +309,7 @@ variable "wait_for_deployment" {
 
 variable "encryption_enabled" {
   type        = bool
-  default     = false
+  default     = true
   description = "When set to 'true' the resource will have aes256 encryption enabled by default"
 }
 
@@ -402,7 +402,7 @@ variable "website_enabled" {
 
 variable "versioning_enabled" {
   type        = bool
-  default     = false
+  default     = true
   description = "When set to 'true' the s3 origin bucket will have versioning enabled"
 }
 
@@ -434,4 +434,16 @@ variable "block_origin_public_access_enabled" {
   type        = bool
   default     = false
   description = "When set to 'true' the s3 origin bucket will have public access block enabled"
+}
+
+variable "access_log_bucket_name" {
+  type        = string
+  default     = ""
+  description = "Name of the S3 bucket where s3 access log will be sent to"
+}
+
+variable "mfa_delete" {
+  type        = bool
+  description = "A boolean that indicates that versions of S3 objects can only be deleted with MFA. ( Terraform cannot apply changes of this value; https://github.com/terraform-providers/terraform-provider-aws/issues/629 )"
+  default     = true
 }
