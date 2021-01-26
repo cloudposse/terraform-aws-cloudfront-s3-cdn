@@ -99,6 +99,8 @@ resource "aws_s3_bucket_policy" "default" {
 }
 
 resource "aws_s3_bucket" "origin" {
+  #bridgecrew:skip=BC_AWS_S3_13:Skipping `Enable S3 Bucket Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
+  #bridgecrew:skip=BC_AWS_S3_14:Skipping `Ensure all data stored in the S3 bucket is securely encrypted at rest` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   count         = local.using_existing_origin ? 0 : 1
   bucket        = module.origin_label.id
   acl           = "private"
@@ -117,11 +119,16 @@ resource "aws_s3_bucket" "origin" {
     }
   }
 
-  dynamic "versioning" {
-    for_each = [var.versioning_enabled]
+  versioning {
+    enabled    = var.versioning_enabled
+    mfa_delete = var.mfa_delete
+  }
 
+  dynamic "logging" {
+    for_each = var.access_log_bucket_name != "" ? [1] : []
     content {
-      enabled = versioning.value
+      target_bucket = var.access_log_bucket_name
+      target_prefix = "logs/${module.this.id}/"
     }
   }
 
@@ -158,15 +165,16 @@ resource "aws_s3_bucket_public_access_block" "origin" {
 
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
-  version                  = "0.15.0"
+  version                  = "0.17.0"
   enabled                  = var.logging_enabled
-  context                  = module.this.context
   attributes               = compact(concat(module.this.attributes, var.extra_logs_attributes))
   lifecycle_prefix         = var.log_prefix
   standard_transition_days = var.log_standard_transition_days
   glacier_transition_days  = var.log_glacier_transition_days
   expiration_days          = var.log_expiration_days
   force_destroy            = var.origin_force_destroy
+
+  context = module.this.context
 }
 
 data "aws_s3_bucket" "selected" {
@@ -193,6 +201,7 @@ locals {
 }
 
 resource "aws_cloudfront_distribution" "default" {
+  #bridgecrew:skip=BC_AWS_LOGGING_20:Skipping `CloudFront Access Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   enabled             = module.this.enabled
   is_ipv6_enabled     = var.ipv6_enabled
   comment             = var.comment
@@ -366,4 +375,6 @@ module "dns" {
   target_dns_name  = aws_cloudfront_distribution.default.domain_name
   target_zone_id   = aws_cloudfront_distribution.default.hosted_zone_id
   ipv6_enabled     = var.ipv6_enabled
+
+  context = module.this.context
 }

@@ -2,6 +2,7 @@
 **/*.tfstate
 **/*.tfstate.backup
 **/*.terraform.tfstate*
+**/.terraform.lock.hcl
 
 # Module directory
 .idea

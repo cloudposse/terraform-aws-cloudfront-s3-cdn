@@ -13,6 +13,7 @@ module "cloudfront_s3_cdn" {
   cors_allowed_methods     = ["GET", "HEAD", "PUT"]
   cors_allowed_origins     = ["*.cloudposse.com"]
   cors_expose_headers      = ["ETag"]
+  mfa_delete               = var.mfa_delete
 }
 
 resource "aws_s3_bucket_object" "index" {
@@ -21,4 +22,5 @@ resource "aws_s3_bucket_object" "index" {
   source       = "${path.module}/index.html"
   content_type = "text/html"
   etag         = md5(file("${path.module}/index.html"))
+  tags         = module.this.tags
 }

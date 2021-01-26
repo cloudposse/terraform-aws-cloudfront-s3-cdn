@@ -142,8 +142,6 @@ Available targets:
 |------|---------|
 | terraform | >= 0.12.26 |
 | aws | >= 2.0 |
-| local | >= 1.2 |
-| null | >= 2.0 |
 | template | >= 2.0 |
 
 ## Providers
@@ -157,6 +155,7 @@ Available targets:
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| access\_log\_bucket\_name | Name of the S3 bucket where s3 access log will be sent to | `string` | `""` | no |
 | acm\_certificate\_arn | Existing ACM Certificate ARN | `string` | `""` | no |
 | additional\_bucket\_policy | Additional policies for the bucket. If included in the policies, the variables `${bucket_name}`, `${origin_path}` and `${cloudfront_origin_access_identity_iam_arn}` will be substituted. It is also possible to override the default policy statements by providing statements with `S3GetObjectForCloudFront` and `S3ListBucketForCloudFront` sid. | `string` | `"{}"` | no |
 | additional\_tag\_map | Additional tags for appending to tags\_as\_list\_of\_maps. Not added to `tags`. | `map(string)` | `{}` | no |
@@ -184,7 +183,7 @@ Available targets:
 | delimiter | Delimiter to be used between `namespace`, `environment`, `stage`, `name` and `attributes`.<br>Defaults to `-` (hyphen). Set to `""` to use no delimiter at all. | `string` | `null` | no |
 | dns\_alias\_enabled | Explicitly opt into DNS aliasing the CDN. | `bool` | `false` | no |
 | enabled | Set to false to prevent the module from creating any resources | `bool` | `null` | no |
-| encryption\_enabled | When set to 'true' the resource will have aes256 encryption enabled by default | `bool` | `false` | no |
+| encryption\_enabled | When set to 'true' the resource will have aes256 encryption enabled by default | `bool` | `true` | no |
 | environment | Environment, e.g. 'uw2', 'us-west-2', OR 'prod', 'staging', 'dev', 'UAT' | `string` | `null` | no |
 | error\_document | An absolute path to the document to return in case of a 4XX error | `string` | `""` | no |
 | extra\_logs\_attributes | Additional attributes to put onto the log bucket label | `list(string)` | <pre>[<br>  "logs"<br>]</pre> | no |
@@ -206,6 +205,7 @@ Available targets:
 | log\_standard\_transition\_days | Number of days to persist in the standard storage tier before moving to the glacier tier | `number` | `30` | no |
 | logging\_enabled | When true, access logs will be sent to a newly created s3 bucket | `bool` | `true` | no |
 | max\_ttl | Maximum amount of time (in seconds) that an object is in a CloudFront cache | `number` | `31536000` | no |
+| mfa\_delete | A boolean that indicates that versions of S3 objects can only be deleted with MFA. ( Terraform cannot apply changes of this value; https://github.com/terraform-providers/terraform-provider-aws/issues/629 ) | `bool` | `true` | no |
 | min\_ttl | Minimum amount of time that you want objects to stay in CloudFront caches | `number` | `0` | no |
 | minimum\_protocol\_version | Cloudfront TLS minimum protocol version | `string` | `"TLSv1"` | no |
 | name | Solution name, e.g. 'app' or 'jenkins' | `string` | `null` | no |
@@ -227,7 +227,7 @@ Available targets:
 | tags | Additional tags (e.g. `map('BusinessUnit','XYZ')` | `map(string)` | `{}` | no |
 | trusted\_signers | The AWS accounts, if any, that you want to allow to create signed URLs for private content. 'self' is acceptable. | `list(string)` | `[]` | no |
 | use\_regional\_s3\_endpoint | When set to 'true' the s3 origin\_bucket will use the regional endpoint address instead of the global endpoint address | `bool` | `false` | no |
-| versioning\_enabled | When set to 'true' the s3 origin bucket will have versioning enabled | `bool` | `false` | no |
+| versioning\_enabled | When set to 'true' the s3 origin bucket will have versioning enabled | `bool` | `true` | no |
 | viewer\_protocol\_policy | allow-all, redirect-to-https | `string` | `"redirect-to-https"` | no |
 | wait\_for\_deployment | When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed | `bool` | `true` | no |
 | web\_acl\_id | ID of the AWS WAF web ACL that is associated with the distribution | `string` | `""` | no |
