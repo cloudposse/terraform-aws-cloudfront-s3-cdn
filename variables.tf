@@ -441,9 +441,3 @@ variable "access_log_bucket_name" {
   default     = ""
   description = "Name of the S3 bucket where s3 access log will be sent to"
 }
-
-variable "mfa_delete" {
-  type        = bool
-  description = "A boolean that indicates that versions of S3 objects can only be deleted with MFA. ( Terraform cannot apply changes of this value; https://github.com/terraform-providers/terraform-provider-aws/issues/629 )"
-  default     = true
-}

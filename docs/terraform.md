@@ -68,7 +68,6 @@
 | log\_standard\_transition\_days | Number of days to persist in the standard storage tier before moving to the glacier tier | `number` | `30` | no |
 | logging\_enabled | When true, access logs will be sent to a newly created s3 bucket | `bool` | `true` | no |
 | max\_ttl | Maximum amount of time (in seconds) that an object is in a CloudFront cache | `number` | `31536000` | no |
-| mfa\_delete | A boolean that indicates that versions of S3 objects can only be deleted with MFA. ( Terraform cannot apply changes of this value; https://github.com/terraform-providers/terraform-provider-aws/issues/629 ) | `bool` | `true` | no |
 | min\_ttl | Minimum amount of time that you want objects to stay in CloudFront caches | `number` | `0` | no |
 | minimum\_protocol\_version | Cloudfront TLS minimum protocol version | `string` | `"TLSv1"` | no |
 | name | Solution name, e.g. 'app' or 'jenkins' | `string` | `null` | no |

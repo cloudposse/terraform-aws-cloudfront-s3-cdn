@@ -7,5 +7,3 @@ stage = "test"
 name = "cloudfront-s3-cdn"
 
 parent_zone_name = "testing.cloudposse.co"
-
-mfa_delete = false
