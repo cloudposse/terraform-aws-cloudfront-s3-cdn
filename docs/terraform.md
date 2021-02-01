@@ -66,6 +66,7 @@
 | log\_include\_cookies | Include cookies in access logs | `bool` | `false` | no |
 | log\_prefix | Path of logs in S3 bucket | `string` | `""` | no |
 | log\_standard\_transition\_days | Number of days to persist in the standard storage tier before moving to the glacier tier | `number` | `30` | no |
+| log\_versioning\_enabled | When true, the access logs bucket will be versioned | `bool` | `false` | no |
 | logging\_enabled | When true, access logs will be sent to a newly created s3 bucket | `bool` | `true` | no |
 | max\_ttl | Maximum amount of time (in seconds) that an object is in a CloudFront cache | `number` | `31536000` | no |
 | min\_ttl | Minimum amount of time that you want objects to stay in CloudFront caches | `number` | `0` | no |

@@ -95,6 +95,12 @@ variable "logging_enabled" {
   description = "When true, access logs will be sent to a newly created s3 bucket"
 }
 
+variable "log_versioning_enabled" {
+  type        = bool
+  default     = false
+  description = "When true, the access logs bucket will be versioned"
+}
+
 variable "log_include_cookies" {
   type        = bool
   default     = false
