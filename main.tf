@@ -368,7 +368,7 @@ resource "aws_cloudfront_distribution" "default" {
 
 module "dns" {
   source           = "cloudposse/route53-alias/aws"
-  version          = "0.10.0"
+  version          = "0.12.0"
   enabled          = module.this.enabled && var.dns_alias_enabled ? true : false
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
