@@ -384,9 +384,13 @@ DESCRIPTION
 
 variable "custom_origins" {
   type = list(object({
-    domain_name = string
-    origin_id   = string
-    origin_path = string
+    domain_name    = string
+    origin_id      = string
+    origin_path    = string
+    custom_headers = list(object({
+      name  = string
+      value = string
+    }))
     custom_origin_config = object({
       http_port                = number
       https_port               = number
