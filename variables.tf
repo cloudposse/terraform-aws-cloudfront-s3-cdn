@@ -387,6 +387,10 @@ variable "custom_origins" {
     domain_name = string
     origin_id   = string
     origin_path = string
+    custom_headers = list(object({
+      name  = string
+      value = string
+    }))
     custom_origin_config = object({
       http_port                = number
       https_port               = number
