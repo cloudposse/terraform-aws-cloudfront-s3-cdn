@@ -254,16 +254,16 @@ resource "aws_cloudfront_distribution" "default" {
   dynamic "origin" {
     for_each = var.custom_origins
     content {
-      domain_name    = origin.value.domain_name
-      origin_id      = origin.value.origin_id
-      origin_path    = lookup(origin.value, "origin_path", "")
+      domain_name = origin.value.domain_name
+      origin_id   = origin.value.origin_id
+      origin_path = lookup(origin.value, "origin_path", "")
       dynamic "custom_header" {
         for_each = lookup(origin.value, "custom_headers", [])
         content {
           name  = custom_header.value["name"]
           value = custom_header.value["value"]
         }
-      } 
+      }
       custom_origin_config {
         http_port                = lookup(origin.value.custom_origin_config, "http_port", null)
         https_port               = lookup(origin.value.custom_origin_config, "https_port", null)
