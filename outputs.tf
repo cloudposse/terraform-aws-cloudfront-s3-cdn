@@ -40,22 +40,22 @@ output "cf_s3_canonical_user_id" {
 
 output "s3_bucket" {
   value       = local.bucket
-  description = "Name of S3 bucket"
+  description = "Name of origin S3 bucket"
 }
 
 output "s3_bucket_domain_name" {
   value       = local.bucket_domain_name
-  description = "Domain of S3 bucket"
+  description = "Domain of origin S3 bucket"
 }
 
 output "s3_bucket_arn" {
   value       = join("", aws_s3_bucket.origin.*.arn)
-  description = "ARN of S3 bucket"
+  description = "ARN of origin S3 bucket"
 }
 
 output "logs" {
   value       = module.logs
-  description = "Logs resource"
+  description = "Log bucket resource"
 }
 
 output "aliases" {
