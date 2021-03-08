@@ -164,7 +164,7 @@ resource "aws_s3_bucket_public_access_block" "origin" {
 
   # Don't ty and modify this bucket in two ways at the same time, S3 API will
   # complain.
-  depends_on = [ aws_s3_bucket_policy.default ]
+  depends_on = [aws_s3_bucket_policy.default]
 }
 
 module "logs" {
