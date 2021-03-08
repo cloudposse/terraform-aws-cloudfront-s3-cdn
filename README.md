@@ -170,6 +170,28 @@ Available targets:
 | aws | >= 2.0 |
 | template | >= 2.0 |
 
+## Modules
+
+| Name | Source | Version |
+|------|--------|---------|
+| dns | cloudposse/route53-alias/aws | 0.12.0 |
+| logs | cloudposse/s3-log-storage/aws | 0.20.0 |
+| origin_label | cloudposse/label/null | 0.24.1 |
+| this | cloudposse/label/null | 0.24.1 |
+
+## Resources
+
+| Name |
+|------|
+| [aws_cloudfront_distribution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution) |
+| [aws_cloudfront_origin_access_identity](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_access_identity) |
+| [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) |
+| [aws_s3_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/s3_bucket) |
+| [aws_s3_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) |
+| [aws_s3_bucket_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) |
+| [aws_s3_bucket_public_access_block](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) |
+| [template_file](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) |
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -267,11 +289,10 @@ Available targets:
 | cf\_identity\_iam\_arn | CloudFront Origin Access Identity IAM ARN |
 | cf\_s3\_canonical\_user\_id | Canonical user ID for CloudFront Origin Access Identity |
 | cf\_status | Current status of the distribution |
-| logs | Logs resource |
-| s3\_bucket | Name of S3 bucket |
-| s3\_bucket\_arn | ARN of S3 bucket |
-| s3\_bucket\_domain\_name | Domain of S3 bucket |
-
+| logs | Log bucket resource |
+| s3\_bucket | Name of origin S3 bucket |
+| s3\_bucket\_arn | ARN of origin S3 bucket |
+| s3\_bucket\_domain\_name | Domain of origin S3 bucket |
 <!-- markdownlint-restore -->
 
 
