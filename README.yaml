@@ -66,11 +66,12 @@ usage: |-
     source = "cloudposse/cloudfront-s3-cdn/aws"
     # Cloud Posse recommends pinning every module to a specific version
     # version     = "x.x.x"
-    namespace        = "eg"
-    stage            = "prod"
-    name             = "app"
-    aliases          = ["assets.cloudposse.com"]
-    parent_zone_name = "cloudposse.com"
+    namespace         = "eg"
+    stage             = "prod"
+    name              = "app"
+    aliases           = ["assets.cloudposse.com"]
+    dns_alias_enabled = true
+    parent_zone_name  = "cloudposse.com"
   }
   ```
 
