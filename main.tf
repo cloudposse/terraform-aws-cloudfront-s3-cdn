@@ -94,7 +94,7 @@ data "template_file" "default" {
 
 resource "aws_s3_bucket_policy" "default" {
   count  = ! local.using_existing_origin || var.override_origin_bucket_policy ? 1 : 0
-  bucket = local.bucket
+  bucket = join("", aws_s3_bucket.origin.*.bucket)
   policy = data.template_file.default.rendered
 }
 
@@ -161,6 +161,10 @@ resource "aws_s3_bucket_public_access_block" "origin" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+
+  # Don't ty and modify this bucket in two ways at the same time, S3 API will
+  # complain.
+  depends_on = [aws_s3_bucket_policy.default]
 }
 
 module "logs" {
