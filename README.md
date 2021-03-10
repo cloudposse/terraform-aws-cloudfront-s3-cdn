@@ -289,10 +289,10 @@ Available targets:
 | cf\_identity\_iam\_arn | CloudFront Origin Access Identity IAM ARN |
 | cf\_s3\_canonical\_user\_id | Canonical user ID for CloudFront Origin Access Identity |
 | cf\_status | Current status of the distribution |
-| logs | Logs resource |
-| s3\_bucket | Name of S3 bucket |
-| s3\_bucket\_arn | ARN of S3 bucket |
-| s3\_bucket\_domain\_name | Domain of S3 bucket |
+| logs | Log bucket resource |
+| s3\_bucket | Name of origin S3 bucket |
+| s3\_bucket\_arn | ARN of origin S3 bucket |
+| s3\_bucket\_domain\_name | Domain of origin S3 bucket |
 <!-- markdownlint-restore -->
 
 
