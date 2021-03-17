@@ -294,14 +294,14 @@ resource "aws_cloudfront_distribution" "default" {
     compress         = var.compress
     trusted_signers  = var.trusted_signers
 
-    forwarded_values {
-      query_string = var.forward_query_string
-      headers      = var.forward_header_values
+    # forwarded_values {
+    #   query_string = var.forward_query_string
+    #   headers      = var.forward_header_values
 
-      cookies {
-        forward = var.forward_cookies
-      }
-    }
+    #   cookies {
+    #     forward = var.forward_cookies
+    #   }
+    # }
 
     viewer_protocol_policy = var.viewer_protocol_policy
     default_ttl            = var.default_ttl
