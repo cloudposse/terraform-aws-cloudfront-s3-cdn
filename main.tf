@@ -296,7 +296,7 @@ resource "aws_cloudfront_distribution" "default" {
 
     dynamic "forwarded_values" {
       # If a cache policy is specified, we cannot includ a `forwarded_values` block at all in the API request
-      for_each = length(var.cache_policy_id) == 0 ? [true] : []
+      for_each = var.cache_policy_id == null ? [true] : []
       content {
         query_string = var.forward_query_string
         headers      = var.forward_header_values
