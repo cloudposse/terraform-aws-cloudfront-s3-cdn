@@ -206,6 +206,7 @@ Available targets:
 | attributes | Additional attributes (e.g. `1`) | `list(string)` | `[]` | no |
 | block\_origin\_public\_access\_enabled | When set to 'true' the s3 origin bucket will have public access block enabled | `bool` | `false` | no |
 | bucket\_domain\_format | Format of bucket domain name | `string` | `"%s.s3.amazonaws.com"` | no |
+| cache\_policy\_id | The unique identifier of the cache policy that is attached to the default cache behavior | `string` | `null` | no |
 | cached\_methods | List of cached methods (e.g. GET, PUT, POST, DELETE, HEAD) | `list(string)` | <pre>[<br>  "GET",<br>  "HEAD"<br>]</pre> | no |
 | cloudfront\_origin\_access\_identity\_iam\_arn | Existing cloudfront origin access identity iam arn that is supplied in the s3 bucket policy | `string` | `""` | no |
 | cloudfront\_origin\_access\_identity\_path | Existing cloudfront origin access identity path used in the cloudfront distribution's s3\_origin\_config content | `string` | `""` | no |
