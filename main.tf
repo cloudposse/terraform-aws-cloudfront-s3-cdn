@@ -294,14 +294,18 @@ resource "aws_cloudfront_distribution" "default" {
     compress         = var.compress
     trusted_signers  = var.trusted_signers
 
-    # forwarded_values {
-    #   query_string = var.forward_query_string
-    #   headers      = var.forward_header_values
+    dynamic "forwarded_values" {
+      # If a cache policy is specified, we cannot includ a `forwarded_values` block at all in the API request
+      for_each = length(var.cache_policy_id) == 0 ? [true] : []
+      content {
+        query_string = var.forward_query_string
+        headers      = var.forward_header_values
 
-    #   cookies {
-    #     forward = var.forward_cookies
-    #   }
-    # }
+        cookies {
+          forward = var.forward_cookies
+        }
+      }
+    }
 
     viewer_protocol_policy = var.viewer_protocol_policy
     default_ttl            = var.default_ttl
