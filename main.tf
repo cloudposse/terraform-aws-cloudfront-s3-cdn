@@ -295,7 +295,7 @@ resource "aws_cloudfront_distribution" "default" {
     trusted_signers  = var.trusted_signers
 
     dynamic "forwarded_values" {
-      # If a cache policy is specified, we cannot includ a `forwarded_values` block at all in the API request
+      # If a cache policy is specified, we cannot include a `forwarded_values` block at all in the API request
       for_each = var.cache_policy_id == null ? [true] : []
       content {
         query_string = var.forward_query_string
