@@ -168,7 +168,7 @@ data "aws_s3_bucket" "selected" {
 }
 
 locals {
-  using_existing_origin = signum(length(var.origin_bucket)) == 1
+  using_existing_origin = var.origin_bucket
 
   using_existing_cloudfront_origin = var.cloudfront_origin_access_identity_iam_arn != "" && var.cloudfront_origin_access_identity_path != ""
 
@@ -181,7 +181,7 @@ locals {
       concat([var.origin_bucket], concat([""], aws_s3_bucket.origin.*.id))
     )
   )
-  bucket_domain_name = var.origin_bucket ? try(data.aws_s3_bucket.selected[0].bucket_regional_domain_name, "") : try(aws_s3_bucket.origin[0].bucket_regional_domain_name, "")
+  bucket_domain_name = local.using_existing_origin ? try(data.aws_s3_bucket.selected[0].bucket_regional_domain_name, "") : try(aws_s3_bucket.origin[0].bucket_regional_domain_name, "")
 }
 
 resource "aws_cloudfront_distribution" "default" {
