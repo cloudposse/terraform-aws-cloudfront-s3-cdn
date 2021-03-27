@@ -168,7 +168,7 @@ data "aws_s3_bucket" "selected" {
 }
 
 locals {
-  using_existing_origin = var.origin_bucket
+  using_existing_origin = var.origin_bucket != null
 
   using_existing_cloudfront_origin = var.cloudfront_origin_access_identity_iam_arn != "" && var.cloudfront_origin_access_identity_path != ""
 
