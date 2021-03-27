@@ -115,7 +115,46 @@ module "cdn" {
 
 ### Generating ACM Certificate
 
-Use the AWS cli to [request new ACM certifiates](http://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request.html) (requires email validation)
+```hcl
+# acm can only be created in us-east-1
+provider "aws" {
+  region = "us-east-1"
+  alias  = "aws.us-east-1"
+}
+
+# create acm and explicitly set it to us-east-1 provider
+module "acm_request_certificate" {
+  source = "cloudposse/acm-request-certificate/aws"
+  providers = {
+    aws = aws.us-east-1
+  }
+
+  # Cloud Posse recommends pinning every module to a specific version
+  # version = "x.x.x"
+  domain_name                       = "example.com"
+  subject_alternative_names         = ["a.example.com", "b.example.com", "*.c.example.com"]
+  process_domain_validation_options = true
+  ttl                               = "300"
+}
+
+module "cdn" {
+  source = "cloudposse/cloudfront-s3-cdn/aws"
+  # Cloud Posse recommends pinning every module to a specific version
+  # version     = "x.x.x"
+  namespace         = "eg"
+  stage             = "prod"
+  name              = "app"
+  aliases           = ["assets.cloudposse.com"]
+  dns_alias_enabled = true
+  parent_zone_name  = "cloudposse.com"
+
+  acm_certificate_arn = module.acm_request_certificate.arn
+
+  depends_on = [module.acm_request_certificate]
+}
+```
+
+Or use the AWS cli to [request new ACM certifiates](http://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request.html) (requires email validation)
 ```
 aws acm request-certificate --domain-name example.com --subject-alternative-names a.example.com b.example.com *.c.example.com
 ```
