@@ -44,7 +44,7 @@ output "s3_bucket" {
 }
 
 output "s3_bucket_domain_name" {
-  value       = var.origin_bucket ? data.aws_s3_bucket.selected.bucket_regional_domain_name : aws_s3_bucket.origin.bucket_regional_domain_name
+  value       = local.bucket_domain_name
   description = "Domain of origin S3 bucket"
 }
 
