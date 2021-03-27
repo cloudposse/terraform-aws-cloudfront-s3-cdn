@@ -49,7 +49,7 @@ variable "override_origin_bucket_policy" {
 variable "origin_bucket" {
   type        = string
   default     = ""
-  description = "Origin S3 bucket name"
+  description = "Use an existing origin S3 bucket name"
 }
 
 variable "origin_path" {
