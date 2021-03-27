@@ -61,14 +61,32 @@ usage: |-
 
   For automated tests of the complete example using [bats](https://github.com/bats-core/bats-core) and [Terratest](https://github.com/gruntwork-io/terratest) (which tests and deploys the example on AWS), see [test](test).
 
+  This will create a new s3 bucket `app-prod-eg` for a cloudfront cdn.
+
   ```hcl
   module "cdn" {
     source = "cloudposse/cloudfront-s3-cdn/aws"
     # Cloud Posse recommends pinning every module to a specific version
     # version     = "x.x.x"
+
     namespace         = "eg"
     stage             = "prod"
     name              = "app"
+    aliases           = ["assets.cloudposse.com"]
+    dns_alias_enabled = true
+    parent_zone_name  = "cloudposse.com"
+  }
+  ```
+
+  This will reuse an existing s3 bucket `app-prod-eg` for a cloudfront cdn.
+
+  ```hcl
+  module "cdn" {
+    source = "cloudposse/cloudfront-s3-cdn/aws"
+    # Cloud Posse recommends pinning every module to a specific version
+    # version     = "x.x.x"
+
+    origin_bucket     = "app-prod-eg"
     aliases           = ["assets.cloudposse.com"]
     dns_alias_enabled = true
     parent_zone_name  = "cloudposse.com"
@@ -116,3 +134,5 @@ contributors:
     github: "cliveza"
   - name: "David Mattia"
     github: "dmattia"
+  - name: "RB"
+    github: "nitrocode"
