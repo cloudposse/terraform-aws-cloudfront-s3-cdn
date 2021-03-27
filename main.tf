@@ -184,7 +184,7 @@ locals {
   origin_path                               = coalesce(var.origin_path, "/")
   cloudfront_origin_access_identity_iam_arn = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_iam_arn : join("", aws_cloudfront_origin_access_identity.default.*.iam_arn)
   iam_policy_document                       = var.website_enabled ? data.aws_iam_policy_document.origin_website.json : data.aws_iam_policy_document.origin.json
-  
+
   bucket = join("",
     compact(
       concat([var.origin_bucket], concat([""], aws_s3_bucket.origin.*.id))
