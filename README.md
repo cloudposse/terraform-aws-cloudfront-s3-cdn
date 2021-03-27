@@ -99,7 +99,7 @@ For a complete example, see [examples/complete](examples/complete).
 
 For automated tests of the complete example using [bats](https://github.com/bats-core/bats-core) and [Terratest](https://github.com/gruntwork-io/terratest) (which tests and deploys the example on AWS), see [test](test).
 
-This will create a new s3 bucket `app-prod-eg` for a cloudfront cdn.
+This will create a new s3 bucket `eg-prod-app` for a cloudfront cdn.
 
 ```hcl
 module "cdn" {
@@ -116,7 +116,7 @@ module "cdn" {
 }
 ```
 
-This will reuse an existing s3 bucket `app-prod-eg` for a cloudfront cdn.
+This will reuse an existing s3 bucket `eg-prod-app` for a cloudfront cdn.
 
 ```hcl
 module "cdn" {
@@ -124,7 +124,7 @@ module "cdn" {
   # Cloud Posse recommends pinning every module to a specific version
   # version     = "x.x.x"
 
-  origin_bucket     = "app-prod-eg"
+  origin_bucket     = "eg-prod-app"
   aliases           = ["assets.cloudposse.com"]
   dns_alias_enabled = true
   parent_zone_name  = "cloudposse.com"
