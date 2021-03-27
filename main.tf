@@ -181,6 +181,7 @@ locals {
       concat([var.origin_bucket], concat([""], aws_s3_bucket.origin.*.id))
     )
   )
+  bucket_domain_name = var.origin_bucket ? try(data.aws_s3_bucket.selected[0].bucket_regional_domain_name, "") : try(aws_s3_bucket.origin.bucket_regional_domain_name, "")
 }
 
 resource "aws_cloudfront_distribution" "default" {
@@ -204,7 +205,7 @@ resource "aws_cloudfront_distribution" "default" {
   aliases = var.acm_certificate_arn != "" ? var.aliases : []
 
   origin {
-    domain_name = var.origin_bucket ? data.aws_s3_bucket.selected.bucket_regional_domain_name : aws_s3_bucket.origin.bucket_regional_domain_name
+    domain_name = local.bucket_domain_name
     origin_id   = module.this.id
     origin_path = var.origin_path
 
