@@ -45,11 +45,11 @@ data "aws_iam_policy_document" "origin" {
     sid = "S3GetObjectForCloudFront"
 
     actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::$${bucket_name}$${origin_path}*"]
+    resources = ["arn:aws:s3:::${local.bucket}${local.origin_path}*"]
 
     principals {
       type        = "AWS"
-      identifiers = ["$${cloudfront_origin_access_identity_iam_arn}"]
+      identifiers = [local.cloudfront_origin_access_identity_iam_arn]
     }
   }
 
@@ -57,11 +57,11 @@ data "aws_iam_policy_document" "origin" {
     sid = "S3ListBucketForCloudFront"
 
     actions   = ["s3:ListBucket"]
-    resources = ["arn:aws:s3:::$${bucket_name}"]
+    resources = ["arn:aws:s3:::${local.bucket}"]
 
     principals {
       type        = "AWS"
-      identifiers = ["$${cloudfront_origin_access_identity_iam_arn}"]
+      identifiers = [local.cloudfront_origin_access_identity_iam_arn]
     }
   }
 }
@@ -73,7 +73,7 @@ data "aws_iam_policy_document" "origin_website" {
     sid = "S3GetObjectForCloudFront"
 
     actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::$${bucket_name}$${origin_path}*"]
+    resources = ["arn:aws:s3:::${local.bucket}${local.origin_path}*"]
 
     principals {
       type        = "AWS"
@@ -82,20 +82,10 @@ data "aws_iam_policy_document" "origin_website" {
   }
 }
 
-data "template_file" "default" {
-  template = var.website_enabled ? data.aws_iam_policy_document.origin_website.json : data.aws_iam_policy_document.origin.json
-
-  vars = {
-    origin_path                               = coalesce(var.origin_path, "/")
-    bucket_name                               = local.bucket
-    cloudfront_origin_access_identity_iam_arn = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_iam_arn : join("", aws_cloudfront_origin_access_identity.default.*.iam_arn)
-  }
-}
-
 resource "aws_s3_bucket_policy" "default" {
   count  = ! local.using_existing_origin || var.override_origin_bucket_policy ? 1 : 0
   bucket = join("", aws_s3_bucket.origin.*.bucket)
-  policy = data.template_file.default.rendered
+  policy = local.iam_policy_document
 }
 
 resource "aws_s3_bucket" "origin" {
@@ -191,6 +181,10 @@ locals {
 
   using_existing_cloudfront_origin = var.cloudfront_origin_access_identity_iam_arn != "" && var.cloudfront_origin_access_identity_path != ""
 
+  origin_path                               = coalesce(var.origin_path, "/")
+  cloudfront_origin_access_identity_iam_arn = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_iam_arn : join("", aws_cloudfront_origin_access_identity.default.*.iam_arn)
+  iam_policy_document                       = var.website_enabled ? data.aws_iam_policy_document.origin_website.json : data.aws_iam_policy_document.origin.json
+  
   bucket = join("",
     compact(
       concat([var.origin_bucket], concat([""], aws_s3_bucket.origin.*.id))
