@@ -99,14 +99,32 @@ For a complete example, see [examples/complete](examples/complete).
 
 For automated tests of the complete example using [bats](https://github.com/bats-core/bats-core) and [Terratest](https://github.com/gruntwork-io/terratest) (which tests and deploys the example on AWS), see [test](test).
 
+This will create a new s3 bucket `app-prod-eg` for a cloudfront cdn.
+
 ```hcl
 module "cdn" {
   source = "cloudposse/cloudfront-s3-cdn/aws"
   # Cloud Posse recommends pinning every module to a specific version
   # version     = "x.x.x"
+
   namespace         = "eg"
   stage             = "prod"
   name              = "app"
+  aliases           = ["assets.cloudposse.com"]
+  dns_alias_enabled = true
+  parent_zone_name  = "cloudposse.com"
+}
+```
+
+This will reuse an existing s3 bucket `app-prod-eg` for a cloudfront cdn.
+
+```hcl
+module "cdn" {
+  source = "cloudposse/cloudfront-s3-cdn/aws"
+  # Cloud Posse recommends pinning every module to a specific version
+  # version     = "x.x.x"
+
+  origin_bucket     = "app-prod-eg"
   aliases           = ["assets.cloudposse.com"]
   dns_alias_enabled = true
   parent_zone_name  = "cloudposse.com"
@@ -444,8 +462,8 @@ Check out [our other projects][github], [follow us on twitter][twitter], [apply 
 ### Contributors
 
 <!-- markdownlint-disable -->
-|  [![Erik Osterman][osterman_avatar]][osterman_homepage]<br/>[Erik Osterman][osterman_homepage] | [![Andriy Knysh][aknysh_avatar]][aknysh_homepage]<br/>[Andriy Knysh][aknysh_homepage] | [![Jamie Nelson][Jamie-BitFlight_avatar]][Jamie-BitFlight_homepage]<br/>[Jamie Nelson][Jamie-BitFlight_homepage] | [![Clive Zagno][cliveza_avatar]][cliveza_homepage]<br/>[Clive Zagno][cliveza_homepage] | [![David Mattia][dmattia_avatar]][dmattia_homepage]<br/>[David Mattia][dmattia_homepage] |
-|---|---|---|---|---|
+|  [![Erik Osterman][osterman_avatar]][osterman_homepage]<br/>[Erik Osterman][osterman_homepage] | [![Andriy Knysh][aknysh_avatar]][aknysh_homepage]<br/>[Andriy Knysh][aknysh_homepage] | [![Jamie Nelson][Jamie-BitFlight_avatar]][Jamie-BitFlight_homepage]<br/>[Jamie Nelson][Jamie-BitFlight_homepage] | [![Clive Zagno][cliveza_avatar]][cliveza_homepage]<br/>[Clive Zagno][cliveza_homepage] | [![David Mattia][dmattia_avatar]][dmattia_homepage]<br/>[David Mattia][dmattia_homepage] | [![RB][nitrocode_avatar]][nitrocode_homepage]<br/>[RB][nitrocode_homepage] |
+|---|---|---|---|---|---|
 <!-- markdownlint-restore -->
 
   [osterman_homepage]: https://github.com/osterman
@@ -458,6 +476,8 @@ Check out [our other projects][github], [follow us on twitter][twitter], [apply 
   [cliveza_avatar]: https://img.cloudposse.com/150x150/https://github.com/cliveza.png
   [dmattia_homepage]: https://github.com/dmattia
   [dmattia_avatar]: https://img.cloudposse.com/150x150/https://github.com/dmattia.png
+  [nitrocode_homepage]: https://github.com/nitrocode
+  [nitrocode_avatar]: https://img.cloudposse.com/150x150/https://github.com/nitrocode.png
 
 [![README Footer][readme_footer_img]][readme_footer_link]
 [![Beacon][beacon]][website]
