@@ -26,7 +26,7 @@ variable "aliases" {
   type        = list(string)
   description = "List of FQDN's - Used to set the Alternate Domain Names (CNAMEs) setting on Cloudfront"
   default     = []
-}  
+}
 
 variable "additional_bucket_policy" {
   type        = string
