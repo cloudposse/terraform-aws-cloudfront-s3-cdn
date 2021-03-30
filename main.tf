@@ -33,7 +33,7 @@ module "origin_label" {
 }
 
 resource "aws_cloudfront_origin_access_identity" "default" {
-  count = (module.this.enabled && local.using_existing_cloudfront_origin) ? 0 : 1
+  count = (! module.this.enabled || local.using_existing_cloudfront_origin) ? 0 : 1
 
   comment = module.this.id
 }
