@@ -39,6 +39,8 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 }
 
 data "aws_iam_policy_document" "origin" {
+  count = module.this.enabled ? 1 : 0
+
   override_json = var.additional_bucket_policy
 
   statement {
@@ -67,6 +69,8 @@ data "aws_iam_policy_document" "origin" {
 }
 
 data "aws_iam_policy_document" "origin_website" {
+  count = module.this.enabled ? 1 : 0
+
   override_json = var.additional_bucket_policy
 
   statement {
@@ -173,6 +177,8 @@ module "logs" {
 }
 
 data "aws_s3_bucket" "selected" {
+  count = module.this.enabled ? 1 : 0
+
   bucket = local.bucket == "" ? var.static_s3_bucket : local.bucket
 }
 
@@ -183,7 +189,7 @@ locals {
 
   origin_path                               = coalesce(var.origin_path, "/")
   cloudfront_origin_access_identity_iam_arn = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_iam_arn : join("", aws_cloudfront_origin_access_identity.default.*.iam_arn)
-  iam_policy_document                       = var.website_enabled ? data.aws_iam_policy_document.origin_website.json : data.aws_iam_policy_document.origin.json
+  iam_policy_document                       = var.website_enabled ? data.aws_iam_policy_document.origin_website[0].json : data.aws_iam_policy_document.origin[0].json
 
   bucket = join("",
     compact(
@@ -194,8 +200,8 @@ locals {
   bucket_domain_name = (var.use_regional_s3_endpoint || var.website_enabled) ? format(
     var.website_enabled ? "%s.s3-website%s%s.amazonaws.com" : "%s.s3%s%s.amazonaws.com",
     local.bucket,
-    (var.website_enabled && contains(local.regions_s3_website_use_dash, data.aws_s3_bucket.selected.region)) ? "-" : ".",
-    data.aws_s3_bucket.selected.region,
+    (var.website_enabled && contains(local.regions_s3_website_use_dash, data.aws_s3_bucket.selected[0].region)) ? "-" : ".",
+    data.aws_s3_bucket.selected[0].region,
   ) : format(var.bucket_domain_format, local.bucket)
 }
 
