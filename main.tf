@@ -181,7 +181,7 @@ locals {
       concat([var.origin_bucket], concat([""], aws_s3_bucket.origin.*.id))
     )
   )
-  bucket_domain_name = local.using_existing_origin ? try(data.aws_s3_bucket.selected[0].bucket_regional_domain_name, "") : try(aws_s3_bucket.origin[0].bucket_regional_domain_name, "")
+  bucket_domain_name = local.using_existing_origin ? try(data.aws_s3_bucket.selected[0].website_endpoint, "") : try(aws_s3_bucket.origin[0].website_endpoint, "")
 }
 
 resource "aws_cloudfront_distribution" "default" {
