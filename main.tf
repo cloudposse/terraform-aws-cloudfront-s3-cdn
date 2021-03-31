@@ -13,16 +13,6 @@ locals {
       }
     ]
   }
-
-  regions_s3_website_use_dash = [
-    "us-east-1",
-    "us-west-1",
-    "us-west-2",
-    "ap-southeast-1",
-    "ap-southeast-2",
-    "ap-northeast-1",
-    "sa-east-1"
-  ]
 }
 
 module "origin_label" {
@@ -173,11 +163,12 @@ module "logs" {
 }
 
 data "aws_s3_bucket" "selected" {
-  bucket = local.bucket == "" ? var.static_s3_bucket : local.bucket
+  count  = local.using_existing_origin ? 1 : 0
+  bucket = var.origin_bucket
 }
 
 locals {
-  using_existing_origin = signum(length(var.origin_bucket)) == 1
+  using_existing_origin = var.origin_bucket != null
 
   using_existing_cloudfront_origin = var.cloudfront_origin_access_identity_iam_arn != "" && var.cloudfront_origin_access_identity_path != ""
 
@@ -190,13 +181,7 @@ locals {
       concat([var.origin_bucket], concat([""], aws_s3_bucket.origin.*.id))
     )
   )
-
-  bucket_domain_name = (var.use_regional_s3_endpoint || var.website_enabled) ? format(
-    var.website_enabled ? "%s.s3-website%s%s.amazonaws.com" : "%s.s3%s%s.amazonaws.com",
-    local.bucket,
-    (var.website_enabled && contains(local.regions_s3_website_use_dash, data.aws_s3_bucket.selected.region)) ? "-" : ".",
-    data.aws_s3_bucket.selected.region,
-  ) : format(var.bucket_domain_format, local.bucket)
+  bucket_domain_name = local.using_existing_origin ? try(data.aws_s3_bucket.selected[0].bucket_regional_domain_name, "") : try(aws_s3_bucket.origin[0].bucket_regional_domain_name, "")
 }
 
 resource "aws_cloudfront_distribution" "default" {
