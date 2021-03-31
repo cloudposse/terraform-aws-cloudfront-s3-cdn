@@ -116,7 +116,7 @@ module "cdn" {
 ### Generating ACM Certificate
 
 ```hcl
-# acm can only be created in us-east-1
+# For cloudfront, the acm has to be created in us-east-1 or it will not work
 provider "aws" {
   region = "us-east-1"
   alias  = "aws.us-east-1"
