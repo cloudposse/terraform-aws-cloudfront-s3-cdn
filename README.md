@@ -147,6 +147,7 @@ In addition to setting `website_enabled=true`, you must also:
 * Specify an ACM certificate
 
 ### Generating ACM Certificate
+<<<<<<< HEAD
 
 ```hcl
 # For cloudfront, the acm has to be created in us-east-1 or it will not work
@@ -188,6 +189,10 @@ module "cdn" {
 ```
 
 Or use the AWS cli to [request new ACM certifiates](http://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request.html) (requires email validation)
+=======
+
+Use the AWS cli to [request new ACM certifiates](http://docs.aws.amazon.com/acm/latest/userguide/gs-acm-request.html) (requires email validation)
+>>>>>>> Provide better description for var.origin_bucket (#142)
 ```
 aws acm request-certificate --domain-name example.com --subject-alternative-names a.example.com b.example.com *.c.example.com
 ```
