@@ -374,13 +374,38 @@ variable "custom_origins" {
     })
   }))
   default     = []
-  description = "One or more custom origins for this distribution (multiples allowed). See documentation for configuration options description https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments"
+  description = <<DESCRIPTION
+A list of custom origins (such as apps or S3 websites) for this distribution.
+See the Terraform documentation for configuration options
+https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments
+DESCRIPTION
+}
+
+variable "s3_origins" {
+  type = list(object({
+    domain_name = string
+    origin_id   = string
+    origin_path = string
+    s3_origin_config = object({
+      origin_access_identity = string
+    })
+  }))
+  default     = []
+  description = <<DESCRIPTION
+A list of S3 origins for this distribution. S3 buckets configured as websites
+are custom_origins, not s3_origins. See the Terraform documentation for
+configuration options
+https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments
+DESCRIPTION
 }
 
 variable "website_enabled" {
   type        = bool
   default     = false
-  description = "Set to true to use an S3 static website as origin"
+  description = <<DESCRIPTION
+Set to true to use an S3 static website as origin. If you set this to true, see
+README for more important instructions.
+DESCRIPTION
 }
 
 variable "versioning_enabled" {

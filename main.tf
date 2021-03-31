@@ -28,6 +28,11 @@ resource "aws_cloudfront_origin_access_identity" "default" {
   comment = module.this.id
 }
 
+resource "random_password" "referer" {
+  length = 32
+  special = false
+}
+
 data "aws_iam_policy_document" "origin" {
   count = module.this.enabled ? 1 : 0
 
@@ -72,6 +77,11 @@ data "aws_iam_policy_document" "origin_website" {
     principals {
       type        = "AWS"
       identifiers = ["*"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "aws:referer"
+      values   = [random_password.referer.result]
     }
   }
 }
@@ -235,7 +245,7 @@ resource "aws_cloudfront_distribution" "default" {
       }
     }
     dynamic "custom_header" {
-      for_each = var.custom_origin_headers
+      for_each = var.website_enabled ? concat([{name = "referer", value = random_password.referer.result}], var.custom_origin_headers) : var.custom_origin_headers
       content {
         name  = custom_header.value["name"]
         value = custom_header.value["value"]
@@ -257,12 +267,24 @@ resource "aws_cloudfront_distribution" "default" {
         }
       }
       custom_origin_config {
-        http_port                = lookup(origin.value.custom_origin_config, "http_port", null)
-        https_port               = lookup(origin.value.custom_origin_config, "https_port", null)
+        http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
+        https_port               = lookup(origin.value.custom_origin_config, "https_port", 443)
         origin_protocol_policy   = lookup(origin.value.custom_origin_config, "origin_protocol_policy", "https-only")
         origin_ssl_protocols     = lookup(origin.value.custom_origin_config, "origin_ssl_protocols", ["TLSv1.2"])
         origin_keepalive_timeout = lookup(origin.value.custom_origin_config, "origin_keepalive_timeout", 60)
         origin_read_timeout      = lookup(origin.value.custom_origin_config, "origin_read_timeout", 60)
+      }
+    }
+  }
+
+  dynamic "origin" {
+    for_each = var.s3_origins
+    content {
+      domain_name = origin.value.domain_name
+      origin_id   = origin.value.origin_id
+      origin_path = lookup(origin.value, "origin_path", "")
+      s3_origin_config {
+        origin_access_identity = lookup(origin.value.s3_origin_config, "origin_access_identity", "")
       }
     }
   }
