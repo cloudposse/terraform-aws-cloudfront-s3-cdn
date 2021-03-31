@@ -29,7 +29,7 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 }
 
 resource "random_password" "referer" {
-  length = 32
+  length  = 32
   special = false
 }
 
@@ -245,7 +245,7 @@ resource "aws_cloudfront_distribution" "default" {
       }
     }
     dynamic "custom_header" {
-      for_each = var.website_enabled ? concat([{name = "referer", value = random_password.referer.result}], var.custom_origin_headers) : var.custom_origin_headers
+      for_each = var.website_enabled ? concat([{ name = "referer", value = random_password.referer.result }], var.custom_origin_headers) : var.custom_origin_headers
       content {
         name  = custom_header.value["name"]
         value = custom_header.value["value"]
