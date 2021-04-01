@@ -177,13 +177,12 @@ module "logs" {
 }
 
 data "aws_s3_bucket" "selected" {
-  count = module.this.enabled ? 1 : 0
-
-  bucket = local.bucket == "" ? var.static_s3_bucket : local.bucket
+  count  = (module.this.enabled && local.using_existing_origin) ? 1 : 0
+  bucket = var.origin_bucket
 }
 
 locals {
-  using_existing_origin = signum(length(var.origin_bucket)) == 1
+  using_existing_origin = var.origin_bucket != null
 
   using_existing_cloudfront_origin = var.cloudfront_origin_access_identity_iam_arn != "" && var.cloudfront_origin_access_identity_path != ""
 
