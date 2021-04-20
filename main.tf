@@ -23,7 +23,7 @@ module "origin_label" {
 }
 
 resource "aws_cloudfront_origin_access_identity" "default" {
-  count = (!module.this.enabled || local.using_existing_cloudfront_origin) ? 0 : 1
+  count = (! module.this.enabled || local.using_existing_cloudfront_origin) ? 0 : 1
 
   comment = module.this.id
 }
@@ -77,7 +77,7 @@ data "aws_iam_policy_document" "origin_website" {
 }
 
 resource "aws_s3_bucket_policy" "default" {
-  count  = (module.this.enabled && (!local.using_existing_origin || var.override_origin_bucket_policy)) ? 1 : 0
+  count  = (module.this.enabled && (! local.using_existing_origin || var.override_origin_bucket_policy)) ? 1 : 0
   bucket = local.bucket
   policy = local.iam_policy_document
 }
@@ -86,7 +86,7 @@ resource "aws_s3_bucket" "origin" {
   #bridgecrew:skip=BC_AWS_S3_13:Skipping `Enable S3 Bucket Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   #bridgecrew:skip=BC_AWS_S3_14:Skipping `Ensure all data stored in the S3 bucket is securely encrypted at rest` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   #bridgecrew:skip=CKV_AWS_52:Skipping `Ensure S3 bucket has MFA delete enabled` due to issue in terraform (https://github.com/hashicorp/terraform-provider-aws/issues/629).
-  count         = (!module.this.enabled || local.using_existing_origin) ? 0 : 1
+  count         = (! module.this.enabled || local.using_existing_origin) ? 0 : 1
   bucket        = module.origin_label.id
   acl           = "private"
   tags          = module.origin_label.tags
@@ -139,7 +139,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
-  count                   = (module.this.enabled && !local.using_existing_origin && var.block_origin_public_access_enabled) ? 1 : 0
+  count                   = (module.this.enabled && ! local.using_existing_origin && var.block_origin_public_access_enabled) ? 1 : 0
   bucket                  = local.bucket
   block_public_acls       = true
   block_public_policy     = true
@@ -219,7 +219,7 @@ resource "aws_cloudfront_distribution" "default" {
     origin_path = var.origin_path
 
     dynamic "s3_origin_config" {
-      for_each = !var.website_enabled ? [1] : []
+      for_each = ! var.website_enabled ? [1] : []
       content {
         origin_access_identity = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_path : join("", aws_cloudfront_origin_access_identity.default.*.cloudfront_access_identity_path)
       }
