@@ -77,6 +77,7 @@ data "aws_iam_policy_document" "origin_website" {
 }
 
 resource "aws_s3_bucket_policy" "default" {
+  #bridgecrew:skip=BC_AWS_S3_16:Skipping `Ensure S3 Bucket Versioning is Enabled` because this is a user-configurable variable.
   count  = (module.this.enabled && (!local.using_existing_origin || var.override_origin_bucket_policy)) ? 1 : 0
   bucket = local.bucket
   policy = local.iam_policy_document
