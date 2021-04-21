@@ -125,6 +125,12 @@ variable "forward_query_string" {
   description = "Forward query strings to the origin that is associated with this cache behavior"
 }
 
+variable "query_string_cache_keys" {
+  type        = list(string)
+  description = "When Forward query strings is enabled, only the query string keys listed in this argument are cached"
+  default     = []
+}
+
 variable "cors_allowed_headers" {
   type        = list(string)
   default     = ["*"]
