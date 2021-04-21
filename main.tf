@@ -282,9 +282,9 @@ resource "aws_cloudfront_distribution" "default" {
     trusted_signers  = var.trusted_signers
 
     forwarded_values {
-      query_string = var.forward_query_string
+      query_string            = var.forward_query_string
       query_string_cache_keys = var.query_string_cache_keys
-      headers      = var.forward_header_values
+      headers                 = var.forward_header_values
 
       cookies {
         forward = var.forward_cookies
