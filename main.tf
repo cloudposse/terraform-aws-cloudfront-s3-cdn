@@ -77,7 +77,7 @@ data "aws_iam_policy_document" "origin_website" {
 }
 
 resource "aws_s3_bucket_policy" "default" {
-  count  = (module.this.enabled && (! local.using_existing_origin || var.override_origin_bucket_policy)) ? 1 : 0
+  count = (module.this.enabled && (! local.using_existing_origin || var.override_origin_bucket_policy)) ? 1 : 0
   bucket = join("", local.using_existing_origin
     ? data.aws_s3_bucket.selected.*.bucket # Existing origin S3 bucket
     : aws_s3_bucket.origin.*.bucket        # Origin S3 bucket this module manages
