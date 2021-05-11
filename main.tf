@@ -86,13 +86,18 @@ data "aws_iam_policy_document" "origin_website" {
   }
 }
 
+resource "local_file" "policy" {
+  content  = local.iam_policy_document
+  filename = "${path.module}/policy.tmp"
+}
+
 resource "aws_s3_bucket_policy" "default" {
   count = (module.this.enabled && (! local.using_existing_origin || var.override_origin_bucket_policy)) ? 1 : 0
   bucket = join("", local.using_existing_origin
     ? data.aws_s3_bucket.selected.*.bucket # Existing origin S3 bucket
     : aws_s3_bucket.origin.*.bucket        # Origin S3 bucket this module manages
   )
-  policy = templatefile(local.iam_policy_document, {
+  policy = templatefile(local_file.policy.filename, {
     origin_path                               = coalesce(var.origin_path, "/")
     bucket_name                               = local.bucket
     cloudfront_origin_access_identity_iam_arn = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_iam_arn : join("", aws_cloudfront_origin_access_identity.default.*.iam_arn)
