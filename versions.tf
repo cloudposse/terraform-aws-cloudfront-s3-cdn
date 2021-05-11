@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 2.0"
     }
+    local_file = {
+      source  = "hashicorp/local"
+      version = ">= 2.0"
+    }
     random = {
       source  = "hashicorp/random"
       version = ">= 2.2"
