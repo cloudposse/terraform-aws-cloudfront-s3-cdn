@@ -23,12 +23,19 @@ module "origin_label" {
 }
 
 resource "aws_cloudfront_origin_access_identity" "default" {
-  count = local.using_existing_cloudfront_origin ? 0 : 1
+  count = (! module.this.enabled || local.using_existing_cloudfront_origin) ? 0 : 1
 
   comment = module.this.id
 }
 
+resource "random_password" "referer" {
+  length  = 32
+  special = false
+}
+
 data "aws_iam_policy_document" "origin" {
+  count = module.this.enabled ? 1 : 0
+
   override_json = var.additional_bucket_policy
 
   statement {
@@ -57,6 +64,8 @@ data "aws_iam_policy_document" "origin" {
 }
 
 data "aws_iam_policy_document" "origin_website" {
+  count = module.this.enabled ? 1 : 0
+
   override_json = var.additional_bucket_policy
 
   statement {
@@ -69,12 +78,20 @@ data "aws_iam_policy_document" "origin_website" {
       type        = "AWS"
       identifiers = ["*"]
     }
+    condition {
+      test     = "StringEquals"
+      variable = "aws:referer"
+      values   = [random_password.referer.result]
+    }
   }
 }
 
 resource "aws_s3_bucket_policy" "default" {
-  count  = ! local.using_existing_origin || var.override_origin_bucket_policy ? 1 : 0
-  bucket = join("", aws_s3_bucket.origin.*.bucket)
+  count = (module.this.enabled && (! local.using_existing_origin || var.override_origin_bucket_policy)) ? 1 : 0
+  bucket = join("", local.using_existing_origin
+    ? data.aws_s3_bucket.selected.*.bucket # Existing origin S3 bucket
+    : aws_s3_bucket.origin.*.bucket        # Origin S3 bucket this module manages
+  )
   policy = local.iam_policy_document
 }
 
@@ -82,7 +99,7 @@ resource "aws_s3_bucket" "origin" {
   #bridgecrew:skip=BC_AWS_S3_13:Skipping `Enable S3 Bucket Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   #bridgecrew:skip=BC_AWS_S3_14:Skipping `Ensure all data stored in the S3 bucket is securely encrypted at rest` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   #bridgecrew:skip=CKV_AWS_52:Skipping `Ensure S3 bucket has MFA delete enabled` due to issue in terraform (https://github.com/hashicorp/terraform-provider-aws/issues/629).
-  count         = local.using_existing_origin ? 0 : 1
+  count         = (! module.this.enabled || local.using_existing_origin) ? 0 : 1
   bucket        = module.origin_label.id
   acl           = "private"
   tags          = module.origin_label.tags
@@ -135,7 +152,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
-  count                   = ! local.using_existing_origin && var.block_origin_public_access_enabled ? 1 : 0
+  count                   = (module.this.enabled && ! local.using_existing_origin && var.block_origin_public_access_enabled) ? 1 : 0
   bucket                  = local.bucket
   block_public_acls       = true
   block_public_policy     = true
@@ -150,7 +167,7 @@ resource "aws_s3_bucket_public_access_block" "origin" {
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
   version                  = "0.20.0"
-  enabled                  = var.logging_enabled
+  enabled                  = (module.this.enabled && var.logging_enabled)
   attributes               = compact(concat(module.this.attributes, var.extra_logs_attributes))
   lifecycle_prefix         = var.log_prefix
   standard_transition_days = var.log_standard_transition_days
@@ -163,7 +180,7 @@ module "logs" {
 }
 
 data "aws_s3_bucket" "selected" {
-  count  = local.using_existing_origin ? 1 : 0
+  count  = (module.this.enabled && local.using_existing_origin) ? 1 : 0
   bucket = var.origin_bucket
 }
 
@@ -174,7 +191,7 @@ locals {
 
   origin_path                               = coalesce(var.origin_path, "/")
   cloudfront_origin_access_identity_iam_arn = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_iam_arn : join("", aws_cloudfront_origin_access_identity.default.*.iam_arn)
-  iam_policy_document                       = var.website_enabled ? data.aws_iam_policy_document.origin_website.json : data.aws_iam_policy_document.origin.json
+  iam_policy_document                       = var.website_enabled ? try(data.aws_iam_policy_document.origin_website[0].json, "") : try(data.aws_iam_policy_document.origin[0].json, "")
 
   bucket = join("",
     compact(
@@ -188,8 +205,10 @@ locals {
 }
 
 resource "aws_cloudfront_distribution" "default" {
+  count = module.this.enabled ? 1 : 0
+
   #bridgecrew:skip=BC_AWS_LOGGING_20:Skipping `CloudFront Access Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
-  enabled             = module.this.enabled
+  enabled             = var.distribution_enabled
   is_ipv6_enabled     = var.ipv6_enabled
   comment             = var.comment
   default_root_object = var.default_root_object
@@ -229,7 +248,7 @@ resource "aws_cloudfront_distribution" "default" {
       }
     }
     dynamic "custom_header" {
-      for_each = var.custom_origin_headers
+      for_each = var.website_enabled ? concat([{ name = "referer", value = random_password.referer.result }], var.custom_origin_headers) : var.custom_origin_headers
       content {
         name  = custom_header.value["name"]
         value = custom_header.value["value"]
@@ -251,12 +270,24 @@ resource "aws_cloudfront_distribution" "default" {
         }
       }
       custom_origin_config {
-        http_port                = lookup(origin.value.custom_origin_config, "http_port", null)
-        https_port               = lookup(origin.value.custom_origin_config, "https_port", null)
+        http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
+        https_port               = lookup(origin.value.custom_origin_config, "https_port", 443)
         origin_protocol_policy   = lookup(origin.value.custom_origin_config, "origin_protocol_policy", "https-only")
         origin_ssl_protocols     = lookup(origin.value.custom_origin_config, "origin_ssl_protocols", ["TLSv1.2"])
         origin_keepalive_timeout = lookup(origin.value.custom_origin_config, "origin_keepalive_timeout", 60)
         origin_read_timeout      = lookup(origin.value.custom_origin_config, "origin_read_timeout", 60)
+      }
+    }
+  }
+
+  dynamic "origin" {
+    for_each = var.s3_origins
+    content {
+      domain_name = origin.value.domain_name
+      origin_id   = origin.value.origin_id
+      origin_path = lookup(origin.value, "origin_path", "")
+      s3_origin_config {
+        origin_access_identity = lookup(origin.value.s3_origin_config, "origin_access_identity", "")
       }
     }
   }
@@ -281,6 +312,7 @@ resource "aws_cloudfront_distribution" "default" {
       for_each = var.cache_policy_id == null ? [true] : []
       content {
         query_string = var.forward_query_string
+        query_string_cache_keys = var.query_string_cache_keys
         headers      = var.forward_header_values
 
         cookies {
@@ -367,12 +399,12 @@ resource "aws_cloudfront_distribution" "default" {
 module "dns" {
   source           = "cloudposse/route53-alias/aws"
   version          = "0.12.0"
-  enabled          = module.this.enabled && var.dns_alias_enabled ? true : false
+  enabled          = (module.this.enabled && var.dns_alias_enabled) ? true : false
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
   parent_zone_name = var.parent_zone_name
-  target_dns_name  = aws_cloudfront_distribution.default.domain_name
-  target_zone_id   = aws_cloudfront_distribution.default.hosted_zone_id
+  target_dns_name  = try(aws_cloudfront_distribution.default[0].domain_name, "")
+  target_zone_id   = try(aws_cloudfront_distribution.default[0].hosted_zone_id, "")
   ipv6_enabled     = var.ipv6_enabled
 
   context = module.this.context
