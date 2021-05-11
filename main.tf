@@ -102,6 +102,8 @@ resource "aws_s3_bucket_policy" "default" {
     bucket_name                               = local.bucket
     cloudfront_origin_access_identity_iam_arn = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_iam_arn : join("", aws_cloudfront_origin_access_identity.default.*.iam_arn)
   })
+
+  depends_on = [local_file.policy]
 }
 
 resource "aws_s3_bucket" "origin" {
