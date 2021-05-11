@@ -6,7 +6,7 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 2.0"
     }
-    local_file = {
+    local = {
       source  = "hashicorp/local"
       version = ">= 2.0"
     }
