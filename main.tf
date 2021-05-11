@@ -92,7 +92,11 @@ resource "aws_s3_bucket_policy" "default" {
     ? data.aws_s3_bucket.selected.*.bucket # Existing origin S3 bucket
     : aws_s3_bucket.origin.*.bucket        # Origin S3 bucket this module manages
   )
-  policy = local.iam_policy_document
+  policy = templatefile(local.iam_policy_document, {
+    origin_path                               = coalesce(var.origin_path, "/")
+    bucket_name                               = local.bucket
+    cloudfront_origin_access_identity_iam_arn = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_iam_arn : join("", aws_cloudfront_origin_access_identity.default.*.iam_arn)
+  })
 }
 
 resource "aws_s3_bucket" "origin" {
