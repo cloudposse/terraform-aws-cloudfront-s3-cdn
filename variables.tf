@@ -197,6 +197,12 @@ variable "cached_methods" {
   description = "List of cached methods (e.g. GET, PUT, POST, DELETE, HEAD)"
 }
 
+variable "cache_policy_id" {
+  type        = string
+  default     = null
+  description = "The unique identifier of the cache policy that is attached to the default cache behavior"
+}
+
 variable "default_ttl" {
   type        = number
   default     = 60
