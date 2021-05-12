@@ -2,6 +2,23 @@ provider "aws" {
   region = var.region
 }
 
+data "aws_iam_policy_document" "document" {
+  statement {
+    sid = "TemplateTest"
+
+    actions = ["s3:GetObject"]
+    resources = [
+      "arn:aws:s3:::$${bucket_name}$${origin_path}testprefix/*"
+    ]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+  }
+}
+
+
 module "cloudfront_s3_cdn" {
   source               = "../../"
   context              = module.this.context
@@ -12,6 +29,8 @@ module "cloudfront_s3_cdn" {
   cors_allowed_methods = ["GET", "HEAD", "PUT"]
   cors_allowed_origins = ["*.cloudposse.com"]
   cors_expose_headers  = ["ETag"]
+
+  additional_bucket_policy = data.aws_iam_policy_document.document.json
 }
 
 resource "aws_s3_bucket_object" "index" {

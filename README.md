@@ -98,13 +98,14 @@ For a complete example, see [examples/complete](examples/complete).
 
 For automated tests of the complete example using [bats](https://github.com/bats-core/bats-core) and [Terratest](https://github.com/gruntwork-io/terratest) (which tests and deploys the example on AWS), see [test](test).
 
-This will create a new s3 bucket `eg-prod-app` for a cloudfront cdn.
+This will create a new s3 bucket `eg-prod-app` for a cloudfront cdn, and allow `principal1` to upload to
+`prefix1` and `prefix2`, while allowing `principal2` to manage the whole bucket.
 
 ```hcl
 module "cdn" {
   source = "cloudposse/cloudfront-s3-cdn/aws"
   # Cloud Posse recommends pinning every module to a specific version
-  # version     = "x.x.x"
+  # version = "x.x.x"
 
   namespace         = "eg"
   stage             = "prod"
@@ -112,6 +113,11 @@ module "cdn" {
   aliases           = ["assets.cloudposse.com"]
   dns_alias_enabled = true
   parent_zone_name  = "cloudposse.com"
+
+  deployment_arns = {
+    "arn:aws:s3:::principal1" = ["/prefix1", "/prefix2"]
+    "arn:aws:s3:::principal2" = [""]
+  }
 }
 ```
 
@@ -121,7 +127,7 @@ This will reuse an existing s3 bucket `eg-prod-app` for a cloudfront cdn.
 module "cdn" {
   source = "cloudposse/cloudfront-s3-cdn/aws"
   # Cloud Posse recommends pinning every module to a specific version
-  # version     = "x.x.x"
+  # version = "x.x.x"
 
   origin_bucket     = "eg-prod-app"
   aliases           = ["assets.cloudposse.com"]
@@ -130,14 +136,91 @@ module "cdn" {
 }
 ```
 
-### Using an S3 Static Website Origin
+### Background on CDNs, "Origins", S3 Buckets, and Web Servers
 
-When variable `website_enabled` is set to `true`, the S3 origin is configured
-as a static website. The S3 static website has the advantage of redirecting
-URL `subdir/` to `subdir/index.html` without requiring a
-[Lambda@Edge function to perform the redirection](https://aws.amazon.com/blogs/compute/implementing-default-directory-indexes-in-amazon-s3-backed-amazon-cloudfront-origins-using-lambdaedge/).
-The S3 static website responds only to CloudFront, preventing direct access to
-S3.
+#### CDNs and Origin Servers
+
+There are some settings you need to be aware of when using this module. In order to understand the settings,
+you need to understand some of the basics of CDNs and web servers, so we are providing this _highly simplified_
+explanation of how they work in order for you to understand the implications of the settings you are providing.
+
+A "**CDN**" ([Content Distribution Network](https://www.cloudflare.com/learning/cdn/what-is-a-cdn/)) is a collection of
+servers scattered around the internet with the aim of making it faster for people to retrieve content from a website.
+The details of why that is wanted/needed are beyond the scope of this document, as are most of the details of how
+a CDN is implemented. For this discussion, we will simply treat a CDN as a set of web servers all serving
+the same content to different users.
+
+In a normal web server (again, greatly simplified), you place files on the server and the web server software receives
+requests from browsers and responds with the contents of the files.
+
+For a variety of reasons, the web servers in a  CDN do not work the way normal web servers work. Instead of getting
+their content from files on the local server, the CDN web servers get their content by acting like web browsers
+(proxies). When they get a request from a browser, they make the same request to what is called an "**Origin Server**".
+It is called an origin server because it _serves_ the original content of the web site, and thus is the _origin_
+of the content.
+
+As a web site publisher, you put content on an Origin Server (which users usually should be prevented from accessing)
+and configure your CDN to use your Origin Server. Then you direct users to a URL hosted by your CDN provider, the
+users' browsers connect to the CDN, the CDN gets the content from your Origin Server, your Origin Server gets the
+content from a file on the server, and the data gets sent back hop by hop to the user. (The reason this ends up
+being a good idea is that the CDN can cache the content for a while, serving multiple users the same content while
+only contacting the origin server once.)
+
+#### S3 Buckets: file storage and web server
+
+S3 buckets were originally designed just to store files, and they are still most often used for that. The have a lot
+of access controls to make it possible to strictly limit who can read what files in the bucket, so that companies
+can store sensitive information there. You may have heard of a number of "data breaches" being caused by misconfigured
+permissions on S3 buckets, making them publicly accessible. As a result of that, Amazon has some extra settings on
+top of everything else to keep S3 buckets from being publicly accessible, which is usually a good thing.
+
+However, at some point someone realized that since these files were in the cloud, and Amazon already had these web servers
+running to provide access to the files in the cloud, it was only a tiny leap to turn an S3 bucket into a web server.
+So now S3 buckets [can be published as web sites](https://docs.aws.amazon.com/AmazonS3/latest/userguide/EnableWebsiteHosting.html)
+with a few configuration settings, including making the contents publicly accessible.
+
+#### Web servers, files, and the different modes of S3 buckets
+
+In the simplest web sites, the URL "path" (the part after the site name) corresponds directly to the path (under
+a special directory we will call `/webroot`) and name
+of a file on the web server. So if the web server gets a request for "http://example.com/foo/bar/baz.html" it will
+look for a file `/webroot/foo/bar/baz.html`. If it exists, the server will return its contents, and if it does not exist,
+the server will return a `Not Found` error. An S3 bucket, whether configured as a file store or a web site, will
+always do both of these things.
+
+Web servers, however, do some helpful extra things. To name a few:
+- If the URL ends with a `/`, as in `http://example.com/foo/bar/`, the web server (depending on how it is configured)
+will either return a list of files in the directory or it will return the contents of a file in the directory with
+a special name (by default, `index.html`) if it exists.
+- If the URL does not end with a `/` but the last part, instead of being a file name, is a directory name, the web
+server will redirect the user to the URL with the `/` at the end instead of saying the file was `Not Found`. This
+redirect will get you to the `index.html` file we just talked about. Given the way people pass URLs around, this
+turns out to be quite helpful.
+- If the URL does not point to a directory or a file, instead of just sending back a cryptic `Not Found` error code,
+it can return the contents of a special file called an "error document".
+
+#### Your Critical Decision: S3 bucket or website?
+
+All of this background is to help you decide how to set `website_enabled` and `s3_website_password_enabled`.
+The default for `website_enabled` is `false` which is the easiest to configure and the most secure, and with
+this setting, `s3_website_password_enabled` is ignored.
+
+S3 buckets, in file storage mode (`website_enabled = false`), do none of these extra things that web servers do.
+If the URL points to a file, it will return the file, and if it does not _exactly_ match a file, it will return
+`Not Found`. One big advantage, though, is that the S3 bucket can remain private (not publicly accessible). A second,
+related advantage is that you can limit the website to a portion of the S3 bucket (everything under a certain prefix)
+and keep the contents under the the other prefixes private.
+
+S3 buckets configured as static websites (`website_enabled = true`), however, have these extra web server features like redirects, `index.html`,
+and error documents. The disadvantage is that you have to make the entire bucket public (although you can still
+restrict access to some portions of the bucket).
+
+Another feature or drawback (depending on your point of view) of S3 buckets configured as static web sites is that
+they are directly accessible via their [website endpoint](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteEndpoints.html)
+as well as through Cloudfront. This module has a feature, `s3_website_password_enabled`, that requires a password
+be passed in the HTTP request header and configures the CDN to do that, which will make it much harder to access
+the S3 website directly. So set `s3_website_password_enabled = true` to limit direct access to the S3 website
+or set it to false if you want to be able to bypass Cloudfront when you want to.
 
 In addition to setting `website_enabled=true`, you must also:
 
@@ -145,7 +228,18 @@ In addition to setting `website_enabled=true`, you must also:
   `["example.com", "www.example.com"]`
 * Specify an ACM certificate
 
-### Generating ACM Certificate
+### Custom Domain Names and Generating a TLS Certificate with ACM
+
+When you set up Cloudfront, Amazon will generate a domain name for your website. You amost certainly will not
+want to publish that. Instead, you will want to use a custom domain name. This module refers to them as "aliases".
+
+To use the custom domain names, you need to
+- Pass them in as `aliases` so that Cloudfront will respond to them with your content
+- Create CNAMEs for the aliases to point to the Cloudfront domain name. If your alias domains are hosted by
+Route53 and you have IAM permissions to modify them, this module will set that up for you if you set `dns_alias_enabled = true`.
+- Generate a TLS Certificate via ACM that includes the all the aliases and pass the ARN for the
+certificate in `acm_certificate_arn`. Note that for Cloudfront, the certificate has to be provisioned in the
+`us-east-1` region regardless of where any other resources are.
 
 ```hcl
 # For cloudfront, the acm has to be created in us-east-1 or it will not work
@@ -230,14 +324,14 @@ Available targets:
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 2.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.28.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 2.2 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 2.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.28.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | >= 2.2 |
 
 ## Modules
@@ -259,9 +353,11 @@ Available targets:
 | [aws_s3_bucket_policy.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [aws_s3_bucket_public_access_block.origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) | resource |
 | [random_password.referer](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
-| [aws_iam_policy_document.origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_iam_policy_document.origin_website](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
-| [aws_s3_bucket.selected](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/s3_bucket) | data source |
+| [aws_iam_policy_document.combined](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.deployment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.s3_origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.s3_website_origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_s3_bucket.origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/s3_bucket) | data source |
 
 ## Inputs
 
@@ -275,7 +371,7 @@ Available targets:
 | <a name="input_allowed_methods"></a> [allowed\_methods](#input\_allowed\_methods) | List of allowed methods (e.g. GET, PUT, POST, DELETE, HEAD) for AWS CloudFront | `list(string)` | <pre>[<br>  "DELETE",<br>  "GET",<br>  "HEAD",<br>  "OPTIONS",<br>  "PATCH",<br>  "POST",<br>  "PUT"<br>]</pre> | no |
 | <a name="input_attributes"></a> [attributes](#input\_attributes) | Additional attributes (e.g. `1`) | `list(string)` | `[]` | no |
 | <a name="input_block_origin_public_access_enabled"></a> [block\_origin\_public\_access\_enabled](#input\_block\_origin\_public\_access\_enabled) | When set to 'true' the s3 origin bucket will have public access block enabled | `bool` | `false` | no |
-| <a name="input_cache_policy_id"></a> [cache\_policy\_id](#input\_cache\_policy\_id) | The unique identifier of the cache policy that is attached to the default cache behavior | `string` | `null` | no |
+| <a name="input_cache_policy_id"></a> [cache\_policy\_id](#input\_cache\_policy\_id) | The unique identifier of the existing cache policy to attach to the default cache behavior.<br>If not provided, this module will add a default cache policy using other provided inputs. | `string` | `null` | no |
 | <a name="input_cached_methods"></a> [cached\_methods](#input\_cached\_methods) | List of cached methods (e.g. GET, PUT, POST, DELETE, HEAD) | `list(string)` | <pre>[<br>  "GET",<br>  "HEAD"<br>]</pre> | no |
 | <a name="input_cloudfront_origin_access_identity_iam_arn"></a> [cloudfront\_origin\_access\_identity\_iam\_arn](#input\_cloudfront\_origin\_access\_identity\_iam\_arn) | Existing cloudfront origin access identity iam arn that is supplied in the s3 bucket policy | `string` | `""` | no |
 | <a name="input_cloudfront_origin_access_identity_path"></a> [cloudfront\_origin\_access\_identity\_path](#input\_cloudfront\_origin\_access\_identity\_path) | Existing cloudfront origin access identity path used in the cloudfront distribution's s3\_origin\_config content | `string` | `""` | no |
@@ -289,11 +385,13 @@ Available targets:
 | <a name="input_cors_max_age_seconds"></a> [cors\_max\_age\_seconds](#input\_cors\_max\_age\_seconds) | Time in seconds that browser can cache the response for S3 bucket | `number` | `3600` | no |
 | <a name="input_custom_error_response"></a> [custom\_error\_response](#input\_custom\_error\_response) | List of one or more custom error response element maps | <pre>list(object({<br>    error_caching_min_ttl = string<br>    error_code            = string<br>    response_code         = string<br>    response_page_path    = string<br>  }))</pre> | `[]` | no |
 | <a name="input_custom_origin_headers"></a> [custom\_origin\_headers](#input\_custom\_origin\_headers) | A list of origin header parameters that will be sent to origin | `list(object({ name = string, value = string }))` | `[]` | no |
-| <a name="input_custom_origins"></a> [custom\_origins](#input\_custom\_origins) | A list of custom origins (such as apps or S3 websites) for this distribution.<br>See the Terraform documentation for configuration options<br>https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments | <pre>list(object({<br>    domain_name = string<br>    origin_id   = string<br>    origin_path = string<br>    custom_headers = list(object({<br>      name  = string<br>      value = string<br>    }))<br>    custom_origin_config = object({<br>      http_port                = number<br>      https_port               = number<br>      origin_protocol_policy   = string<br>      origin_ssl_protocols     = list(string)<br>      origin_keepalive_timeout = number<br>      origin_read_timeout      = number<br>    })<br>  }))</pre> | `[]` | no |
+| <a name="input_custom_origins"></a> [custom\_origins](#input\_custom\_origins) | A list of additional custom website [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) for this distribution. | <pre>list(object({<br>    domain_name = string<br>    origin_id   = string<br>    origin_path = string<br>    custom_headers = list(object({<br>      name  = string<br>      value = string<br>    }))<br>    custom_origin_config = object({<br>      http_port                = number<br>      https_port               = number<br>      origin_protocol_policy   = string<br>      origin_ssl_protocols     = list(string)<br>      origin_keepalive_timeout = number<br>      origin_read_timeout      = number<br>    })<br>  }))</pre> | `[]` | no |
 | <a name="input_default_root_object"></a> [default\_root\_object](#input\_default\_root\_object) | Object that CloudFront return when requests the root URL | `string` | `"index.html"` | no |
 | <a name="input_default_ttl"></a> [default\_ttl](#input\_default\_ttl) | Default amount of time (in seconds) that an object is in a CloudFront cache | `number` | `60` | no |
 | <a name="input_delimiter"></a> [delimiter](#input\_delimiter) | Delimiter to be used between `namespace`, `environment`, `stage`, `name` and `attributes`.<br>Defaults to `-` (hyphen). Set to `""` to use no delimiter at all. | `string` | `null` | no |
-| <a name="input_distribution_enabled"></a> [distribution\_enabled](#input\_distribution\_enabled) | Set to `true` if you want CloudFront to begin processing requests as soon as the distribution is created, or to false if you do not want CloudFront to begin processing requests after the distribution is created. | `bool` | `true` | no |
+| <a name="input_deployment_actions"></a> [deployment\_actions](#input\_deployment\_actions) | List of actions to permit `deployment_principal_arns` to perform | `list(string)` | <pre>[<br>  "s3:PutObject",<br>  "s3:PutObjectAcl",<br>  "s3:GetObject",<br>  "s3:DeleteObject",<br>  "s3:ListBucket",<br>  "s3:ListBucketMultipartUploads",<br>  "s3:GetBucketLocation",<br>  "s3:AbortMultipartUpload"<br>]</pre> | no |
+| <a name="input_deployment_principal_arns"></a> [deployment\_principal\_arns](#input\_deployment\_principal\_arns) | (Optional) Map of IAM Principal ARNs to lists of S3 path prefixes to grant `deployment_actions` permissions.<br>Resource list will include the bucket itself along with all the prefixes. | `map(list(string))` | `{}` | no |
+| <a name="input_distribution_enabled"></a> [distribution\_enabled](#input\_distribution\_enabled) | Set to `false` to create the distribution but still prevent CloudFront from serving requests. | `bool` | `true` | no |
 | <a name="input_dns_alias_enabled"></a> [dns\_alias\_enabled](#input\_dns\_alias\_enabled) | Create a DNS alias for the CDN. Requires `parent_zone_id` or `parent_zone_name` | `bool` | `false` | no |
 | <a name="input_enabled"></a> [enabled](#input\_enabled) | Set to false to prevent the module from creating any resources | `bool` | `null` | no |
 | <a name="input_encryption_enabled"></a> [encryption\_enabled](#input\_encryption\_enabled) | When set to 'true' the resource will have aes256 encryption enabled by default | `bool` | `true` | no |
@@ -302,8 +400,8 @@ Available targets:
 | <a name="input_extra_logs_attributes"></a> [extra\_logs\_attributes](#input\_extra\_logs\_attributes) | Additional attributes to put onto the log bucket label | `list(string)` | <pre>[<br>  "logs"<br>]</pre> | no |
 | <a name="input_extra_origin_attributes"></a> [extra\_origin\_attributes](#input\_extra\_origin\_attributes) | Additional attributes to put onto the origin label | `list(string)` | <pre>[<br>  "origin"<br>]</pre> | no |
 | <a name="input_forward_cookies"></a> [forward\_cookies](#input\_forward\_cookies) | Specifies whether you want CloudFront to forward all or no cookies to the origin. Can be 'all' or 'none' | `string` | `"none"` | no |
-| <a name="input_forward_header_values"></a> [forward\_header\_values](#input\_forward\_header\_values) | A list of whitelisted header values to forward to the origin | `list(string)` | <pre>[<br>  "Access-Control-Request-Headers",<br>  "Access-Control-Request-Method",<br>  "Origin"<br>]</pre> | no |
-| <a name="input_forward_query_string"></a> [forward\_query\_string](#input\_forward\_query\_string) | Forward query strings to the origin that is associated with this cache behavior | `bool` | `false` | no |
+| <a name="input_forward_header_values"></a> [forward\_header\_values](#input\_forward\_header\_values) | A list of whitelisted header values to forward to the origin (incompatible with `cache_policy_id`) | `list(string)` | <pre>[<br>  "Access-Control-Request-Headers",<br>  "Access-Control-Request-Method",<br>  "Origin"<br>]</pre> | no |
+| <a name="input_forward_query_string"></a> [forward\_query\_string](#input\_forward\_query\_string) | Forward query strings to the origin that is associated with this cache behavior (incompatible with `cache_policy_id`) | `bool` | `false` | no |
 | <a name="input_geo_restriction_locations"></a> [geo\_restriction\_locations](#input\_geo\_restriction\_locations) | List of country codes for which  CloudFront either to distribute content (whitelist) or not distribute your content (blacklist) | `list(string)` | `[]` | no |
 | <a name="input_geo_restriction_type"></a> [geo\_restriction\_type](#input\_geo\_restriction\_type) | Method that use to restrict distribution of your content by country: `none`, `whitelist`, or `blacklist` | `string` | `"none"` | no |
 | <a name="input_id_length_limit"></a> [id\_length\_limit](#input\_id\_length\_limit) | Limit `id` to this many characters (minimum 6).<br>Set to `0` for unlimited length.<br>Set to `null` for default, which is `0`.<br>Does not affect `id_full`. | `number` | `null` | no |
@@ -325,7 +423,7 @@ Available targets:
 | <a name="input_minimum_protocol_version"></a> [minimum\_protocol\_version](#input\_minimum\_protocol\_version) | Cloudfront TLS minimum protocol version. See [Supported protocols and ciphers between viewers and CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html#secure-connections-supported-ciphers) for more information. | `string` | `"TLSv1.2_2019"` | no |
 | <a name="input_name"></a> [name](#input\_name) | Solution name, e.g. 'app' or 'jenkins' | `string` | `null` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | Namespace, which could be your organization name or abbreviation, e.g. 'eg' or 'cp' | `string` | `null` | no |
-| <a name="input_ordered_cache"></a> [ordered\_cache](#input\_ordered\_cache) | An ordered list of cache behaviors resource for this distribution. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0.<br>The fields can be described by the other variables in this file. For example, the field 'lambda\_function\_association' in this object has<br>a description in var.lambda\_function\_association variable earlier in this file. The only difference is that fields on this object are in ordered caches, whereas the rest<br>of the vars in this file apply only to the default cache. Put value `""` on field `target_origin_id` to specify default s3 bucket origin. | <pre>list(object({<br>    target_origin_id = string<br>    path_pattern     = string<br><br>    allowed_methods = list(string)<br>    cached_methods  = list(string)<br>    compress        = bool<br><br>    viewer_protocol_policy = string<br>    min_ttl                = number<br>    default_ttl            = number<br>    max_ttl                = number<br><br>    forward_query_string  = bool<br>    forward_header_values = list(string)<br>    forward_cookies       = string<br><br>    lambda_function_association = list(object({<br>      event_type   = string<br>      include_body = bool<br>      lambda_arn   = string<br>    }))<br>  }))</pre> | `[]` | no |
+| <a name="input_ordered_cache"></a> [ordered\_cache](#input\_ordered\_cache) | An ordered list of [cache behaviors](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#cache-behavior-arguments) resource for this distribution.<br>List in order of precedence (first match wins). This is in addition to the default cache policy.<br>Set `target_origin_id` to `""` to specify the S3 bucket origin created by this module. | <pre>list(object({<br>    target_origin_id = string<br>    path_pattern     = string<br><br>    allowed_methods = list(string)<br>    cached_methods  = list(string)<br>    compress        = bool<br><br>    viewer_protocol_policy = string<br>    min_ttl                = number<br>    default_ttl            = number<br>    max_ttl                = number<br><br>    forward_query_string  = bool<br>    forward_header_values = list(string)<br>    forward_cookies       = string<br><br>    lambda_function_association = list(object({<br>      event_type   = string<br>      include_body = bool<br>      lambda_arn   = string<br>    }))<br>  }))</pre> | `[]` | no |
 | <a name="input_origin_bucket"></a> [origin\_bucket](#input\_origin\_bucket) | Name of an existing S3 bucket to use as the origin. If this is not provided, it will create a new s3 bucket using `var.name` and other context related inputs | `string` | `null` | no |
 | <a name="input_origin_force_destroy"></a> [origin\_force\_destroy](#input\_origin\_force\_destroy) | Delete all objects from the bucket so that the bucket can be destroyed without error (e.g. `true` or `false`) | `bool` | `false` | no |
 | <a name="input_origin_path"></a> [origin\_path](#input\_origin\_path) | An optional element that causes CloudFront to request your content from a directory in your Amazon S3 bucket or your custom origin. It must begin with a /. Do not add a / at the end of the path. | `string` | `""` | no |
@@ -334,19 +432,20 @@ Available targets:
 | <a name="input_parent_zone_id"></a> [parent\_zone\_id](#input\_parent\_zone\_id) | ID of the hosted zone to contain this record (or specify `parent_zone_name`). Requires `dns_alias_enabled` set to true | `string` | `""` | no |
 | <a name="input_parent_zone_name"></a> [parent\_zone\_name](#input\_parent\_zone\_name) | Name of the hosted zone to contain this record (or specify `parent_zone_id`). Requires `dns_alias_enabled` set to true | `string` | `""` | no |
 | <a name="input_price_class"></a> [price\_class](#input\_price\_class) | Price class for this distribution: `PriceClass_All`, `PriceClass_200`, `PriceClass_100` | `string` | `"PriceClass_100"` | no |
-| <a name="input_query_string_cache_keys"></a> [query\_string\_cache\_keys](#input\_query\_string\_cache\_keys) | When Forward query strings is enabled, only the query string keys listed in this argument are cached | `list(string)` | `[]` | no |
+| <a name="input_query_string_cache_keys"></a> [query\_string\_cache\_keys](#input\_query\_string\_cache\_keys) | When `forward_query_string` is enabled, only the query string keys listed in this argument are cached (incompatible with `cache_policy_id`) | `list(string)` | `[]` | no |
 | <a name="input_redirect_all_requests_to"></a> [redirect\_all\_requests\_to](#input\_redirect\_all\_requests\_to) | A hostname to redirect all website requests for this distribution to. If this is set, it overrides other website settings | `string` | `""` | no |
 | <a name="input_regex_replace_chars"></a> [regex\_replace\_chars](#input\_regex\_replace\_chars) | Regex to replace chars with empty string in `namespace`, `environment`, `stage` and `name`.<br>If not set, `"/[^a-zA-Z0-9-]/"` is used to remove all characters other than hyphens, letters and digits. | `string` | `null` | no |
 | <a name="input_routing_rules"></a> [routing\_rules](#input\_routing\_rules) | A json array containing routing rules describing redirect behavior and when redirects are applied | `string` | `""` | no |
-| <a name="input_s3_origins"></a> [s3\_origins](#input\_s3\_origins) | A list of S3 origins for this distribution. S3 buckets configured as websites<br>are custom\_origins, not s3\_origins. See the Terraform documentation for<br>configuration options<br>https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments | <pre>list(object({<br>    domain_name = string<br>    origin_id   = string<br>    origin_path = string<br>    s3_origin_config = object({<br>      origin_access_identity = string<br>    })<br>  }))</pre> | `[]` | no |
+| <a name="input_s3_origins"></a> [s3\_origins](#input\_s3\_origins) | A list of S3 [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) (in addition to the one created by this module) for this distribution.<br>S3 buckets configured as websites are `custom_origins`, not `s3_origins`. | <pre>list(object({<br>    domain_name = string<br>    origin_id   = string<br>    origin_path = string<br>    s3_origin_config = object({<br>      origin_access_identity = string<br>    })<br>  }))</pre> | `[]` | no |
+| <a name="input_s3_website_password_enabled"></a> [s3\_website\_password\_enabled](#input\_s3\_website\_password\_enabled) | If set to true, and `website_enabled` is also true, a password will be required in the `Referrer` field of the<br>HTTP request in order to access the website, and Cloudfront will be configured to pass this password in its requests.<br>This will make it much harder for people to bypass Cloudfront and access the S3 website directly via its website endpoint. | `bool` | `false` | no |
 | <a name="input_stage"></a> [stage](#input\_stage) | Stage, e.g. 'prod', 'staging', 'dev', OR 'source', 'build', 'test', 'deploy', 'release' | `string` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Additional tags (e.g. `map('BusinessUnit','XYZ')` | `map(string)` | `{}` | no |
 | <a name="input_trusted_signers"></a> [trusted\_signers](#input\_trusted\_signers) | The AWS accounts, if any, that you want to allow to create signed URLs for private content. 'self' is acceptable. | `list(string)` | `[]` | no |
 | <a name="input_versioning_enabled"></a> [versioning\_enabled](#input\_versioning\_enabled) | When set to 'true' the s3 origin bucket will have versioning enabled | `bool` | `true` | no |
-| <a name="input_viewer_protocol_policy"></a> [viewer\_protocol\_policy](#input\_viewer\_protocol\_policy) | allow-all, redirect-to-https | `string` | `"redirect-to-https"` | no |
+| <a name="input_viewer_protocol_policy"></a> [viewer\_protocol\_policy](#input\_viewer\_protocol\_policy) | Limit the protocol users can use to access content. One of `allow-all`, `https-only`, or `redirect-to-https` | `string` | `"redirect-to-https"` | no |
 | <a name="input_wait_for_deployment"></a> [wait\_for\_deployment](#input\_wait\_for\_deployment) | When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed | `bool` | `true` | no |
 | <a name="input_web_acl_id"></a> [web\_acl\_id](#input\_web\_acl\_id) | ID of the AWS WAF web ACL that is associated with the distribution | `string` | `""` | no |
-| <a name="input_website_enabled"></a> [website\_enabled](#input\_website\_enabled) | Set to true to use an S3 static website as origin. If you set this to true, see<br>README for more important instructions. | `bool` | `false` | no |
+| <a name="input_website_enabled"></a> [website\_enabled](#input\_website\_enabled) | Set to true to enable the created S3 bucket to serve as a website independently of Cloudfront,<br>and to use that website as the origin. See the README for details and caveats. See also `s3_website_password_enabled`. | `bool` | `false` | no |
 
 ## Outputs
 
@@ -365,6 +464,7 @@ Available targets:
 | <a name="output_s3_bucket"></a> [s3\_bucket](#output\_s3\_bucket) | Name of origin S3 bucket |
 | <a name="output_s3_bucket_arn"></a> [s3\_bucket\_arn](#output\_s3\_bucket\_arn) | ARN of origin S3 bucket |
 | <a name="output_s3_bucket_domain_name"></a> [s3\_bucket\_domain\_name](#output\_s3\_bucket\_domain\_name) | Domain of origin S3 bucket |
+| <a name="output_s3_bucket_policy"></a> [s3\_bucket\_policy](#output\_s3\_bucket\_policy) | Final computed S3 bucket policy |
 <!-- markdownlint-restore -->
 
 
