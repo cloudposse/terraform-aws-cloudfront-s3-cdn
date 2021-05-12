@@ -3,6 +3,7 @@ locals {
 
   # Encapsulate logic here so that it is not lost/scattered among the configuration
   website_enabled                          = local.enabled && var.website_enabled
+  website_password_enabled                 = local.website_enabled && var.s3_website_password_enabled
   s3_origin_enabled                        = local.enabled && ! var.website_enabled
   create_s3_bucket                         = local.enabled && var.origin_bucket == null
   create_cloudfront_origin_access_identity = local.enabled && length(compact([var.cloudfront_origin_access_identity_iam_arn])) == 0 # "" or null
@@ -89,6 +90,8 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 }
 
 resource "random_password" "referer" {
+  count = local.website_password_enabled ? 1 : 0
+
   length  = 32
   special = false
 }
@@ -139,12 +142,12 @@ data "aws_iam_policy_document" "s3_website_origin" {
       identifiers = ["*"]
     }
     dynamic "condition" {
-      for_each = var.s3_website_password_enabled ? ["password"] : []
+      for_each = local.website_password_enabled ? ["password"] : []
 
       content {
         test     = "StringEquals"
         variable = "aws:referer"
-        values   = [random_password.referer.result]
+        values   = [random_password.referer[0].result]
       }
     }
   }
@@ -288,6 +291,7 @@ resource "aws_cloudfront_distribution" "default" {
 
   dynamic "logging_config" {
     for_each = var.logging_enabled ? ["true"] : []
+
     content {
       include_cookies = var.log_include_cookies
       bucket          = module.logs.bucket_domain_name
@@ -319,7 +323,8 @@ resource "aws_cloudfront_distribution" "default" {
       }
     }
     dynamic "custom_header" {
-      for_each = var.website_enabled ? concat([{ name = "referer", value = random_password.referer.result }], var.custom_origin_headers) : var.custom_origin_headers
+      for_each = local.website_password_enabled ? concat([{ name = "referer", value = random_password.referer[0].result }], var.custom_origin_headers) : var.custom_origin_headers
+
       content {
         name  = custom_header.value["name"]
         value = custom_header.value["value"]
