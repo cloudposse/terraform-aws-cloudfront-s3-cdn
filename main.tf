@@ -29,6 +29,8 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 }
 
 resource "random_password" "referer" {
+  count = (module.this.enabled && var.website_enabled) ? 1 : 0
+
   length  = 32
   special = false
 }
@@ -81,7 +83,7 @@ data "aws_iam_policy_document" "origin_website" {
     condition {
       test     = "StringEquals"
       variable = "aws:referer"
-      values   = [random_password.referer.result]
+      values   = [random_password.referer[0].result]
     }
   }
 }
@@ -248,7 +250,7 @@ resource "aws_cloudfront_distribution" "default" {
       }
     }
     dynamic "custom_header" {
-      for_each = var.website_enabled ? concat([{ name = "referer", value = random_password.referer.result }], var.custom_origin_headers) : var.custom_origin_headers
+      for_each = var.website_enabled ? concat([{ name = "referer", value = random_password.referer[0].result }], var.custom_origin_headers) : var.custom_origin_headers
       content {
         name  = custom_header.value["name"]
         value = custom_header.value["value"]
