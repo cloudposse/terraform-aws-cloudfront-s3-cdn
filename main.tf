@@ -29,7 +29,7 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 }
 
 resource "random_password" "referer" {
-  count = (module.this.enabled && var.website_enabled) ? 1 : 0
+  count = module.this.enabled && var.website_enabled ? 1 : 0
 
   length  = 32
   special = false
