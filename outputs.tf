@@ -53,6 +53,11 @@ output "s3_bucket_arn" {
   description = "ARN of origin S3 bucket"
 }
 
+output "s3_bucket_policy" {
+  value       = join("", aws_s3_bucket_policy.default.*.policy)
+  description = "Final computed S3 bucket policy"
+}
+
 output "logs" {
   value       = module.logs
   description = "Log bucket resource"

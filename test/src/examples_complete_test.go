@@ -1,6 +1,7 @@
 package test
 
 import (
+	"encoding/json"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -45,4 +46,30 @@ func TestExamplesComplete(t *testing.T) {
 	expectedS3BucketName := "eg-test-cloudfront-s3-cdn-" + attributes[0] + "-origin"
 	// Verify we're getting back the outputs we expect
 	assert.Equal(t, expectedS3BucketName, s3BucketName)
+
+	policyString := terraform.Output(t, terraformOptions, "s3_bucket_policy")
+	assert.NotPanics(t, func() { getTestResource(policyString) }, "Could not parse S3 Bucket Policy")
+	defer func() { recover() }()
+	assert.Equal(t, `arn:aws:s3:::`+expectedS3BucketName+`/testprefix/*`, getTestResource(policyString),
+		"Templating of var.additional_bucket_policy failed")
+}
+
+func getTestResource(jsonString string) string {
+	var js interface{}
+
+	err := json.Unmarshal([]byte(jsonString), &js)
+	if err != nil {
+		return ""
+	}
+	policy := js.(map[string]interface{})
+	statements := policy["Statement"].([]interface{})
+	for _, statement := range statements {
+		s := statement.(map[string]interface{})
+		if s["Sid"].(string) != "TemplateTest" {
+			continue
+		}
+		return s["Resource"].(string)
+	}
+
+	return ""
 }

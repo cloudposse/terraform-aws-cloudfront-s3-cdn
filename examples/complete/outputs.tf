@@ -47,3 +47,8 @@ output "s3_bucket_domain_name" {
   value       = module.cloudfront_s3_cdn.s3_bucket_domain_name
   description = "Domain of S3 bucket"
 }
+
+output "s3_bucket_policy" {
+  value       = module.cloudfront_s3_cdn.s3_bucket_policy
+  description = "Final computed S3 bucket policy"
+}

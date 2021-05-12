@@ -1,4 +1,52 @@
 locals {
+  enabled = module.this.enabled
+
+  # Encapsulate logic here so that it is not lost/scattered among the configuration
+  website_enabled                          = local.enabled && var.website_enabled
+  s3_origin_enabled                        = local.enabled && ! var.website_enabled
+  create_s3_bucket                         = local.enabled && var.origin_bucket == null
+  create_cloudfront_origin_access_identity = local.enabled && length(compact([var.cloudfront_origin_access_identity_iam_arn])) == 0 # "" or null
+
+  origin_path = coalesce(var.origin_path, "/")
+  # Collect the information for whichever S3 bucket we are using as the origin
+  origin_bucket_placeholder = {
+    arn                         = null
+    bucket                      = null
+    website_domain              = null
+    website_endpoint            = null
+    bucket_regional_domain_name = null
+  }
+  origin_bucket_options = {
+    new      = local.create_s3_bucket ? aws_s3_bucket.origin[0] : null
+    existing = local.enabled && var.origin_bucket != null ? data.aws_s3_bucket.origin[0] : null
+    disabled = local.origin_bucket_placeholder
+  }
+  # Workaround for requirement that tertiary expression has to have exactly matching objects in both result values
+  origin_bucket = local.origin_bucket_options[local.enabled ? (local.create_s3_bucket ? "new" : "existing") : "disabled"]
+
+  # Collect the information for cloudfront_origin_access_identity_iam and shorten the variable names
+  cf_access_options = {
+    new = local.create_cloudfront_origin_access_identity ? {
+      arn  = aws_cloudfront_origin_access_identity.default[0].iam_arn
+      path = aws_cloudfront_origin_access_identity.default[0].cloudfront_access_identity_path
+    } : null
+    existing = {
+      arn  = var.cloudfront_origin_access_identity_iam_arn
+      path = var.cloudfront_origin_access_identity_path
+    }
+  }
+  cf_access = local.cf_access_options[local.create_cloudfront_origin_access_identity ? "new" : "existing"]
+
+  # Pick the IAM policy document based on whether the origin is an S3 origin or a Website origin
+  iam_policy_document = local.enabled ? (
+    local.website_enabled ? data.aws_iam_policy_document.s3_website_origin[0].json : data.aws_iam_policy_document.s3_origin[0].json
+  ) : ""
+
+  bucket             = local.origin_bucket.bucket
+  bucket_domain_name = var.website_enabled ? local.origin_bucket.website_domain : local.origin_bucket.bucket_regional_domain_name
+
+  override_origin_bucket_policy = local.enabled && var.override_origin_bucket_policy
+
   website_config = {
     redirect_all = [
       {
@@ -15,15 +63,27 @@ locals {
   }
 }
 
+## Make up for deprecated template_file and lack of templatestring
+# https://github.com/hashicorp/terraform-provider-template/issues/85
+# https://github.com/hashicorp/terraform/issues/26838
+locals {
+  override_policy = replace(replace(replace(var.additional_bucket_policy,
+    "$${origin_path}", local.origin_path),
+    "$${bucket_name}", local.bucket),
+  "$${cloudfront_origin_access_identity_iam_arn}", local.cf_access.arn)
+}
+
 module "origin_label" {
-  source     = "cloudposse/label/null"
-  version    = "0.24.1"
-  context    = module.this.context
-  attributes = compact(concat(module.this.attributes, var.extra_origin_attributes))
+  source  = "cloudposse/label/null"
+  version = "0.24.1"
+
+  attributes = var.extra_origin_attributes
+
+  context = module.this.context
 }
 
 resource "aws_cloudfront_origin_access_identity" "default" {
-  count = (! module.this.enabled || local.using_existing_cloudfront_origin) ? 0 : 1
+  count = local.create_cloudfront_origin_access_identity ? 1 : 0
 
   comment = module.this.id
 }
@@ -33,10 +93,10 @@ resource "random_password" "referer" {
   special = false
 }
 
-data "aws_iam_policy_document" "origin" {
-  count = module.this.enabled ? 1 : 0
+data "aws_iam_policy_document" "s3_origin" {
+  count = local.s3_origin_enabled ? 1 : 0
 
-  override_json = var.additional_bucket_policy
+  override_json = local.override_policy
 
   statement {
     sid = "S3GetObjectForCloudFront"
@@ -46,7 +106,7 @@ data "aws_iam_policy_document" "origin" {
 
     principals {
       type        = "AWS"
-      identifiers = [local.cloudfront_origin_access_identity_iam_arn]
+      identifiers = [local.cf_access.arn]
     }
   }
 
@@ -58,15 +118,15 @@ data "aws_iam_policy_document" "origin" {
 
     principals {
       type        = "AWS"
-      identifiers = [local.cloudfront_origin_access_identity_iam_arn]
+      identifiers = [local.cf_access.arn]
     }
   }
 }
 
-data "aws_iam_policy_document" "origin_website" {
-  count = module.this.enabled ? 1 : 0
+data "aws_iam_policy_document" "s3_website_origin" {
+  count = local.website_enabled ? 1 : 0
 
-  override_json = var.additional_bucket_policy
+  override_json = local.override_policy
 
   statement {
     sid = "S3GetObjectForCloudFront"
@@ -78,28 +138,60 @@ data "aws_iam_policy_document" "origin_website" {
       type        = "AWS"
       identifiers = ["*"]
     }
-    condition {
-      test     = "StringEquals"
-      variable = "aws:referer"
-      values   = [random_password.referer.result]
+    dynamic "condition" {
+      for_each = var.s3_website_password_enabled ? ["password"] : []
+
+      content {
+        test     = "StringEquals"
+        variable = "aws:referer"
+        values   = [random_password.referer.result]
+      }
     }
   }
 }
 
+data "aws_iam_policy_document" "deployment" {
+  for_each = local.enabled ? var.deployment_principal_arns : {}
+
+  statement {
+    actions = var.deployment_actions
+
+    resources = flatten(distinct([
+      local.origin_bucket.arn,
+      formatlist("${local.origin_bucket.arn}%s*", each.value),
+    ]))
+
+    principals {
+      type        = "AWS"
+      identifiers = [each.key]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "combined" {
+  count = local.enabled ? 1 : 0
+
+  source_policy_documents = compact(concat(
+    data.aws_iam_policy_document.s3_origin.*.json,
+    data.aws_iam_policy_document.s3_website_origin.*.json,
+    values(data.aws_iam_policy_document.deployment)[*].json
+  ))
+}
+
+
 resource "aws_s3_bucket_policy" "default" {
-  count = (module.this.enabled && (! local.using_existing_origin || var.override_origin_bucket_policy)) ? 1 : 0
-  bucket = join("", local.using_existing_origin
-    ? data.aws_s3_bucket.selected.*.bucket # Existing origin S3 bucket
-    : aws_s3_bucket.origin.*.bucket        # Origin S3 bucket this module manages
-  )
-  policy = local.iam_policy_document
+  count = local.create_s3_bucket || local.override_origin_bucket_policy ? 1 : 0
+
+  bucket = local.origin_bucket.bucket
+  policy = join("", data.aws_iam_policy_document.combined.*.json)
 }
 
 resource "aws_s3_bucket" "origin" {
   #bridgecrew:skip=BC_AWS_S3_13:Skipping `Enable S3 Bucket Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   #bridgecrew:skip=BC_AWS_S3_14:Skipping `Ensure all data stored in the S3 bucket is securely encrypted at rest` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   #bridgecrew:skip=CKV_AWS_52:Skipping `Ensure S3 bucket has MFA delete enabled` due to issue in terraform (https://github.com/hashicorp/terraform-provider-aws/issues/629).
-  count         = (! module.this.enabled || local.using_existing_origin) ? 0 : 1
+  count = local.create_s3_bucket ? 1 : 0
+
   bucket        = module.origin_label.id
   acl           = "private"
   tags          = module.origin_label.tags
@@ -152,23 +244,22 @@ resource "aws_s3_bucket" "origin" {
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
-  count                   = (module.this.enabled && ! local.using_existing_origin && var.block_origin_public_access_enabled) ? 1 : 0
+  count                   = (local.create_s3_bucket || local.override_origin_bucket_policy) && var.block_origin_public_access_enabled ? 1 : 0
   bucket                  = local.bucket
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
 
-  # Don't ty and modify this bucket in two ways at the same time, S3 API will
-  # complain.
+  # Don't modify this bucket in two ways at the same time, S3 API will complain.
   depends_on = [aws_s3_bucket_policy.default]
 }
 
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
   version                  = "0.20.0"
-  enabled                  = (module.this.enabled && var.logging_enabled)
-  attributes               = compact(concat(module.this.attributes, var.extra_logs_attributes))
+  enabled                  = (local.enabled && var.logging_enabled)
+  attributes               = var.extra_logs_attributes
   lifecycle_prefix         = var.log_prefix
   standard_transition_days = var.log_standard_transition_days
   glacier_transition_days  = var.log_glacier_transition_days
@@ -179,33 +270,13 @@ module "logs" {
   context = module.this.context
 }
 
-data "aws_s3_bucket" "selected" {
-  count  = (module.this.enabled && local.using_existing_origin) ? 1 : 0
+data "aws_s3_bucket" "origin" {
+  count  = local.enabled && (var.origin_bucket != null) ? 1 : 0
   bucket = var.origin_bucket
 }
 
-locals {
-  using_existing_origin = var.origin_bucket != null
-
-  using_existing_cloudfront_origin = var.cloudfront_origin_access_identity_iam_arn != "" && var.cloudfront_origin_access_identity_path != ""
-
-  origin_path                               = coalesce(var.origin_path, "/")
-  cloudfront_origin_access_identity_iam_arn = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_iam_arn : join("", aws_cloudfront_origin_access_identity.default.*.iam_arn)
-  iam_policy_document                       = var.website_enabled ? try(data.aws_iam_policy_document.origin_website[0].json, "") : try(data.aws_iam_policy_document.origin[0].json, "")
-
-  bucket = join("",
-    compact(
-      concat([var.origin_bucket], concat([""], aws_s3_bucket.origin.*.id))
-    )
-  )
-
-  bucket_website_domain_name  = local.using_existing_origin ? try(data.aws_s3_bucket.selected[0].website_endpoint, "") : try(aws_s3_bucket.origin[0].website_endpoint, "")
-  bucket_regional_domain_name = local.using_existing_origin ? try(data.aws_s3_bucket.selected[0].bucket_regional_domain_name, "") : try(aws_s3_bucket.origin[0].bucket_regional_domain_name, "")
-  bucket_domain_name          = var.website_enabled ? local.bucket_website_domain_name : local.bucket_regional_domain_name
-}
-
 resource "aws_cloudfront_distribution" "default" {
-  count = module.this.enabled ? 1 : 0
+  count = local.enabled ? 1 : 0
 
   #bridgecrew:skip=BC_AWS_LOGGING_20:Skipping `CloudFront Access Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   enabled             = var.distribution_enabled
@@ -234,7 +305,7 @@ resource "aws_cloudfront_distribution" "default" {
     dynamic "s3_origin_config" {
       for_each = ! var.website_enabled ? [1] : []
       content {
-        origin_access_identity = local.using_existing_cloudfront_origin ? var.cloudfront_origin_access_identity_path : join("", aws_cloudfront_origin_access_identity.default.*.cloudfront_access_identity_path)
+        origin_access_identity = local.cf_access.path
       }
     }
 
@@ -399,7 +470,7 @@ resource "aws_cloudfront_distribution" "default" {
 module "dns" {
   source           = "cloudposse/route53-alias/aws"
   version          = "0.12.0"
-  enabled          = (module.this.enabled && var.dns_alias_enabled) ? true : false
+  enabled          = (local.enabled && var.dns_alias_enabled) ? true : false
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
   parent_zone_name = var.parent_zone_name
