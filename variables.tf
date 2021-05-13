@@ -566,3 +566,9 @@ variable "log_prefix" {
   default     = null
   description = "DEPRECATED. Use `cloudfront_access_log_prefix` instead."
 }
+
+variable "realtime_log_config_arn" {
+  type        = string
+  default     = null
+  description = "The ARN of the real-time log configuration that is attached to this cache behavior"
+}
