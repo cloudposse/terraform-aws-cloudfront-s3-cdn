@@ -413,6 +413,8 @@ resource "aws_cloudfront_distribution" "default" {
     min_ttl                = var.min_ttl
     max_ttl                = var.max_ttl
 
+    realtime_log_config_arn = var.realtime_log_config_arn
+
     dynamic "lambda_function_association" {
       for_each = var.lambda_function_association
       content {
