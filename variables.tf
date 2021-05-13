@@ -4,12 +4,6 @@ variable "extra_origin_attributes" {
   description = "Additional attributes to put onto the origin label"
 }
 
-variable "extra_logs_attributes" {
-  type        = list(string)
-  default     = ["logs"]
-  description = "Additional attributes to put onto the log bucket label"
-}
-
 variable "acm_certificate_arn" {
   type        = string
   description = "Existing ACM Certificate ARN"
@@ -77,46 +71,40 @@ variable "comment" {
   description = "Comment for the origin access identity"
 }
 
-variable "logging_enabled" {
-  type        = bool
-  default     = true
-  description = "When true, access logs will be sent to a newly created s3 bucket"
+variable "log_standard_transition_days" {
+  type        = number
+  default     = 30
+  description = <<-EOT
+    Number of days after object creation to move Cloudfront Access Log objects to the infrequent access tier.
+    Only effective if `cloudfront_access_log_create_bucket` is `true`.
+    EOT
+}
+
+variable "log_glacier_transition_days" {
+  type        = number
+  default     = 60
+  description = <<-EOT
+    Number of days after object creation to move Cloudfront Access Log objects to the glacier tier.
+    Only effective if `cloudfront_access_log_create_bucket` is `true`.
+    EOT
+}
+
+variable "log_expiration_days" {
+  type        = number
+  default     = 90
+  description = <<-EOT
+    Number of days after object creation to expire Cloudfront Access Log objects.
+    Only effective if `cloudfront_access_log_create_bucket` is `true`.
+    EOT
 }
 
 variable "log_versioning_enabled" {
   type        = bool
   default     = false
-  description = "When true, the access logs bucket will be versioned"
-}
-
-variable "log_include_cookies" {
-  type        = bool
-  default     = false
-  description = "Include cookies in access logs"
-}
-
-variable "log_prefix" {
-  type        = string
-  default     = ""
-  description = "Path of logs in S3 bucket"
-}
-
-variable "log_standard_transition_days" {
-  type        = number
-  description = "Number of days to persist in the standard storage tier before moving to the glacier tier"
-  default     = 30
-}
-
-variable "log_glacier_transition_days" {
-  type        = number
-  description = "Number of days after which to move the data to the glacier storage tier"
-  default     = 60
-}
-
-variable "log_expiration_days" {
-  type        = number
-  description = "Number of days after which to expunge the objects"
-  default     = 90
+  description = <<-EOT
+    Set `true` to enable object versioning in the created Cloudfront Access Log S3 Bucket.
+    Only effective if `cloudfront_access_log_create_bucket` is `true`.
+    EOT
 }
 
 variable "forward_query_string" {
@@ -469,10 +457,72 @@ variable "block_origin_public_access_enabled" {
   description = "When set to 'true' the s3 origin bucket will have public access block enabled"
 }
 
-variable "access_log_bucket_name" {
-  type        = string
-  default     = ""
-  description = "Name of the S3 bucket where s3 access log will be sent to"
+variable "s3_access_logging_enabled" {
+  type        = bool
+  default     = null
+  description = <<-EOF
+    Set `true` to deliver S3 Access Logs to the `s3_access_log_bucket_name` bucket.
+    Defaults to `false` if `s3_access_log_bucket_name` is empty (the default), `true` otherwise.
+    Must be set explicitly if the access log bucket is being created at the same time as this module is being invoked.
+    EOF
+}
+
+variable "s3_access_log_bucket_name" {
+  type        = string # diff hint
+  default     = "foo"  # diff hint
+  description = "Name of the existing S3 bucket where S3 Access Logs will be delivered. Default is not to enable S3 Access Logging."
+}
+
+variable "s3_access_log_prefix" {
+  type        = string # diff hint
+  default     = ""     # diff hint
+  description = "Prefix to use for S3 Access Log object keys. Defaults to `logs/$${module.this.id}`"
+}
+
+variable "cloudfront_access_logging_enabled" {
+  type        = bool
+  default     = true
+  description = "Set true to enable delivery of Cloudfront Access Logs to an S3 bucket"
+}
+
+variable "cloudfront_access_log_create_bucket" {
+  type        = bool
+  default     = true
+  description = <<-EOT
+    When `true` and `cloudfront_access_logging_enabled` is also true, this module will create a new,
+    separate S3 bucket to receive Cloudfront Access Logs.
+    EOT
+}
+
+variable "extra_logs_attributes" {
+  type        = list(string)
+  default     = ["logs"]
+  description = <<-EOT
+    Additional attributes to add to the end of the generated Cloudfront Access Log S3 Bucket name.
+    Only effective if `cloudfront_access_log_create_bucket` is `true`.
+    EOT
+}
+
+
+variable "cloudfront_access_log_bucket_name" {
+  type        = string # diff hint
+  default     = ""     # diff hint
+  description = <<-EOT
+    When `cloudfront_access_log_create_bucket` is `false`, this is the name of the existing S3 Bucket where
+    Cloudfront Access Logs are to be delivered and is required. IGNORED when `cloudfront_access_log_create_bucket` is `true`.
+    EOT
+}
+
+variable "cloudfront_access_log_include_cookies" {
+  type        = bool
+  default     = false
+  description = "Set true to include cookies in Cloudfront Access Logs"
+}
+
+variable "cloudfront_access_log_prefix" {
+  type        = string # diff hint
+  default     = ""     # diff hint
+  description = "Prefix to use for Cloudfront Access Log object keys. Defaults to no prefix."
 }
 
 variable "distribution_enabled" {
@@ -489,4 +539,30 @@ variable "s3_website_password_enabled" {
     HTTP request in order to access the website, and Cloudfront will be configured to pass this password in its requests.
     This will make it much harder for people to bypass Cloudfront and access the S3 website directly via its website endpoint.
     EOT
+}
+
+# Variables below here are DEPRECATED and should not be used anymore
+
+variable "access_log_bucket_name" {
+  type        = string
+  default     = null
+  description = "DEPRECATED. Use `s3_access_log_bucket_name` instead."
+}
+
+variable "logging_enabled" {
+  type        = bool
+  default     = null
+  description = "DEPRECATED. Use `cloudfront_access_logging_enabled` instead."
+}
+
+variable "log_include_cookies" {
+  type        = bool
+  default     = null
+  description = "DEPRECATED. Use `cloudfront_access_log_include_cookies` instead."
+}
+
+variable "log_prefix" {
+  type        = string
+  default     = null
+  description = "DEPRECATED. Use `cloudfront_access_log_prefix` instead."
 }

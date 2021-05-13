@@ -2,28 +2,31 @@ locals {
   enabled = module.this.enabled
 
   # Encapsulate logic here so that it is not lost/scattered among the configuration
-  website_enabled                          = local.enabled && var.website_enabled
-  website_password_enabled                 = local.website_enabled && var.s3_website_password_enabled
-  s3_origin_enabled                        = local.enabled && ! var.website_enabled
-  create_s3_bucket                         = local.enabled && var.origin_bucket == null
+  website_enabled           = local.enabled && var.website_enabled
+  website_password_enabled  = local.website_enabled && var.s3_website_password_enabled
+  s3_origin_enabled         = local.enabled && ! var.website_enabled
+  create_s3_origin_bucket   = local.enabled && var.origin_bucket == null
+  s3_access_logging_enabled = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
+  create_cf_log_bucket      = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
+
   create_cloudfront_origin_access_identity = local.enabled && length(compact([var.cloudfront_origin_access_identity_iam_arn])) == 0 # "" or null
 
   origin_path = coalesce(var.origin_path, "/")
   # Collect the information for whichever S3 bucket we are using as the origin
   origin_bucket_placeholder = {
-    arn                         = null
-    bucket                      = null
-    website_domain              = null
-    website_endpoint            = null
-    bucket_regional_domain_name = null
+    arn                         = ""
+    bucket                      = ""
+    website_domain              = ""
+    website_endpoint            = ""
+    bucket_regional_domain_name = ""
   }
   origin_bucket_options = {
-    new      = local.create_s3_bucket ? aws_s3_bucket.origin[0] : null
+    new      = local.create_s3_origin_bucket ? aws_s3_bucket.origin[0] : null
     existing = local.enabled && var.origin_bucket != null ? data.aws_s3_bucket.origin[0] : null
     disabled = local.origin_bucket_placeholder
   }
   # Workaround for requirement that tertiary expression has to have exactly matching objects in both result values
-  origin_bucket = local.origin_bucket_options[local.enabled ? (local.create_s3_bucket ? "new" : "existing") : "disabled"]
+  origin_bucket = local.origin_bucket_options[local.enabled ? (local.create_s3_origin_bucket ? "new" : "existing") : "disabled"]
 
   # Collect the information for cloudfront_origin_access_identity_iam and shorten the variable names
   cf_access_options = {
@@ -47,6 +50,11 @@ locals {
   bucket_domain_name = var.website_enabled ? local.origin_bucket.website_domain : local.origin_bucket.bucket_regional_domain_name
 
   override_origin_bucket_policy = local.enabled && var.override_origin_bucket_policy
+
+  lookup_cf_log_bucket = local.cloudfront_access_logging_enabled && ! local.cloudfront_access_log_create_bucket
+  cf_log_bucket_domain = local.cloudfront_access_logging_enabled ? (
+    local.lookup_cf_log_bucket ? data.aws_s3_bucket.cf_logs[0].bucket_domain_name : module.logs.bucket_domain_name
+  ) : ""
 
   website_config = {
     redirect_all = [
@@ -183,17 +191,16 @@ data "aws_iam_policy_document" "combined" {
 
 
 resource "aws_s3_bucket_policy" "default" {
-  count = local.create_s3_bucket || local.override_origin_bucket_policy ? 1 : 0
+  count = local.create_s3_origin_bucket || local.override_origin_bucket_policy ? 1 : 0
 
   bucket = local.origin_bucket.bucket
   policy = join("", data.aws_iam_policy_document.combined.*.json)
 }
 
 resource "aws_s3_bucket" "origin" {
-  #bridgecrew:skip=BC_AWS_S3_13:Skipping `Enable S3 Bucket Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
-  #bridgecrew:skip=BC_AWS_S3_14:Skipping `Ensure all data stored in the S3 bucket is securely encrypted at rest` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
+  #bridgecrew:skip=BC_AWS_S3_13:Skipping `Enable S3 Bucket Logging` because we cannot enable it by default because we do not have a default destination for it.
   #bridgecrew:skip=CKV_AWS_52:Skipping `Ensure S3 bucket has MFA delete enabled` due to issue in terraform (https://github.com/hashicorp/terraform-provider-aws/issues/629).
-  count = local.create_s3_bucket ? 1 : 0
+  count = local.create_s3_origin_bucket ? 1 : 0
 
   bucket        = module.origin_label.id
   acl           = "private"
@@ -217,10 +224,10 @@ resource "aws_s3_bucket" "origin" {
   }
 
   dynamic "logging" {
-    for_each = var.access_log_bucket_name != "" ? [1] : []
+    for_each = local.s3_access_log_bucket_name != "" ? [1] : []
     content {
-      target_bucket = var.access_log_bucket_name
-      target_prefix = "logs/${module.this.id}/"
+      target_bucket = local.s3_access_log_bucket_name
+      target_prefix = coalesce(var.s3_access_log_prefix, "logs/${module.this.id}/")
     }
   }
 
@@ -247,7 +254,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
-  count                   = (local.create_s3_bucket || local.override_origin_bucket_policy) && var.block_origin_public_access_enabled ? 1 : 0
+  count                   = (local.create_s3_origin_bucket || local.override_origin_bucket_policy) && var.block_origin_public_access_enabled ? 1 : 0
   bucket                  = local.bucket
   block_public_acls       = true
   block_public_policy     = true
@@ -261,9 +268,9 @@ resource "aws_s3_bucket_public_access_block" "origin" {
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
   version                  = "0.20.0"
-  enabled                  = (local.enabled && var.logging_enabled)
+  enabled                  = local.create_cf_log_bucket
   attributes               = var.extra_logs_attributes
-  lifecycle_prefix         = var.log_prefix
+  lifecycle_prefix         = local.cloudfront_access_log_prefix
   standard_transition_days = var.log_standard_transition_days
   glacier_transition_days  = var.log_glacier_transition_days
   expiration_days          = var.log_expiration_days
@@ -278,10 +285,14 @@ data "aws_s3_bucket" "origin" {
   bucket = var.origin_bucket
 }
 
+data "aws_s3_bucket" "cf_logs" {
+  count  = local.lookup_cf_log_bucket ? 1 : 0
+  bucket = var.cloudfront_access_log_bucket_name
+}
+
 resource "aws_cloudfront_distribution" "default" {
   count = local.enabled ? 1 : 0
 
-  #bridgecrew:skip=BC_AWS_LOGGING_20:Skipping `CloudFront Access Logging` check until bridgecrew will support dynamic blocks (https://github.com/bridgecrewio/checkov/issues/776).
   enabled             = var.distribution_enabled
   is_ipv6_enabled     = var.ipv6_enabled
   comment             = var.comment
@@ -290,12 +301,12 @@ resource "aws_cloudfront_distribution" "default" {
   depends_on          = [aws_s3_bucket.origin]
 
   dynamic "logging_config" {
-    for_each = var.logging_enabled ? ["true"] : []
+    for_each = local.cloudfront_access_logging_enabled ? ["true"] : []
 
     content {
-      include_cookies = var.log_include_cookies
-      bucket          = module.logs.bucket_domain_name
-      prefix          = var.log_prefix
+      include_cookies = local.cloudfront_access_log_include_cookies
+      bucket          = local.cf_log_bucket_domain
+      prefix          = local.cloudfront_access_log_prefix
     }
   }
 
@@ -475,7 +486,7 @@ resource "aws_cloudfront_distribution" "default" {
 module "dns" {
   source           = "cloudposse/route53-alias/aws"
   version          = "0.12.0"
-  enabled          = (local.enabled && var.dns_alias_enabled) ? true : false
+  enabled          = (local.enabled && var.dns_alias_enabled)
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
   parent_zone_name = var.parent_zone_name

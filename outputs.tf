@@ -49,7 +49,7 @@ output "s3_bucket_domain_name" {
 }
 
 output "s3_bucket_arn" {
-  value       = join("", aws_s3_bucket.origin.*.arn)
+  value       = local.origin_bucket.arn
   description = "ARN of origin S3 bucket"
 }
 

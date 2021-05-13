@@ -121,10 +121,10 @@ usage: |-
   For a variety of reasons, the web servers in a  CDN do not work the way normal web servers work. Instead of getting
   their content from files on the local server, the CDN web servers get their content by acting like web browsers
   (proxies). When they get a request from a browser, they make the same request to what is called an "**Origin Server**".
-  It is called an origin server because it _serves_ the original content of the web site, and thus is the _origin_
+  It is called an origin server because it _serves_ the original content of the website, and thus is the _origin_
   of the content.
   
-  As a web site publisher, you put content on an Origin Server (which users usually should be prevented from accessing)
+  As a website publisher, you put content on an Origin Server (which users usually should be prevented from accessing)
   and configure your CDN to use your Origin Server. Then you direct users to a URL hosted by your CDN provider, the
   users' browsers connect to the CDN, the CDN gets the content from your Origin Server, your Origin Server gets the
   content from a file on the server, and the data gets sent back hop by hop to the user. (The reason this ends up
@@ -141,16 +141,16 @@ usage: |-
   
   However, at some point someone realized that since these files were in the cloud, and Amazon already had these web servers
   running to provide access to the files in the cloud, it was only a tiny leap to turn an S3 bucket into a web server.
-  So now S3 buckets [can be published as web sites](https://docs.aws.amazon.com/AmazonS3/latest/userguide/EnableWebsiteHosting.html)
+  So now S3 buckets [can be published as websites](https://docs.aws.amazon.com/AmazonS3/latest/userguide/EnableWebsiteHosting.html)
   with a few configuration settings, including making the contents publicly accessible.
   
   #### Web servers, files, and the different modes of S3 buckets
   
-  In the simplest web sites, the URL "path" (the part after the site name) corresponds directly to the path (under
+  In the simplest websites, the URL "path" (the part after the site name) corresponds directly to the path (under
   a special directory we will call `/webroot`) and name
   of a file on the web server. So if the web server gets a request for "http://example.com/foo/bar/baz.html" it will
   look for a file `/webroot/foo/bar/baz.html`. If it exists, the server will return its contents, and if it does not exist,
-  the server will return a `Not Found` error. An S3 bucket, whether configured as a file store or a web site, will
+  the server will return a `Not Found` error. An S3 bucket, whether configured as a file store or a website, will
   always do both of these things.
   
   Web servers, however, do some helpful extra things. To name a few:
@@ -180,7 +180,7 @@ usage: |-
   and error documents. The disadvantage is that you have to make the entire bucket public (although you can still
   restrict access to some portions of the bucket).
   
-  Another feature or drawback (depending on your point of view) of S3 buckets configured as static web sites is that
+  Another feature or drawback (depending on your point of view) of S3 buckets configured as static websites is that
   they are directly accessible via their [website endpoint](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteEndpoints.html)
   as well as through Cloudfront. This module has a feature, `s3_website_password_enabled`, that requires a password
   be passed in the HTTP request header and configures the CDN to do that, which will make it much harder to access

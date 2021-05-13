@@ -156,10 +156,10 @@ requests from browsers and responds with the contents of the files.
 For a variety of reasons, the web servers in a  CDN do not work the way normal web servers work. Instead of getting
 their content from files on the local server, the CDN web servers get their content by acting like web browsers
 (proxies). When they get a request from a browser, they make the same request to what is called an "**Origin Server**".
-It is called an origin server because it _serves_ the original content of the web site, and thus is the _origin_
+It is called an origin server because it _serves_ the original content of the website, and thus is the _origin_
 of the content.
 
-As a web site publisher, you put content on an Origin Server (which users usually should be prevented from accessing)
+As a website publisher, you put content on an Origin Server (which users usually should be prevented from accessing)
 and configure your CDN to use your Origin Server. Then you direct users to a URL hosted by your CDN provider, the
 users' browsers connect to the CDN, the CDN gets the content from your Origin Server, your Origin Server gets the
 content from a file on the server, and the data gets sent back hop by hop to the user. (The reason this ends up
@@ -176,16 +176,16 @@ top of everything else to keep S3 buckets from being publicly accessible, which 
 
 However, at some point someone realized that since these files were in the cloud, and Amazon already had these web servers
 running to provide access to the files in the cloud, it was only a tiny leap to turn an S3 bucket into a web server.
-So now S3 buckets [can be published as web sites](https://docs.aws.amazon.com/AmazonS3/latest/userguide/EnableWebsiteHosting.html)
+So now S3 buckets [can be published as websites](https://docs.aws.amazon.com/AmazonS3/latest/userguide/EnableWebsiteHosting.html)
 with a few configuration settings, including making the contents publicly accessible.
 
 #### Web servers, files, and the different modes of S3 buckets
 
-In the simplest web sites, the URL "path" (the part after the site name) corresponds directly to the path (under
+In the simplest websites, the URL "path" (the part after the site name) corresponds directly to the path (under
 a special directory we will call `/webroot`) and name
 of a file on the web server. So if the web server gets a request for "http://example.com/foo/bar/baz.html" it will
 look for a file `/webroot/foo/bar/baz.html`. If it exists, the server will return its contents, and if it does not exist,
-the server will return a `Not Found` error. An S3 bucket, whether configured as a file store or a web site, will
+the server will return a `Not Found` error. An S3 bucket, whether configured as a file store or a website, will
 always do both of these things.
 
 Web servers, however, do some helpful extra things. To name a few:
@@ -215,7 +215,7 @@ S3 buckets configured as static websites (`website_enabled = true`), however, ha
 and error documents. The disadvantage is that you have to make the entire bucket public (although you can still
 restrict access to some portions of the bucket).
 
-Another feature or drawback (depending on your point of view) of S3 buckets configured as static web sites is that
+Another feature or drawback (depending on your point of view) of S3 buckets configured as static websites is that
 they are directly accessible via their [website endpoint](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteEndpoints.html)
 as well as through Cloudfront. This module has a feature, `s3_website_password_enabled`, that requires a password
 be passed in the HTTP request header and configures the CDN to do that, which will make it much harder to access
@@ -357,13 +357,14 @@ Available targets:
 | [aws_iam_policy_document.deployment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.s3_origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.s3_website_origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_s3_bucket.cf_logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/s3_bucket) | data source |
 | [aws_s3_bucket.origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/s3_bucket) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_access_log_bucket_name"></a> [access\_log\_bucket\_name](#input\_access\_log\_bucket\_name) | Name of the S3 bucket where s3 access log will be sent to | `string` | `""` | no |
+| <a name="input_access_log_bucket_name"></a> [access\_log\_bucket\_name](#input\_access\_log\_bucket\_name) | DEPRECATED. Use `s3_access_log_bucket_name` instead. | `string` | `null` | no |
 | <a name="input_acm_certificate_arn"></a> [acm\_certificate\_arn](#input\_acm\_certificate\_arn) | Existing ACM Certificate ARN | `string` | `""` | no |
 | <a name="input_additional_bucket_policy"></a> [additional\_bucket\_policy](#input\_additional\_bucket\_policy) | Additional policies for the bucket. If included in the policies, the variables `${bucket_name}`, `${origin_path}` and `${cloudfront_origin_access_identity_iam_arn}` will be substituted. It is also possible to override the default policy statements by providing statements with `S3GetObjectForCloudFront` and `S3ListBucketForCloudFront` sid. | `string` | `"{}"` | no |
 | <a name="input_additional_tag_map"></a> [additional\_tag\_map](#input\_additional\_tag\_map) | Additional tags for appending to tags\_as\_list\_of\_maps. Not added to `tags`. | `map(string)` | `{}` | no |
@@ -373,6 +374,11 @@ Available targets:
 | <a name="input_block_origin_public_access_enabled"></a> [block\_origin\_public\_access\_enabled](#input\_block\_origin\_public\_access\_enabled) | When set to 'true' the s3 origin bucket will have public access block enabled | `bool` | `false` | no |
 | <a name="input_cache_policy_id"></a> [cache\_policy\_id](#input\_cache\_policy\_id) | The unique identifier of the existing cache policy to attach to the default cache behavior.<br>If not provided, this module will add a default cache policy using other provided inputs. | `string` | `null` | no |
 | <a name="input_cached_methods"></a> [cached\_methods](#input\_cached\_methods) | List of cached methods (e.g. GET, PUT, POST, DELETE, HEAD) | `list(string)` | <pre>[<br>  "GET",<br>  "HEAD"<br>]</pre> | no |
+| <a name="input_cloudfront_access_log_bucket_name"></a> [cloudfront\_access\_log\_bucket\_name](#input\_cloudfront\_access\_log\_bucket\_name) | When `cloudfront_access_log_create_bucket` is `false`, this is the name of the existing S3 Bucket where<br>Cloudfront Access Logs are to be delivered and is required. IGNORED when `cloudfront_access_log_create_bucket` is `true`. | `string` | `""` | no |
+| <a name="input_cloudfront_access_log_create_bucket"></a> [cloudfront\_access\_log\_create\_bucket](#input\_cloudfront\_access\_log\_create\_bucket) | When `true` and `cloudfront_access_logging_enabled` is also true, this module will create a new,<br>separate S3 bucket to receive Cloudfront Access Logs. | `bool` | `true` | no |
+| <a name="input_cloudfront_access_log_include_cookies"></a> [cloudfront\_access\_log\_include\_cookies](#input\_cloudfront\_access\_log\_include\_cookies) | Set true to include cookies in Cloudfront Access Logs | `bool` | `false` | no |
+| <a name="input_cloudfront_access_log_prefix"></a> [cloudfront\_access\_log\_prefix](#input\_cloudfront\_access\_log\_prefix) | Prefix to use for Cloudfront Access Log object keys. Defaults to no prefix. | `string` | `""` | no |
+| <a name="input_cloudfront_access_logging_enabled"></a> [cloudfront\_access\_logging\_enabled](#input\_cloudfront\_access\_logging\_enabled) | Set true to enable delivery of Cloudfront Access Logs to an S3 bucket | `bool` | `true` | no |
 | <a name="input_cloudfront_origin_access_identity_iam_arn"></a> [cloudfront\_origin\_access\_identity\_iam\_arn](#input\_cloudfront\_origin\_access\_identity\_iam\_arn) | Existing cloudfront origin access identity iam arn that is supplied in the s3 bucket policy | `string` | `""` | no |
 | <a name="input_cloudfront_origin_access_identity_path"></a> [cloudfront\_origin\_access\_identity\_path](#input\_cloudfront\_origin\_access\_identity\_path) | Existing cloudfront origin access identity path used in the cloudfront distribution's s3\_origin\_config content | `string` | `""` | no |
 | <a name="input_comment"></a> [comment](#input\_comment) | Comment for the origin access identity | `string` | `"Managed by Terraform"` | no |
@@ -397,7 +403,7 @@ Available targets:
 | <a name="input_encryption_enabled"></a> [encryption\_enabled](#input\_encryption\_enabled) | When set to 'true' the resource will have aes256 encryption enabled by default | `bool` | `true` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Environment, e.g. 'uw2', 'us-west-2', OR 'prod', 'staging', 'dev', 'UAT' | `string` | `null` | no |
 | <a name="input_error_document"></a> [error\_document](#input\_error\_document) | An absolute path to the document to return in case of a 4XX error | `string` | `""` | no |
-| <a name="input_extra_logs_attributes"></a> [extra\_logs\_attributes](#input\_extra\_logs\_attributes) | Additional attributes to put onto the log bucket label | `list(string)` | <pre>[<br>  "logs"<br>]</pre> | no |
+| <a name="input_extra_logs_attributes"></a> [extra\_logs\_attributes](#input\_extra\_logs\_attributes) | Additional attributes to add to the end of the generated Cloudfront Access Log S3 Bucket name.<br>Only effective if `cloudfront_access_log_create_bucket` is `true`. | `list(string)` | <pre>[<br>  "logs"<br>]</pre> | no |
 | <a name="input_extra_origin_attributes"></a> [extra\_origin\_attributes](#input\_extra\_origin\_attributes) | Additional attributes to put onto the origin label | `list(string)` | <pre>[<br>  "origin"<br>]</pre> | no |
 | <a name="input_forward_cookies"></a> [forward\_cookies](#input\_forward\_cookies) | Specifies whether you want CloudFront to forward all or no cookies to the origin. Can be 'all' or 'none' | `string` | `"none"` | no |
 | <a name="input_forward_header_values"></a> [forward\_header\_values](#input\_forward\_header\_values) | A list of whitelisted header values to forward to the origin (incompatible with `cache_policy_id`) | `list(string)` | <pre>[<br>  "Access-Control-Request-Headers",<br>  "Access-Control-Request-Method",<br>  "Origin"<br>]</pre> | no |
@@ -411,13 +417,13 @@ Available targets:
 | <a name="input_label_order"></a> [label\_order](#input\_label\_order) | The naming order of the id output and Name tag.<br>Defaults to ["namespace", "environment", "stage", "name", "attributes"].<br>You can omit any of the 5 elements, but at least one must be present. | `list(string)` | `null` | no |
 | <a name="input_label_value_case"></a> [label\_value\_case](#input\_label\_value\_case) | The letter case of output label values (also used in `tags` and `id`).<br>Possible values: `lower`, `title`, `upper` and `none` (no transformation).<br>Default value: `lower`. | `string` | `null` | no |
 | <a name="input_lambda_function_association"></a> [lambda\_function\_association](#input\_lambda\_function\_association) | A config block that triggers a lambda function with specific actions | <pre>list(object({<br>    event_type   = string<br>    include_body = bool<br>    lambda_arn   = string<br>  }))</pre> | `[]` | no |
-| <a name="input_log_expiration_days"></a> [log\_expiration\_days](#input\_log\_expiration\_days) | Number of days after which to expunge the objects | `number` | `90` | no |
-| <a name="input_log_glacier_transition_days"></a> [log\_glacier\_transition\_days](#input\_log\_glacier\_transition\_days) | Number of days after which to move the data to the glacier storage tier | `number` | `60` | no |
-| <a name="input_log_include_cookies"></a> [log\_include\_cookies](#input\_log\_include\_cookies) | Include cookies in access logs | `bool` | `false` | no |
-| <a name="input_log_prefix"></a> [log\_prefix](#input\_log\_prefix) | Path of logs in S3 bucket | `string` | `""` | no |
-| <a name="input_log_standard_transition_days"></a> [log\_standard\_transition\_days](#input\_log\_standard\_transition\_days) | Number of days to persist in the standard storage tier before moving to the glacier tier | `number` | `30` | no |
-| <a name="input_log_versioning_enabled"></a> [log\_versioning\_enabled](#input\_log\_versioning\_enabled) | When true, the access logs bucket will be versioned | `bool` | `false` | no |
-| <a name="input_logging_enabled"></a> [logging\_enabled](#input\_logging\_enabled) | When true, access logs will be sent to a newly created s3 bucket | `bool` | `true` | no |
+| <a name="input_log_expiration_days"></a> [log\_expiration\_days](#input\_log\_expiration\_days) | Number of days after object creation to expire Cloudfront Access Log objects.<br>Only effective if `cloudfront_access_log_create_bucket` is `true`. | `number` | `90` | no |
+| <a name="input_log_glacier_transition_days"></a> [log\_glacier\_transition\_days](#input\_log\_glacier\_transition\_days) | Number of days after object creation to move Cloudfront Access Log objects to the glacier tier.<br>Only effective if `cloudfront_access_log_create_bucket` is `true`. | `number` | `60` | no |
+| <a name="input_log_include_cookies"></a> [log\_include\_cookies](#input\_log\_include\_cookies) | DEPRECATED. Use `cloudfront_access_log_include_cookies` instead. | `bool` | `null` | no |
+| <a name="input_log_prefix"></a> [log\_prefix](#input\_log\_prefix) | DEPRECATED. Use `cloudfront_access_log_prefix` instead. | `string` | `null` | no |
+| <a name="input_log_standard_transition_days"></a> [log\_standard\_transition\_days](#input\_log\_standard\_transition\_days) | Number of days after object creation to move Cloudfront Access Log objects to the infrequent access tier.<br>Only effective if `cloudfront_access_log_create_bucket` is `true`. | `number` | `30` | no |
+| <a name="input_log_versioning_enabled"></a> [log\_versioning\_enabled](#input\_log\_versioning\_enabled) | Set `true` to enable object versioning in the created Cloudfront Access Log S3 Bucket.<br>Only effective if `cloudfront_access_log_create_bucket` is `true`. | `bool` | `false` | no |
+| <a name="input_logging_enabled"></a> [logging\_enabled](#input\_logging\_enabled) | DEPRECATED. Use `cloudfront_access_logging_enabled` instead. | `bool` | `null` | no |
 | <a name="input_max_ttl"></a> [max\_ttl](#input\_max\_ttl) | Maximum amount of time (in seconds) that an object is in a CloudFront cache | `number` | `31536000` | no |
 | <a name="input_min_ttl"></a> [min\_ttl](#input\_min\_ttl) | Minimum amount of time that you want objects to stay in CloudFront caches | `number` | `0` | no |
 | <a name="input_minimum_protocol_version"></a> [minimum\_protocol\_version](#input\_minimum\_protocol\_version) | Cloudfront TLS minimum protocol version. See [Supported protocols and ciphers between viewers and CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html#secure-connections-supported-ciphers) for more information. | `string` | `"TLSv1.2_2019"` | no |
@@ -436,6 +442,9 @@ Available targets:
 | <a name="input_redirect_all_requests_to"></a> [redirect\_all\_requests\_to](#input\_redirect\_all\_requests\_to) | A hostname to redirect all website requests for this distribution to. If this is set, it overrides other website settings | `string` | `""` | no |
 | <a name="input_regex_replace_chars"></a> [regex\_replace\_chars](#input\_regex\_replace\_chars) | Regex to replace chars with empty string in `namespace`, `environment`, `stage` and `name`.<br>If not set, `"/[^a-zA-Z0-9-]/"` is used to remove all characters other than hyphens, letters and digits. | `string` | `null` | no |
 | <a name="input_routing_rules"></a> [routing\_rules](#input\_routing\_rules) | A json array containing routing rules describing redirect behavior and when redirects are applied | `string` | `""` | no |
+| <a name="input_s3_access_log_bucket_name"></a> [s3\_access\_log\_bucket\_name](#input\_s3\_access\_log\_bucket\_name) | Name of the existing S3 bucket where S3 Access Logs will be delivered. Default is not to enable S3 Access Logging. | `string` | `"foo"` | no |
+| <a name="input_s3_access_log_prefix"></a> [s3\_access\_log\_prefix](#input\_s3\_access\_log\_prefix) | Prefix to use for S3 Access Log object keys. Defaults to `logs/${module.this.id}` | `string` | `""` | no |
+| <a name="input_s3_access_logging_enabled"></a> [s3\_access\_logging\_enabled](#input\_s3\_access\_logging\_enabled) | Set `true` to deliver S3 Access Logs to the `s3_access_log_bucket_name` bucket.<br>Defaults to `false` if `s3_access_log_bucket_name` is empty (the default), `true` otherwise.<br>Must be set explicitly if the access log bucket is being created at the same time as this module is being invoked. | `bool` | `null` | no |
 | <a name="input_s3_origins"></a> [s3\_origins](#input\_s3\_origins) | A list of S3 [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) (in addition to the one created by this module) for this distribution.<br>S3 buckets configured as websites are `custom_origins`, not `s3_origins`. | <pre>list(object({<br>    domain_name = string<br>    origin_id   = string<br>    origin_path = string<br>    s3_origin_config = object({<br>      origin_access_identity = string<br>    })<br>  }))</pre> | `[]` | no |
 | <a name="input_s3_website_password_enabled"></a> [s3\_website\_password\_enabled](#input\_s3\_website\_password\_enabled) | If set to true, and `website_enabled` is also true, a password will be required in the `Referrer` field of the<br>HTTP request in order to access the website, and Cloudfront will be configured to pass this password in its requests.<br>This will make it much harder for people to bypass Cloudfront and access the S3 website directly via its website endpoint. | `bool` | `false` | no |
 | <a name="input_stage"></a> [stage](#input\_stage) | Stage, e.g. 'prod', 'staging', 'dev', OR 'source', 'build', 'test', 'deploy', 'release' | `string` | `null` | no |
