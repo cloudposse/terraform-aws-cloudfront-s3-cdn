@@ -420,7 +420,7 @@ variable "deployment_principal_arns" {
     Resource list will include the bucket itself along with all the prefixes.
     EOT
   validation {
-    condition     = alltrue([for prefixes in var.deployment_principal_arns : alltrue([for prefix in prefixes : substr(prefix,0,1) == "/"])])
+    condition     = alltrue([for prefixes in var.deployment_principal_arns : alltrue([for prefix in prefixes : substr(prefix, 0, 1) == "/"])])
     error_message = "Prefixes must all start with '/'."
   }
 }
