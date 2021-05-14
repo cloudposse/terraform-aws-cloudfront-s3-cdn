@@ -43,9 +43,9 @@ resource "aws_iam_role" "test_role" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Sid    = ""
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Sid       = ""
         Principal = { "AWS" : "arn:aws:iam::${data.aws_caller_identity.current[0].account_id}:root" }
       },
     ]
