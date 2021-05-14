@@ -114,7 +114,7 @@ module "cdn" {
   dns_alias_enabled = true
   parent_zone_name  = "cloudposse.com"
 
-  deployment_arns = {
+  deployment_principal_arns = {
     "arn:aws:s3:::principal1" = ["/prefix1", "/prefix2"]
     "arn:aws:s3:::principal2" = [""]
   }
