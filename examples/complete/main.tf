@@ -3,10 +3,18 @@ provider "aws" {
 }
 
 locals {
-  enabled = module.this.enabled
+  enabled          = module.this.enabled
+  test_role_a_name = "test_role_a"
+  test_role_b_name = "test_role_b"
+}
+
+data "aws_caller_identity" "current" {
+  count = local.enabled ? 1 : 0
 }
 
 data "aws_iam_policy_document" "document" {
+  count = local.enabled ? 1 : 0
+
   statement {
     sid = "TemplateTest"
 
@@ -22,7 +30,27 @@ data "aws_iam_policy_document" "document" {
   }
 }
 
-data "aws_canonical_user_id" "current" {}
+data "aws_canonical_user_id" "current" {
+  count = local.enabled ? 1 : 0
+}
+
+resource "aws_iam_role" "test_role" {
+  for_each = local.enabled ? toset([local.test_role_a_name, local.test_role_b_name]) : toset([])
+
+  name = each.value
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = { "AWS" : "arn:aws:iam::${data.aws_caller_identity.current[0].account_id}:root" }
+      },
+    ]
+  })
+}
 
 module "s3_bucket" {
   source  = "cloudposse/s3-bucket/aws"
@@ -36,7 +64,7 @@ module "s3_bucket" {
 
   grants = [
     {
-      id          = data.aws_canonical_user_id.current.id
+      id          = data.aws_canonical_user_id.current[0].id
       type        = "CanonicalUser"
       permissions = ["FULL_CONTROL"]
       uri         = null
@@ -63,6 +91,11 @@ module "cloudfront_s3_cdn" {
   cors_allowed_origins = ["*.cloudposse.com"]
   cors_expose_headers  = ["ETag"]
 
+  deployment_principal_arns = {
+    "arn:aws:iam::${data.aws_caller_identity.current[0].account_id}:role/${local.test_role_a_name}" = ["/"]
+    "arn:aws:iam::${data.aws_caller_identity.current[0].account_id}:role/${local.test_role_b_name}" = ["/prefix1", "/prefix2"]
+  }
+
   s3_access_logging_enabled = true
   s3_access_log_bucket_name = module.s3_bucket.bucket_id
   s3_access_log_prefix      = "logs/s3_access"
@@ -70,11 +103,11 @@ module "cloudfront_s3_cdn" {
   cloudfront_access_logging_enabled = true
   cloudfront_access_log_prefix      = "logs/cf_access"
 
-  additional_bucket_policy = data.aws_iam_policy_document.document.json
+  additional_bucket_policy = data.aws_iam_policy_document.document[0].json
 }
 
 resource "aws_s3_bucket_object" "index" {
-  count = module.this.enabled ? 1 : 0
+  count = local.enabled ? 1 : 0
 
   bucket       = module.cloudfront_s3_cdn.s3_bucket
   key          = "index.html"
