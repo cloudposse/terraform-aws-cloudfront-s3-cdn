@@ -469,7 +469,7 @@ variable "s3_access_logging_enabled" {
 
 variable "s3_access_log_bucket_name" {
   type        = string # diff hint
-  default     = "foo"  # diff hint
+  default     = ""  # diff hint
   description = "Name of the existing S3 bucket where S3 Access Logs will be delivered. Default is not to enable S3 Access Logging."
 }
 
