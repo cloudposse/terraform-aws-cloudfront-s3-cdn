@@ -167,8 +167,8 @@ data "aws_iam_policy_document" "deployment" {
   statement {
     actions = var.deployment_actions
 
-    resources = flatten(distinct([
-      local.origin_bucket.arn,
+    resources = distinct(flatten([
+      [local.origin_bucket.arn],
       formatlist("${local.origin_bucket.arn}%s*", each.value),
     ]))
 
