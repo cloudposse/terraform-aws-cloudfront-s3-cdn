@@ -419,10 +419,6 @@ variable "deployment_principal_arns" {
     (Optional) Map of IAM Principal ARNs to lists of S3 path prefixes to grant `deployment_actions` permissions.
     Resource list will include the bucket itself along with all the prefixes.
     EOT
-  validation {
-    condition     = alltrue([for prefixes in var.deployment_principal_arns : alltrue([for prefix in prefixes : substr(prefix, 0, 1) == "/"])])
-    error_message = "Prefixes must all start with '/'."
-  }
 }
 
 variable "deployment_actions" {
