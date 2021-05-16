@@ -103,6 +103,7 @@ module "cloudfront_s3_cdn" {
   cloudfront_access_logging_enabled = true
   cloudfront_access_log_prefix      = "logs/cf_access"
 
+  minimum_protocol_version = "TLSv1" # Because var.acm_certificate_arn is unset, only TLSv1 can be specified (see root-level variables.tf for more information).
   additional_bucket_policy = data.aws_iam_policy_document.document[0].json
 }
 

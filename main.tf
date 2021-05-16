@@ -382,7 +382,7 @@ resource "aws_cloudfront_distribution" "default" {
   viewer_certificate {
     acm_certificate_arn            = var.acm_certificate_arn
     ssl_support_method             = var.acm_certificate_arn == "" ? "" : "sni-only"
-    minimum_protocol_version       = var.acm_certificate_arn == "" ? "TLSv1" : var.minimum_protocol_version # If cloudfront_default_certificate=true, only TLSv1 can be specified (see: https://docs.aws.amazon.com/cli/latest/reference/cloudfront/create-distribution.html).
+    minimum_protocol_version       = var.minimum_protocol_version
     cloudfront_default_certificate = var.acm_certificate_arn == "" ? true : false
   }
 
