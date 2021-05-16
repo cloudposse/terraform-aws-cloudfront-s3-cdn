@@ -417,7 +417,7 @@ variable "deployment_principal_arns" {
   default     = {}
   description = <<-EOT
     (Optional) Map of IAM Principal ARNs to lists of S3 path prefixes to grant `deployment_actions` permissions.
-    Resource list will include the bucket itself along with all the prefixes.
+    Resource list will include the bucket itself along with all the prefixes. All prefixes must begin with '/'.
     EOT
 }
 
