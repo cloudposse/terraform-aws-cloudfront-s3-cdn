@@ -45,7 +45,7 @@ resource "aws_iam_role" "test_role" {
       {
         Action    = "sts:AssumeRole"
         Effect    = "Allow"
-        Sid       = ""
+        Sid       = "Enable${replace(title(replace(each.key, "_", " ")), " ", "")}" # snake_case to CamelCase
         Principal = { "AWS" : "arn:aws:iam::${data.aws_caller_identity.current[0].account_id}:root" }
       },
     ]
