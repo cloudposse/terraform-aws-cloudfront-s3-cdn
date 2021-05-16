@@ -64,7 +64,7 @@ module "s3_bucket" {
 
   grants = [
     {
-      id          = data.aws_canonical_user_id.current[0].id
+      id          = local.enabled ? data.aws_canonical_user_id.current[0].id : ""
       type        = "CanonicalUser"
       permissions = ["FULL_CONTROL"]
       uri         = null
@@ -92,8 +92,8 @@ module "cloudfront_s3_cdn" {
   cors_expose_headers  = ["ETag"]
 
   deployment_principal_arns = {
-    "arn:aws:iam::${data.aws_caller_identity.current[0].account_id}:role/${local.test_role_a_name}" = ["/"]
-    "arn:aws:iam::${data.aws_caller_identity.current[0].account_id}:role/${local.test_role_b_name}" = ["/prefix1", "/prefix2"]
+    "arn:aws:iam::${local.enabled ? data.aws_caller_identity.current[0].account_id : ""}:role/${local.test_role_a_name}" = ["/"]
+    "arn:aws:iam::${local.enabled ? data.aws_caller_identity.current[0].account_id : ""}:role/${local.test_role_b_name}" = ["/prefix1", "/prefix2"]
   }
 
   s3_access_logging_enabled = true
@@ -104,7 +104,7 @@ module "cloudfront_s3_cdn" {
   cloudfront_access_log_prefix      = "logs/cf_access"
 
   minimum_protocol_version = "TLSv1" # Because var.acm_certificate_arn is unset, only TLSv1 can be specified (see root-level variables.tf for more information).
-  additional_bucket_policy = data.aws_iam_policy_document.document[0].json
+  additional_bucket_policy = local.enabled ? data.aws_iam_policy_document.document[0].json : ""
 }
 
 resource "aws_s3_bucket_object" "index" {
