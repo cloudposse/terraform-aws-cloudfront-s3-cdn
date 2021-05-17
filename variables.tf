@@ -12,8 +12,13 @@ variable "acm_certificate_arn" {
 
 variable "minimum_protocol_version" {
   type        = string
-  description = "Cloudfront TLS minimum protocol version. See [Supported protocols and ciphers between viewers and CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html#secure-connections-supported-ciphers) for more information."
-  default     = "TLSv1.2_2019"
+  description = <<-EOT
+    Cloudfront TLS minimum protocol version.
+    If `var.acm_certificate_arn` is unset, only "TLSv1" can be specified. See: [AWS Cloudfront create-distribution documentation](https://docs.aws.amazon.com/cli/latest/reference/cloudfront/create-distribution.html)
+    and [Supported protocols and ciphers between viewers and CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html#secure-connections-supported-ciphers) for more information.
+    Defaults to "TLSv1.2_2019" unless `var.acm_certificate_arn` is unset, in which case it defaults to `TLSv1`
+    EOT
+  default     = ""
 }
 
 variable "aliases" {
@@ -25,7 +30,10 @@ variable "aliases" {
 variable "additional_bucket_policy" {
   type        = string
   default     = "{}"
-  description = "Additional policies for the bucket. If included in the policies, the variables `$${bucket_name}`, `$${origin_path}` and `$${cloudfront_origin_access_identity_iam_arn}` will be substituted. It is also possible to override the default policy statements by providing statements with `S3GetObjectForCloudFront` and `S3ListBucketForCloudFront` sid."
+  description = <<-EOT
+    Additional policies for the bucket. If included in the policies, the variables `$${bucket_name}`, `$${origin_path}` and `$${cloudfront_origin_access_identity_iam_arn}` will be substituted.
+    It is also possible to override the default policy statements by providing statements with `S3GetObjectForCloudFront` and `S3ListBucketForCloudFront` sid.
+    EOT
 }
 
 variable "override_origin_bucket_policy" {
@@ -417,14 +425,14 @@ variable "deployment_principal_arns" {
   default     = {}
   description = <<-EOT
     (Optional) Map of IAM Principal ARNs to lists of S3 path prefixes to grant `deployment_actions` permissions.
-    Resource list will include the bucket itself along with all the prefixes.
+    Resource list will include the bucket itself along with all the prefixes. Prefixes should not begin with '/'.
     EOT
 }
 
 variable "deployment_actions" {
   type        = list(string)
   default     = ["s3:PutObject", "s3:PutObjectAcl", "s3:GetObject", "s3:DeleteObject", "s3:ListBucket", "s3:ListBucketMultipartUploads", "s3:GetBucketLocation", "s3:AbortMultipartUpload"]
-  description = "List of actions to permit `deployment_principal_arns` to perform"
+  description = "List of actions to permit `deployment_principal_arns` to perform on bucket and bucket prefixes (see `deployment_principal_arns`)"
 }
 
 variable "cloudfront_origin_access_identity_iam_arn" {
@@ -469,7 +477,7 @@ variable "s3_access_logging_enabled" {
 
 variable "s3_access_log_bucket_name" {
   type        = string # diff hint
-  default     = "foo"  # diff hint
+  default     = ""     # diff hint
   description = "Name of the existing S3 bucket where S3 Access Logs will be delivered. Default is not to enable S3 Access Logging."
 }
 

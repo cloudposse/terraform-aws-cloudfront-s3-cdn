@@ -56,6 +56,9 @@ locals {
     local.lookup_cf_log_bucket ? data.aws_s3_bucket.cf_logs[0].bucket_domain_name : module.logs.bucket_domain_name
   ) : ""
 
+  use_default_acm_certificate = var.acm_certificate_arn == ""
+  minimum_protocol_version    = var.minimum_protocol_version == "" ? (local.use_default_acm_certificate ? "TLSv1" : "TLSv1.2_2019") : var.minimum_protocol_version
+
   website_config = {
     redirect_all = [
       {
@@ -167,9 +170,9 @@ data "aws_iam_policy_document" "deployment" {
   statement {
     actions = var.deployment_actions
 
-    resources = flatten(distinct([
-      local.origin_bucket.arn,
-      formatlist("${local.origin_bucket.arn}%s*", each.value),
+    resources = distinct(flatten([
+      [local.origin_bucket.arn],
+      formatlist("${local.origin_bucket.arn}/%s*", each.value),
     ]))
 
     principals {
@@ -381,9 +384,9 @@ resource "aws_cloudfront_distribution" "default" {
 
   viewer_certificate {
     acm_certificate_arn            = var.acm_certificate_arn
-    ssl_support_method             = var.acm_certificate_arn == "" ? "" : "sni-only"
-    minimum_protocol_version       = var.minimum_protocol_version
-    cloudfront_default_certificate = var.acm_certificate_arn == "" ? true : false
+    ssl_support_method             = local.use_default_acm_certificate ? "" : "sni-only"
+    minimum_protocol_version       = local.minimum_protocol_version
+    cloudfront_default_certificate = local.use_default_acm_certificate
   }
 
   default_cache_behavior {

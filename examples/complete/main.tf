@@ -7,6 +7,8 @@ locals {
 }
 
 data "aws_iam_policy_document" "document" {
+  count = local.enabled ? 1 : 0
+
   statement {
     sid = "TemplateTest"
 
@@ -22,7 +24,9 @@ data "aws_iam_policy_document" "document" {
   }
 }
 
-data "aws_canonical_user_id" "current" {}
+data "aws_canonical_user_id" "current" {
+  count = local.enabled ? 1 : 0
+}
 
 module "s3_bucket" {
   source  = "cloudposse/s3-bucket/aws"
@@ -36,7 +40,7 @@ module "s3_bucket" {
 
   grants = [
     {
-      id          = data.aws_canonical_user_id.current.id
+      id          = local.enabled ? data.aws_canonical_user_id.current[0].id : ""
       type        = "CanonicalUser"
       permissions = ["FULL_CONTROL"]
       uri         = null
@@ -53,8 +57,8 @@ module "s3_bucket" {
 }
 
 module "cloudfront_s3_cdn" {
-  source               = "../../"
-  context              = module.this.context
+  source = "../../"
+
   parent_zone_name     = var.parent_zone_name
   dns_alias_enabled    = true
   origin_force_destroy = true
@@ -63,6 +67,8 @@ module "cloudfront_s3_cdn" {
   cors_allowed_origins = ["*.cloudposse.com"]
   cors_expose_headers  = ["ETag"]
 
+  deployment_principal_arns = local.deployment_principal_arns
+
   s3_access_logging_enabled = true
   s3_access_log_bucket_name = module.s3_bucket.bucket_id
   s3_access_log_prefix      = "logs/s3_access"
@@ -70,11 +76,13 @@ module "cloudfront_s3_cdn" {
   cloudfront_access_logging_enabled = true
   cloudfront_access_log_prefix      = "logs/cf_access"
 
-  additional_bucket_policy = data.aws_iam_policy_document.document.json
+  additional_bucket_policy = local.enabled ? data.aws_iam_policy_document.document[0].json : ""
+
+  context = module.this.context
 }
 
 resource "aws_s3_bucket_object" "index" {
-  count = module.this.enabled ? 1 : 0
+  count = local.enabled ? 1 : 0
 
   bucket       = module.cloudfront_s3_cdn.s3_bucket
   key          = "index.html"
