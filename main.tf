@@ -47,7 +47,7 @@ locals {
   ) : ""
 
   bucket             = local.origin_bucket.bucket
-  bucket_domain_name = var.website_enabled ? local.origin_bucket.website_domain : local.origin_bucket.bucket_regional_domain_name
+  bucket_domain_name = var.website_enabled ? local.origin_bucket.website_endpoint : local.origin_bucket.bucket_regional_domain_name
 
   override_origin_bucket_policy = local.enabled && var.override_origin_bucket_policy
 
