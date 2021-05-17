@@ -2,13 +2,13 @@
 
 locals {
   test_deployment_role_prefix_map = local.enabled ? {
-    deploy-alpha = [""]
+    deploy_alpha = [""]
     cicd_role    = ["prefix1/", "prefix2/"]
   } : {}
 
   our_account_id            = local.enabled ? data.aws_caller_identity.current[0].account_id : ""
-  our_role_arn_prefx        = "arn:aws:iam::${local.our_account_id}:role"
-  deployment_principal_arns = { for k, v in local.test_deployment_role_prefix_map : format("%v/%v", local.our_role_arn_prefx, k) => v }
+  our_role_arn_prefix       = "arn:aws:iam::${local.our_account_id}:role"
+  deployment_principal_arns = { for k, v in local.test_deployment_role_prefix_map : format("%v/%v", local.our_role_arn_prefix, k) => v }
 }
 
 data "aws_caller_identity" "current" {
