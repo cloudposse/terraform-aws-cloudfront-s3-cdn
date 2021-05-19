@@ -285,6 +285,16 @@ variable "lambda_function_association" {
   default     = []
 }
 
+variable "function_association" {
+  type = list(object({
+    event_type   = string
+    function_arn = string
+  }))
+
+  description = "A config block that triggers a CloudFront function with specific actions"
+  default     = []
+}
+
 variable "web_acl_id" {
   type        = string
   default     = ""
@@ -355,6 +365,11 @@ variable "ordered_cache" {
       event_type   = string
       include_body = bool
       lambda_arn   = string
+    }))
+
+    function_association = list(object({
+      event_type   = string
+      function_arn = string
     }))
   }))
   default     = []
