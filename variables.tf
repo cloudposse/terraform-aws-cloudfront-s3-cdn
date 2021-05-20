@@ -281,7 +281,7 @@ variable "lambda_function_association" {
     lambda_arn   = string
   }))
 
-  description = "A config block that triggers a lambda function with specific actions"
+  description = "A config block that triggers a lambda@edge function with specific actions"
   default     = []
 }
 
