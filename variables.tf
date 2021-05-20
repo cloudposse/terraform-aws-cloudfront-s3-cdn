@@ -291,7 +291,11 @@ variable "function_association" {
     function_arn = string
   }))
 
-  description = "A config block that triggers a CloudFront function with specific actions"
+  description = <<-EOT
+    A config block that triggers a CloudFront function with specific actions.
+    See the [aws_cloudfront_distribution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#function-association)
+    documentation for more information.
+  EOT
   default     = []
 }
 
