@@ -390,12 +390,12 @@ resource "aws_cloudfront_distribution" "default" {
   }
 
   default_cache_behavior {
-    allowed_methods  = var.allowed_methods
-    cached_methods   = var.cached_methods
-    cache_policy_id  = var.cache_policy_id
-    target_origin_id = module.this.id
-    compress         = var.compress
-    trusted_signers  = var.trusted_signers
+    allowed_methods    = var.allowed_methods
+    cached_methods     = var.cached_methods
+    cache_policy_id    = var.cache_policy_id
+    target_origin_id   = module.this.id
+    compress           = var.compress
+    trusted_signers    = var.trusted_signers
     trusted_key_groups = var.trusted_key_groups
 
     dynamic "forwarded_values" {
@@ -435,11 +435,11 @@ resource "aws_cloudfront_distribution" "default" {
     content {
       path_pattern = ordered_cache_behavior.value.path_pattern
 
-      allowed_methods  = ordered_cache_behavior.value.allowed_methods
-      cached_methods   = ordered_cache_behavior.value.cached_methods
-      target_origin_id = ordered_cache_behavior.value.target_origin_id == "" ? module.this.id : ordered_cache_behavior.value.target_origin_id
-      compress         = ordered_cache_behavior.value.compress
-      trusted_signers  = var.trusted_signers
+      allowed_methods    = ordered_cache_behavior.value.allowed_methods
+      cached_methods     = ordered_cache_behavior.value.cached_methods
+      target_origin_id   = ordered_cache_behavior.value.target_origin_id == "" ? module.this.id : ordered_cache_behavior.value.target_origin_id
+      compress           = ordered_cache_behavior.value.compress
+      trusted_signers    = var.trusted_signers
       trusted_key_groups = var.trusted_key_groups
 
       forwarded_values {
