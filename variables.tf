@@ -226,6 +226,12 @@ variable "trusted_signers" {
   description = "The AWS accounts, if any, that you want to allow to create signed URLs for private content. 'self' is acceptable."
 }
 
+variable "trusted_key_groups" {
+  type        = list(string)
+  default     = []
+  description = "A list of key group IDs that CloudFront can use to validate signed URLs or signed cookies."
+}
+
 variable "geo_restriction_type" {
   type = string
 
