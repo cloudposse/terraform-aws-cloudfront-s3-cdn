@@ -452,6 +452,7 @@ resource "aws_cloudfront_distribution" "default" {
       origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
 
       forwarded_values {
+        for_each     = ordered_cache_behavior.value.cache_policy_id == null || ordered_cache_behavior.value.origin_request_policy_id == null ? [true] : []
         query_string = ordered_cache_behavior.value.forward_query_string
         headers      = ordered_cache_behavior.value.forward_header_values
 
