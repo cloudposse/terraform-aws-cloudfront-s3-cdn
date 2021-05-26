@@ -451,13 +451,16 @@ resource "aws_cloudfront_distribution" "default" {
       cache_policy_id          = ordered_cache_behavior.value.cache_policy_id
       origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
 
-      forwarded_values {
-        for_each     = ordered_cache_behavior.value.cache_policy_id == null || ordered_cache_behavior.value.origin_request_policy_id == null ? [true] : []
-        query_string = ordered_cache_behavior.value.forward_query_string
-        headers      = ordered_cache_behavior.value.forward_header_values
+      dynamic "forwarded_values" {
+        # If a cache policy or origin request policy is specified, we cannot include a `forwarded_values` block at all in the API request
+        for_each = ordered_cache_behavior.value.cache_policy_id == null || ordered_cache_behavior.value.origin_request_policy_id == null ? [true] : []
+        content {
+          query_string = ordered_cache_behavior.value.forward_query_string
+          headers      = ordered_cache_behavior.value.forward_header_values
 
-        cookies {
-          forward = ordered_cache_behavior.value.forward_cookies
+          cookies {
+            forward = ordered_cache_behavior.value.forward_cookies
+          }
         }
       }
 
