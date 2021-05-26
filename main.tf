@@ -448,6 +448,9 @@ resource "aws_cloudfront_distribution" "default" {
       compress         = ordered_cache_behavior.value.compress
       trusted_signers  = var.trusted_signers
 
+      cache_policy_id          = ordered_cache_behavior.value.cache_policy_id
+      origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
+
       forwarded_values {
         query_string = ordered_cache_behavior.value.forward_query_string
         headers      = ordered_cache_behavior.value.forward_header_values
