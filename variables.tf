@@ -356,6 +356,9 @@ variable "ordered_cache" {
     cached_methods  = list(string)
     compress        = bool
 
+    cache_policy_id          = string
+    origin_request_policy_id = string
+
     viewer_protocol_policy = string
     min_ttl                = number
     default_ttl            = number
