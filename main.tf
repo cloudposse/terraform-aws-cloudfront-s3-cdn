@@ -182,16 +182,40 @@ data "aws_iam_policy_document" "deployment" {
   }
 }
 
+data "aws_iam_policy_document" "s3_ssl_only" {
+  count = var.allow_ssl_requests_only ? 1 : 0
+  statement {
+    sid     = "ForceSSLOnlyAccess"
+    effect  = "Deny"
+    actions = ["s3:*"]
+    resources = [
+      local.origin_bucket.arn,
+      "${local.origin_bucket.arn}/*"
+    ]
+
+    principals {
+      identifiers = ["*"]
+      type        = "*"
+    }
+
+    condition {
+      test     = "Bool"
+      values   = ["false"]
+      variable = "aws:SecureTransport"
+    }
+  }
+}
+
 data "aws_iam_policy_document" "combined" {
   count = local.enabled ? 1 : 0
 
   source_policy_documents = compact(concat(
     data.aws_iam_policy_document.s3_origin.*.json,
     data.aws_iam_policy_document.s3_website_origin.*.json,
+    data.aws_iam_policy_document.s3_ssl_only.*.json,
     values(data.aws_iam_policy_document.deployment)[*].json
   ))
 }
-
 
 resource "aws_s3_bucket_policy" "default" {
   count = local.create_s3_origin_bucket || local.override_origin_bucket_policy ? 1 : 0
