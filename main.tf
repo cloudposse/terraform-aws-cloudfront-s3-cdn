@@ -4,7 +4,7 @@ locals {
   # Encapsulate logic here so that it is not lost/scattered among the configuration
   website_enabled           = local.enabled && var.website_enabled
   website_password_enabled  = local.website_enabled && var.s3_website_password_enabled
-  s3_origin_enabled         = local.enabled && ! var.website_enabled
+  s3_origin_enabled         = local.enabled && !var.website_enabled
   create_s3_origin_bucket   = local.enabled && var.origin_bucket == null
   s3_access_logging_enabled = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
   create_cf_log_bucket      = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
@@ -51,7 +51,7 @@ locals {
 
   override_origin_bucket_policy = local.enabled && var.override_origin_bucket_policy
 
-  lookup_cf_log_bucket = local.cloudfront_access_logging_enabled && ! local.cloudfront_access_log_create_bucket
+  lookup_cf_log_bucket = local.cloudfront_access_logging_enabled && !local.cloudfront_access_log_create_bucket
   cf_log_bucket_domain = local.cloudfront_access_logging_enabled ? (
     local.lookup_cf_log_bucket ? data.aws_s3_bucket.cf_logs[0].bucket_domain_name : module.logs.bucket_domain_name
   ) : ""
@@ -182,16 +182,40 @@ data "aws_iam_policy_document" "deployment" {
   }
 }
 
+data "aws_iam_policy_document" "s3_ssl_only" {
+  count = var.allow_ssl_requests_only ? 1 : 0
+  statement {
+    sid     = "ForceSSLOnlyAccess"
+    effect  = "Deny"
+    actions = ["s3:*"]
+    resources = [
+      "arn:aws:s3:::${local.bucket}${local.origin_path}",
+      "arn:aws:s3:::${local.bucket}${local.origin_path}/*"
+    ]
+
+    principals {
+      identifiers = ["*"]
+      type        = "*"
+    }
+
+    condition {
+      test     = "Bool"
+      values   = ["false"]
+      variable = "aws:SecureTransport"
+    }
+  }
+}
+
 data "aws_iam_policy_document" "combined" {
   count = local.enabled ? 1 : 0
 
   source_policy_documents = compact(concat(
     data.aws_iam_policy_document.s3_origin.*.json,
     data.aws_iam_policy_document.s3_website_origin.*.json,
+    data.aws_iam_policy_document.s3_ssl_only.*.json,
     values(data.aws_iam_policy_document.deployment)[*].json
   ))
 }
-
 
 resource "aws_s3_bucket_policy" "default" {
   count = local.create_s3_origin_bucket || local.override_origin_bucket_policy ? 1 : 0
@@ -321,7 +345,7 @@ resource "aws_cloudfront_distribution" "default" {
     origin_path = var.origin_path
 
     dynamic "s3_origin_config" {
-      for_each = ! var.website_enabled ? [1] : []
+      for_each = !var.website_enabled ? [1] : []
       content {
         origin_access_identity = local.cf_access.path
       }
