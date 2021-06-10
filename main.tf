@@ -190,7 +190,7 @@ data "aws_iam_policy_document" "s3_ssl_only" {
     actions = ["s3:*"]
     resources = [
       "arn:aws:s3:::${local.bucket}${local.origin_path}",
-      "arn:aws:s3:::${local.bucket}${local.origin_path}/*"
+      "arn:aws:s3:::${local.bucket}${local.origin_path}*"
     ]
 
     principals {
