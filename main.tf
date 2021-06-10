@@ -189,8 +189,8 @@ data "aws_iam_policy_document" "s3_ssl_only" {
     effect  = "Deny"
     actions = ["s3:*"]
     resources = [
-      "arn:aws:s3:::${local.origin_bucket.arn}",
-      "arn:aws:s3:::${local.origin_bucket.arn}/*"
+      local.origin_bucket.arn,
+      "${local.origin_bucket.arn}/*"
     ]
 
     principals {
