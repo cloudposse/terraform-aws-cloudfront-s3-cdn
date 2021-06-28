@@ -80,8 +80,8 @@ usage: |-
     parent_zone_name  = "cloudposse.com"
 
     deployment_principal_arns = {
-      "arn:aws:s3:::principal1" = ["prefix1/", "prefix2/"]
-      "arn:aws:s3:::principal2" = [""]
+      "arn:aws:iam::123456789012:role/principal1" = ["prefix1/", "prefix2/"]
+      "arn:aws:iam::123456789012:role/principal2" = [""]
     }
   }
   ```
