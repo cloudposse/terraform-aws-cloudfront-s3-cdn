@@ -63,7 +63,7 @@ usage: |-
 
   For automated tests of the complete example using [bats](https://github.com/bats-core/bats-core) and [Terratest](https://github.com/gruntwork-io/terratest) (which tests and deploys the example on AWS), see [test](test).
 
-  This will create a new s3 bucket `eg-prod-app` for a cloudfront cdn, and allow `principal1` to upload to
+  The following will create a new s3 bucket `eg-prod-app` for a cloudfront cdn, and allow `principal1` to upload to
   `prefix1` and `prefix2`, while allowing `principal2` to manage the whole bucket.
 
   ```hcl
@@ -80,13 +80,13 @@ usage: |-
     parent_zone_name  = "cloudposse.com"
 
     deployment_principal_arns = {
-      "arn:aws:s3:::principal1" = ["prefix1/", "prefix2/"]
-      "arn:aws:s3:::principal2" = [""]
+      "arn:aws:iam::123456789012:role/principal1" = ["prefix1/", "prefix2/"]
+      "arn:aws:iam::123456789012:role/principal2" = [""]
     }
   }
   ```
 
-  This will reuse an existing s3 bucket `eg-prod-app` for a cloudfront cdn.
+  The following will reuse an existing s3 bucket `eg-prod-app` for a cloudfront cdn.
 
   ```hcl
   module "cdn" {
