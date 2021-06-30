@@ -417,6 +417,31 @@ variable "custom_origins" {
     EOT
 }
 
+variable "custom_failover_origins" {
+  type = map(object({
+    domain_name = string
+    origin_id   = string
+    origin_path = string
+    custom_headers = list(object({
+      name  = string
+      value = string
+    }))
+    custom_origin_config = object({
+      http_port                = number
+      https_port               = number
+      origin_protocol_policy   = string
+      origin_ssl_protocols     = list(string)
+      origin_keepalive_timeout = number
+      origin_read_timeout      = number
+    })
+  }))
+  default     = {}
+  description = <<-EOT
+    A map of custom website [failover origins](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#origin-group-arguments) for this distribution.
+    The key for each object is the `origin_id` (which must correspond to an object existing in `var.custom_origins`) for which to configure the failover origin against.
+    EOT
+}
+
 variable "s3_origins" {
   type = list(object({
     domain_name = string
@@ -430,6 +455,23 @@ variable "s3_origins" {
   description = <<-EOT
     A list of S3 [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) (in addition to the one created by this module) for this distribution.
     S3 buckets configured as websites are `custom_origins`, not `s3_origins`.
+    EOT
+}
+
+variable "s3_failover_origins" {
+  type = map(object({
+    domain_name = string
+    origin_id   = string
+    origin_path = string
+    s3_origin_config = object({
+      origin_access_identity = string
+    })
+  }))
+  default     = {}
+  description = <<-EOT
+    A map of S3 [failover origins](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#origin-group-arguments) for this distribution.
+    The key for each object is the `origin_id` (which must correspond to an object existing in `var.s3_origins`) for which to configure the failover origin against.
+    Failover S3 buckets configured as websites are `custom_failover_origins`, not `s3_failover_origins`.
     EOT
 }
 
@@ -575,6 +617,15 @@ variable "s3_website_password_enabled" {
     HTTP request in order to access the website, and Cloudfront will be configured to pass this password in its requests.
     This will make it much harder for people to bypass Cloudfront and access the S3 website directly via its website endpoint.
     EOT
+}
+
+variable "failover_criteria_status_codes" {
+  type        = list(string)
+  default     = [403, 404, 500, 502]
+  description = <<-EOT
+    List of HTTP Status Codes to use as the failover criteria for this distribution's origin group.
+    This will only have an effect if either `var.custom_failover_origins` or `var.s3_failover_origins` are supplied.
+  EOT
 }
 
 # Variables below here are DEPRECATED and should not be used anymore
