@@ -8,12 +8,6 @@ locals {
   create_s3_origin_bucket        = local.enabled && var.origin_bucket == null
   s3_access_logging_enabled      = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
   create_cf_log_bucket           = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
-  custom_origin_failover_pairs   = length(var.custom_failover_origins) > 0 ? {
-    for origin_id, failover_origin in var.custom_failover_origins : origin_id => failover_origin.origin_id
-  } : {}
-  s3_origin_failover_pairs       = length(var.s3_failover_origins) > 0 ? {
-    for origin_id, failover_origin in var.s3_failover_origins : origin_id => failover_origin.origin_id
-  } : {}
 
   create_cloudfront_origin_access_identity = local.enabled && length(compact([var.cloudfront_origin_access_identity_iam_arn])) == 0 # "" or null
 
@@ -346,40 +340,20 @@ resource "aws_cloudfront_distribution" "default" {
   aliases = var.acm_certificate_arn != "" ? var.aliases : []
 
   dynamic "origin_group" {
-    for_each = keys(local.custom_origin_failover_pairs)
+    for_each = var.origin_groups
     content {
-      origin_id = "${module.this.id}-custom-origin-failover[${origin_group.key}]"
+      origin_id = "${module.this.id}-group[${origin_group.key}]"
 
       failover_criteria {
-        status_codes = var.failover_criteria_status_codes
+        status_codes = origin_group.value.failover_criteria
       }
 
       member {
-        origin_id = origin_group.value
+        origin_id = try(length(origin_group.value.primary_origin_id), 0) > 0 ? origin_group.value.primary_origin_id : module.this.id
       }
 
       member {
-        origin_id = local.custom_origin_failover_pairs[origin_group.value]
-      }
-    }
-  }
-
-
-  dynamic "origin_group" {
-    for_each = keys(local.s3_origin_failover_pairs)
-    content {
-      origin_id = "${module.this.id}-s3-origin-failover[${origin_group.key}]"
-
-      failover_criteria {
-        status_codes = var.failover_criteria_status_codes
-      }
-
-      member {
-        origin_id = origin_group.value
-      }
-
-      member {
-        origin_id = local.s3_origin_failover_pairs[origin_group.value]
+        origin_id = origin_group.value.failover_origin_id
       }
     }
   }
@@ -440,43 +414,7 @@ resource "aws_cloudfront_distribution" "default" {
   }
 
   dynamic "origin" {
-    for_each = values(var.custom_failover_origins)
-    content {
-      domain_name = origin.value.domain_name
-      origin_id   = origin.value.origin_id
-      origin_path = lookup(origin.value, "origin_path", "")
-      dynamic "custom_header" {
-        for_each = lookup(origin.value, "custom_headers", [])
-        content {
-          name  = custom_header.value["name"]
-          value = custom_header.value["value"]
-        }
-      }
-      custom_origin_config {
-        http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
-        https_port               = lookup(origin.value.custom_origin_config, "https_port", 443)
-        origin_protocol_policy   = lookup(origin.value.custom_origin_config, "origin_protocol_policy", "https-only")
-        origin_ssl_protocols     = lookup(origin.value.custom_origin_config, "origin_ssl_protocols", ["TLSv1.2"])
-        origin_keepalive_timeout = lookup(origin.value.custom_origin_config, "origin_keepalive_timeout", 60)
-        origin_read_timeout      = lookup(origin.value.custom_origin_config, "origin_read_timeout", 60)
-      }
-    }
-  }
-
-  dynamic "origin" {
     for_each = var.s3_origins
-    content {
-      domain_name = origin.value.domain_name
-      origin_id   = origin.value.origin_id
-      origin_path = lookup(origin.value, "origin_path", "")
-      s3_origin_config {
-        origin_access_identity = lookup(origin.value.s3_origin_config, "origin_access_identity", "")
-      }
-    }
-  }
-
-  dynamic "origin" {
-    for_each = values(var.s3_failover_origins)
     content {
       domain_name = origin.value.domain_name
       origin_id   = origin.value.origin_id

@@ -13,18 +13,21 @@ locals {
       origin_read_timeout      = 60
     }
   }
-  custom_origins = [
+  custom_origins = var.additional_custom_origins_enabled ? [
     merge(local.default_custom_origin_configuration, {
       domain_name    = module.additional_custom_origin.s3_bucket_website_endpoint
       origin_id      = module.additional_custom_origin.hostname
-    })
-  ]
-  custom_failover_origins = {
-    (module.additional_custom_origin.hostname) = merge(local.default_custom_origin_configuration, {
+    }),
+    merge(local.default_custom_origin_configuration, {
       domain_name    = module.additional_custom_failover_origin.s3_bucket_website_endpoint
       origin_id      = module.additional_custom_failover_origin.hostname
     })
-  }
+  ] : []
+  custom_origin_groups = var.additional_custom_origins_enabled ? [{
+    primary_origin_id  = local.custom_origins[0].origin_id
+    failover_origin_id = local.custom_origins[1].origin_id
+    failover_criteria  = var.origin_group_failover_criteria_status_codes
+  }] : []
 }
 
 # additional labels are required because they will be used for the 'hostname' variables for each of the additional website origins.

@@ -18,3 +18,14 @@ variable "additional_s3_origins_enabled" {
   description = "Whether or not to enable additional s3 origins."
   default     = false
 }
+
+variable "origin_group_failover_criteria_status_codes" {
+  type        = list(string)
+  description = "List of HTTP Status Codes to use as the failover criteria for origin groups."
+  default     = [
+    403,
+    404,
+    500,
+    502
+  ]
+}

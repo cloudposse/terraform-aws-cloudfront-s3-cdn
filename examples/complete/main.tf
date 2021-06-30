@@ -3,7 +3,8 @@ provider "aws" {
 }
 
 locals {
-  enabled = module.this.enabled
+  enabled       = module.this.enabled
+  origin_groups = concat(local.custom_origin_groups, local.s3_origin_groups)
 }
 
 data "aws_iam_policy_document" "document" {
@@ -78,10 +79,9 @@ module "cloudfront_s3_cdn" {
 
   additional_bucket_policy = local.enabled ? data.aws_iam_policy_document.document[0].json : ""
 
-  custom_origins          = var.additional_custom_origins_enabled ? local.custom_origins : []
-  custom_failover_origins = var.additional_custom_origins_enabled ? local.custom_failover_origins : {}
-  s3_origins              = var.additional_s3_origins_enabled ? local.s3_origins : []
-  s3_failover_origins     = var.additional_s3_origins_enabled ? local.s3_failover_origins : {}
+  custom_origins = local.custom_origins
+  s3_origins     = local.s3_origins
+  origin_groups  = local.origin_groups
 
   context = module.this.context
 }
