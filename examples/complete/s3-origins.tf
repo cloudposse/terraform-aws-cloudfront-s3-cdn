@@ -7,7 +7,7 @@ locals {
       origin_access_identity = ""
     }
   }
-  s3_origins = var.additional_s3_origins_enabled ? [
+  additional_s3_origins           = var.additional_s3_origins_enabled ? [
     merge(local.default_s3_origin_configuration, {
       domain_name    = module.additional_s3_origin.bucket_regional_domain_name
       origin_id      = module.additional_s3_origin.bucket_id
@@ -17,9 +17,9 @@ locals {
       origin_id      = module.additional_s3_failover_origin.bucket_id
     })
   ] : []
-  s3_origin_groups = var.additional_s3_origins_enabled ? [{
-    primary_origin_id  = local.s3_origins[0].origin_id
-    failover_origin_id = local.s3_origins[1].origin_id
+  additional_s3_origin_groups     = var.additional_s3_origins_enabled ? [{
+    primary_origin_id  = local.additional_s3_origins[0].origin_id
+    failover_origin_id = local.additional_s3_origins[1].origin_id
     failover_criteria  = var.origin_group_failover_criteria_status_codes
   }] : []
 }
