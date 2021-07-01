@@ -15,12 +15,12 @@ import (
 
 type OriginGroup struct {
 	FailoverCriteria []FailoverCriteria `json:"failover_criteria"`
-	Member           []Origin         `json:"member"`
-	OriginId         string           `json:"origin_id"`
+	Member           []Origin           `json:"member"`
+	OriginId         string             `json:"origin_id"`
 }
 
 type FailoverCriteria struct {
-	StatusCodes     []int             `json:"status_codes"`
+	StatusCodes []int `json:"status_codes"`
 }
 
 type Origin struct {
