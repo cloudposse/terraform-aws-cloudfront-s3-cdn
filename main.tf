@@ -2,12 +2,12 @@ locals {
   enabled = module.this.enabled
 
   # Encapsulate logic here so that it is not lost/scattered among the configuration
-  website_enabled                = local.enabled && var.website_enabled
-  website_password_enabled       = local.website_enabled && var.s3_website_password_enabled
-  s3_origin_enabled              = local.enabled && ! var.website_enabled
-  create_s3_origin_bucket        = local.enabled && var.origin_bucket == null
-  s3_access_logging_enabled      = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
-  create_cf_log_bucket           = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
+  website_enabled           = local.enabled && var.website_enabled
+  website_password_enabled  = local.website_enabled && var.s3_website_password_enabled
+  s3_origin_enabled         = local.enabled && ! var.website_enabled
+  create_s3_origin_bucket   = local.enabled && var.origin_bucket == null
+  s3_access_logging_enabled = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
+  create_cf_log_bucket      = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
 
   create_cloudfront_origin_access_identity = local.enabled && length(compact([var.cloudfront_origin_access_identity_iam_arn])) == 0 # "" or null
 
