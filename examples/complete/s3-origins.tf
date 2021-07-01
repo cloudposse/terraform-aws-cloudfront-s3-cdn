@@ -50,7 +50,7 @@ module "additional_s3_failover_origin" {
   force_destroy      = true
   user_enabled       = false
   versioning_enabled = false
-  attributes         = ["s3", "fo"]
+  attributes         = ["s3", "fo"] # fo = failover
 
   context = module.this.context
 }
