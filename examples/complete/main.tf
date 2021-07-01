@@ -85,7 +85,7 @@ module "cloudfront_s3_cdn" {
     origin_id   = module.s3_bucket.bucket_id
     origin_path = null
     s3_origin_config = {
-      origin_access_identity = ""
+      origin_access_identity = null # will get translated to the origin_access_identity used by the origin created by this module.
     }
   }], local.additional_s3_origins)
   origin_groups = concat([{

@@ -430,6 +430,7 @@ variable "s3_origins" {
   description = <<-EOT
     A list of S3 [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) (in addition to the one created by this module) for this distribution.
     S3 buckets configured as websites are `custom_origins`, not `s3_origins`.
+    Specifying `s3_origin_config.origin_access_identity` as `null` or `""` will have it translated to the `origin_access_identity` used by the origin created by the module.
     EOT
 }
 

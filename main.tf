@@ -420,7 +420,7 @@ resource "aws_cloudfront_distribution" "default" {
       origin_id   = origin.value.origin_id
       origin_path = lookup(origin.value, "origin_path", "")
       s3_origin_config {
-        origin_access_identity = lookup(origin.value.s3_origin_config, "origin_access_identity", "")
+        origin_access_identity = try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.cf_access.path
       }
     }
   }
