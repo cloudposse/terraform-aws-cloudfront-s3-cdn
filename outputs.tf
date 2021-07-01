@@ -34,7 +34,7 @@ output "cf_identity_iam_arn" {
 }
 
 output "cf_origin_groups" {
-  value       = try(aws_cloudfront_distribution.default.*.origin_group, [])
+  value       = try(flatten(aws_cloudfront_distribution.default.*.origin_group), [])
   description = "List of Origin Groups in the CloudFront distribution."
 }
 

@@ -22,7 +22,7 @@ variable "additional_s3_origins_enabled" {
 variable "origin_group_failover_criteria_status_codes" {
   type        = list(string)
   description = "List of HTTP Status Codes to use as the failover criteria for origin groups."
-  default     = [
+  default = [
     403,
     404,
     500,

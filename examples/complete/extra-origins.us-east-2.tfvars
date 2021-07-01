@@ -4,7 +4,7 @@ namespace = "eg"
 
 stage = "test"
 
-name = "cloudfront-s3-cdn-extra"
+name = "cf-s3-cdn-extra" # name needs to be shortened due to s3 bucket name length restrictions
 
 parent_zone_name = "testing.cloudposse.co"
 
