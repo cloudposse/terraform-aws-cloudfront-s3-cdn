@@ -79,7 +79,7 @@ module "cloudfront_s3_cdn" {
 
   additional_bucket_policy = local.enabled ? data.aws_iam_policy_document.document[0].json : ""
 
-  custom_origins = local.additional_custom_origins
+  custom_origins = [local.additional_custom_origin_primary, local.additional_custom_origin_secondary]
   s3_origins = concat([{
     domain_name = module.s3_bucket.bucket_regional_domain_name
     origin_id   = module.s3_bucket.bucket_id
@@ -87,7 +87,7 @@ module "cloudfront_s3_cdn" {
     s3_origin_config = {
       origin_access_identity = null # will get translated to the origin_access_identity used by the origin created by this module.
     }
-  }], local.additional_s3_origins)
+  }], [local.additional_s3_origin_primary], [local.additional_s3_origin_secondary])
   origin_groups = concat([{
     primary_origin_id  = null # will get translated to the origin id of the origin created by this module.
     failover_origin_id = module.s3_bucket.bucket_id

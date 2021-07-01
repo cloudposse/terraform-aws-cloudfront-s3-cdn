@@ -84,19 +84,7 @@ func testExamplesCompleteEnabled(t *testing.T) {
 	assert.Equal(t, `arn:aws:s3:::`+expectedS3BucketName+`/testprefix/*`, getTestResource(policyString),
 		"Templating of var.additional_bucket_policy failed")
 
-	// Validate that Origins are in Origin Groups
-	originGroups := []OriginGroup{}
-	terraform.OutputStruct(t, terraformOptions, "cf_origin_groups", &originGroups)
-	originIds := terraform.OutputList(t, terraformOptions, "cf_origin_ids")
-	originIdsInGroups := []string{}
-	for _, originGroup := range originGroups {
-		for _, member := range originGroup.Member {
-			originIdsInGroups = append(originIdsInGroups, member.OriginId)
-		}
-	}
-	sort.Strings(originIds)
-	sort.Strings(originIdsInGroups)
-	assert.True(t, reflect.DeepEqual(originIds, originIdsInGroups))
+	validateOriginIDs(t, terraformOptions)
 }
 
 func testExamplesCompleteDisabled(t *testing.T) {
@@ -129,26 +117,6 @@ func testExamplesCompleteDisabled(t *testing.T) {
 	// Verify we're getting back the outputs we expect
 	assert.Empty(t, cfArn)
 	assert.Empty(t, s3BucketName)
-}
-
-func getTestResource(jsonString string) string {
-	var js interface{}
-
-	err := json.Unmarshal([]byte(jsonString), &js)
-	if err != nil {
-		return ""
-	}
-	policy := js.(map[string]interface{})
-	statements := policy["Statement"].([]interface{})
-	for _, statement := range statements {
-		s := statement.(map[string]interface{})
-		if s["Sid"].(string) != "TemplateTest" {
-			continue
-		}
-		return s["Resource"].(string)
-	}
-
-	return ""
 }
 
 // Test the Terraform module in examples/complete with extra origins (extra-origins.us-east-2.tfvars)
@@ -193,6 +161,30 @@ func TestExamplesCompleteExtraOrigins(t *testing.T) {
 	assert.Equal(t, `arn:aws:s3:::`+expectedS3BucketName+`/testprefix/*`, getTestResource(policyString),
 		"Templating of var.additional_bucket_policy failed")
 
+	validateOriginIDs(t, terraformOptions)
+}
+
+func getTestResource(jsonString string) string {
+	var js interface{}
+
+	err := json.Unmarshal([]byte(jsonString), &js)
+	if err != nil {
+		return ""
+	}
+	policy := js.(map[string]interface{})
+	statements := policy["Statement"].([]interface{})
+	for _, statement := range statements {
+		s := statement.(map[string]interface{})
+		if s["Sid"].(string) != "TemplateTest" {
+			continue
+		}
+		return s["Resource"].(string)
+	}
+
+	return ""
+}
+
+func validateOriginIDs(t *testing.T, terraformOptions *terraform.Options) {
 	// Validate that Origins are in Origin Groups
 	originGroups := []OriginGroup{}
 	terraform.OutputStruct(t, terraformOptions, "cf_origin_groups", &originGroups)

@@ -38,8 +38,13 @@ output "cf_origin_groups" {
   description = "List of Origin Groups in the CloudFront distribution."
 }
 
+output "cf_primary_origin_id" {
+  value       = local.origin_id
+  description = "The ID of the origin created by this module."
+}
+
 output "cf_origin_ids" {
-  value       = try([for origin in aws_cloudfront_distribution.default[0].origin : origin.origin_id], [])
+  value       = try(aws_cloudfront_distribution.default[0].origin.*.origin_id, [])
   description = "List of Origin IDs in the CloudFront distribution."
 }
 

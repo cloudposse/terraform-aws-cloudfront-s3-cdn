@@ -588,7 +588,9 @@ variable "origin_groups" {
   description = <<-EOT
     List of [Origin Groups](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#origin-group-arguments) to create in the distribution.
     The values of `primary_origin_id` and `failover_origin_id` must correspond to origin IDs existing in `var.s3_origins` or `var.custom_origins`.
+
     If `primary_origin_id` is set to `null` or `""`, then the origin id of the origin created by this module will be used in its place.
+    This is to allow for the use case of making the origin created by this module the primary origin in an origin group.
   EOT
 }
 
