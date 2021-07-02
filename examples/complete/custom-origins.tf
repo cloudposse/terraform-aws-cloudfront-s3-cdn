@@ -16,14 +16,14 @@ locals {
   }
   additional_custom_origin_primary = local.additional_custom_origins_enabled ? merge(
     local.default_custom_origin_configuration, {
-      domain_name = module.additional_custom_origin[0].s3_bucket_website_endpoint
-      origin_id   = module.additional_custom_origin[0].hostname
+      domain_name = module.additional_custom_origin.s3_bucket_website_endpoint
+      origin_id   = module.additional_custom_origin.hostname
     }
   ) : null
   additional_custom_origin_secondary = local.additional_custom_origins_enabled ? merge(
     local.default_custom_origin_configuration, {
-      domain_name = module.additional_custom_failover_origin[0].s3_bucket_website_endpoint
-      origin_id   = module.additional_custom_failover_origin[0].hostname
+      domain_name = module.additional_custom_failover_origin.s3_bucket_website_endpoint
+      origin_id   = module.additional_custom_failover_origin.hostname
     }
   ) : null
   additional_custom_origin_groups = local.additional_custom_origins_enabled ? [{
@@ -45,10 +45,8 @@ module "additional_custom_origin_label" {
 }
 
 module "additional_custom_origin" {
-  count = local.additional_s3_origins_enabled ? 1 : 0 # https://github.com/cloudposse/terraform-aws-s3-website/issues/65
-
   source  = "cloudposse/s3-website/aws"
-  version = "0.16.0"
+  version = "0.16.1"
   enabled = local.additional_custom_origins_enabled
 
   force_destroy = true
@@ -68,10 +66,8 @@ module "additional_custom_failover_origin_label" {
 }
 
 module "additional_custom_failover_origin" {
-  count = local.additional_s3_origins_enabled ? 1 : 0 # https://github.com/cloudposse/terraform-aws-s3-website/issues/65
-
   source  = "cloudposse/s3-website/aws"
-  version = "0.16.0"
+  version = "0.16.1"
   enabled = local.additional_custom_origins_enabled
 
   force_destroy = true
