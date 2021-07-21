@@ -42,10 +42,16 @@ variable "override_origin_bucket_policy" {
   description = "When using an existing origin bucket (through var.origin_bucket), setting this to 'false' will make it so the existing bucket policy will not be overriden"
 }
 
+variable "create_origin_bucket" {
+  type        = bool
+  default     = true
+  description = "If true, create an origin bucket. If you set this to false, you must supply one with var.origin_bucket"
+}
+
 variable "origin_bucket" {
   type        = string
   default     = null
-  description = "Name of an existing S3 bucket to use as the origin. If this is not provided, it will create a new s3 bucket using `var.name` and other context related inputs"
+  description = "If var.create_origin_bucket is false, this is required to specify the origin bucket name. If var.create_origin_bucket is true, you can optionally set this to override the automatically generated name."
 }
 
 variable "origin_path" {
