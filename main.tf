@@ -23,7 +23,7 @@ locals {
   }
   origin_bucket_options = {
     new      = local.create_s3_origin_bucket ? aws_s3_bucket.origin[0] : null
-    existing = local.enabled && !var.create_origin_bucket ? data.aws_s3_bucket.origin[0] : null
+    existing = local.enabled && ! var.create_origin_bucket ? data.aws_s3_bucket.origin[0] : null
     disabled = local.origin_bucket_placeholder
   }
   # Workaround for requirement that tertiary expression has to have exactly matching objects in both result values
@@ -309,7 +309,7 @@ module "logs" {
 }
 
 data "aws_s3_bucket" "origin" {
-  count  = local.enabled && !var.create_origin_bucket ? 1 : 0
+  count  = local.enabled && ! var.create_origin_bucket ? 1 : 0
   bucket = var.origin_bucket
 }
 
