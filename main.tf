@@ -5,7 +5,7 @@ locals {
   website_enabled           = local.enabled && var.website_enabled
   website_password_enabled  = local.website_enabled && var.s3_website_password_enabled
   s3_origin_enabled         = local.enabled && ! var.website_enabled
-  create_s3_origin_bucket   = local.enabled && var.origin_bucket == null
+  create_s3_origin_bucket   = local.enabled && var.create_origin_bucket
   s3_access_logging_enabled = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
   create_cf_log_bucket      = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
 
@@ -23,7 +23,7 @@ locals {
   }
   origin_bucket_options = {
     new      = local.create_s3_origin_bucket ? aws_s3_bucket.origin[0] : null
-    existing = local.enabled && var.origin_bucket != null ? data.aws_s3_bucket.origin[0] : null
+    existing = local.enabled && !var.create_origin_bucket ? data.aws_s3_bucket.origin[0] : null
     disabled = local.origin_bucket_placeholder
   }
   # Workaround for requirement that tertiary expression has to have exactly matching objects in both result values
@@ -230,7 +230,7 @@ resource "aws_s3_bucket" "origin" {
   #bridgecrew:skip=CKV_AWS_52:Skipping `Ensure S3 bucket has MFA delete enabled` due to issue in terraform (https://github.com/hashicorp/terraform-provider-aws/issues/629).
   count = local.create_s3_origin_bucket ? 1 : 0
 
-  bucket        = module.origin_label.id
+  bucket        = coalesce(var.origin_bucket, module.origin_label.id)
   acl           = "private"
   tags          = module.origin_label.tags
   force_destroy = var.origin_force_destroy
@@ -309,7 +309,7 @@ module "logs" {
 }
 
 data "aws_s3_bucket" "origin" {
-  count  = local.enabled && (var.origin_bucket != null) ? 1 : 0
+  count  = local.enabled && !var.create_origin_bucket ? 1 : 0
   bucket = var.origin_bucket
 }
 
