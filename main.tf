@@ -184,7 +184,7 @@ data "aws_iam_policy_document" "deployment" {
 }
 
 data "aws_iam_policy_document" "s3_ssl_only" {
-  count = var.allow_ssl_requests_only ? 1 : 0
+  count = var.allow_ssl_requests_only && var.acm_certificate_arn == "" ? 1 : 0
   statement {
     sid     = "ForceSSLOnlyAccess"
     effect  = "Deny"
