@@ -3,7 +3,8 @@ provider "aws" {
 }
 
 locals {
-  enabled = module.this.enabled
+  enabled                  = module.this.enabled
+  additional_origin_groups = concat(local.additional_custom_origin_groups, local.additional_s3_origin_groups)
 }
 
 data "aws_iam_policy_document" "document" {
@@ -77,6 +78,21 @@ module "cloudfront_s3_cdn" {
   cloudfront_access_log_prefix      = "logs/cf_access"
 
   additional_bucket_policy = local.enabled ? data.aws_iam_policy_document.document[0].json : ""
+
+  custom_origins = var.additional_custom_origins_enabled ? [local.additional_custom_origin_primary, local.additional_custom_origin_secondary] : []
+  s3_origins = concat([{
+    domain_name = module.s3_bucket.bucket_regional_domain_name
+    origin_id   = module.s3_bucket.bucket_id
+    origin_path = null
+    s3_origin_config = {
+      origin_access_identity = null # will get translated to the origin_access_identity used by the origin created by this module.
+    }
+  }], var.additional_s3_origins_enabled ? [local.additional_s3_origin_primary, local.additional_s3_origin_secondary] : [])
+  origin_groups = concat([{
+    primary_origin_id  = null # will get translated to the origin id of the origin created by this module.
+    failover_origin_id = module.s3_bucket.bucket_id
+    failover_criteria  = var.origin_group_failover_criteria_status_codes
+  }], local.additional_origin_groups)
 
   context = module.this.context
 }

@@ -11,6 +11,7 @@ locals {
 
   create_cloudfront_origin_access_identity = local.enabled && length(compact([var.cloudfront_origin_access_identity_iam_arn])) == 0 # "" or null
 
+  origin_id   = module.this.id
   origin_path = coalesce(var.origin_path, "/")
   # Collect the information for whichever S3 bucket we are using as the origin
   origin_bucket_placeholder = {
@@ -97,7 +98,7 @@ module "origin_label" {
 resource "aws_cloudfront_origin_access_identity" "default" {
   count = local.create_cloudfront_origin_access_identity ? 1 : 0
 
-  comment = module.this.id
+  comment = local.origin_id
 }
 
 resource "random_password" "referer" {
@@ -254,7 +255,7 @@ resource "aws_s3_bucket" "origin" {
     for_each = local.s3_access_log_bucket_name != "" ? [1] : []
     content {
       target_bucket = local.s3_access_log_bucket_name
-      target_prefix = coalesce(var.s3_access_log_prefix, "logs/${module.this.id}/")
+      target_prefix = coalesce(var.s3_access_log_prefix, "logs/${local.origin_id}/")
     }
   }
 
@@ -339,9 +340,30 @@ resource "aws_cloudfront_distribution" "default" {
 
   aliases = var.acm_certificate_arn != "" ? var.aliases : []
 
+  dynamic "origin_group" {
+    for_each = var.origin_groups
+    content {
+      origin_id = "${module.this.id}-group[${origin_group.key}]"
+
+      failover_criteria {
+        status_codes = origin_group.value.failover_criteria
+      }
+
+      member {
+        # the following enables the use case of specifying an origin group with the origin created by this module as the
+        # primary origin in the group, prior to the creation of this module.
+        origin_id = try(length(origin_group.value.primary_origin_id), 0) > 0 ? origin_group.value.primary_origin_id : local.origin_id
+      }
+
+      member {
+        origin_id = origin_group.value.failover_origin_id
+      }
+    }
+  }
+
   origin {
     domain_name = local.bucket_domain_name
-    origin_id   = module.this.id
+    origin_id   = local.origin_id
     origin_path = var.origin_path
 
     dynamic "s3_origin_config" {
@@ -401,7 +423,8 @@ resource "aws_cloudfront_distribution" "default" {
       origin_id   = origin.value.origin_id
       origin_path = lookup(origin.value, "origin_path", "")
       s3_origin_config {
-        origin_access_identity = lookup(origin.value.s3_origin_config, "origin_access_identity", "")
+        # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
+        origin_access_identity = try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.cf_access.path
       }
     }
   }
@@ -417,7 +440,7 @@ resource "aws_cloudfront_distribution" "default" {
     allowed_methods    = var.allowed_methods
     cached_methods     = var.cached_methods
     cache_policy_id    = var.cache_policy_id
-    target_origin_id   = module.this.id
+    target_origin_id   = local.origin_id
     compress           = var.compress
     trusted_signers    = var.trusted_signers
     trusted_key_groups = var.trusted_key_groups
@@ -469,10 +492,10 @@ resource "aws_cloudfront_distribution" "default" {
 
       allowed_methods    = ordered_cache_behavior.value.allowed_methods
       cached_methods     = ordered_cache_behavior.value.cached_methods
-      target_origin_id   = ordered_cache_behavior.value.target_origin_id == "" ? module.this.id : ordered_cache_behavior.value.target_origin_id
+      target_origin_id   = ordered_cache_behavior.value.target_origin_id == "" ? local.origin_id : ordered_cache_behavior.value.target_origin_id
       compress           = ordered_cache_behavior.value.compress
-      trusted_signers    = var.trusted_signers
-      trusted_key_groups = var.trusted_key_groups
+      trusted_signers    = ordered_cache_behavior.value.trusted_signers
+      trusted_key_groups = ordered_cache_behavior.value.trusted_key_groups
 
       cache_policy_id          = ordered_cache_behavior.value.cache_policy_id
       origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id

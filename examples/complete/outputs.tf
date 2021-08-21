@@ -33,6 +33,16 @@ output "cf_identity_iam_arn" {
   description = "CloudFront Origin Access Identity IAM ARN"
 }
 
+output "cf_origin_groups" {
+  value       = module.cloudfront_s3_cdn.cf_origin_groups
+  description = "List of Origin Groups in the CloudFront distribution."
+}
+
+output "cf_origin_ids" {
+  value       = module.cloudfront_s3_cdn.cf_origin_ids
+  description = "List of Origin IDs in the CloudFront distribution."
+}
+
 output "cf_s3_canonical_user_id" {
   value       = module.cloudfront_s3_cdn.cf_s3_canonical_user_id
   description = "Canonical user ID for CloudFront Origin Access Identity"

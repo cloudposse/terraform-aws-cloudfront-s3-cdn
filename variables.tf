@@ -358,9 +358,11 @@ variable "ordered_cache" {
     target_origin_id = string
     path_pattern     = string
 
-    allowed_methods = list(string)
-    cached_methods  = list(string)
-    compress        = bool
+    allowed_methods    = list(string)
+    cached_methods     = list(string)
+    compress           = bool
+    trusted_signers    = list(string)
+    trusted_key_groups = list(string)
 
     cache_policy_id          = string
     origin_request_policy_id = string
@@ -430,6 +432,7 @@ variable "s3_origins" {
   description = <<-EOT
     A list of S3 [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) (in addition to the one created by this module) for this distribution.
     S3 buckets configured as websites are `custom_origins`, not `s3_origins`.
+    Specifying `s3_origin_config.origin_access_identity` as `null` or `""` will have it translated to the `origin_access_identity` used by the origin created by the module.
     EOT
 }
 
@@ -575,6 +578,22 @@ variable "s3_website_password_enabled" {
     HTTP request in order to access the website, and Cloudfront will be configured to pass this password in its requests.
     This will make it much harder for people to bypass Cloudfront and access the S3 website directly via its website endpoint.
     EOT
+}
+
+variable "origin_groups" {
+  type = list(object({
+    primary_origin_id  = string
+    failover_origin_id = string
+    failover_criteria  = list(string)
+  }))
+  default     = []
+  description = <<-EOT
+    List of [Origin Groups](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#origin-group-arguments) to create in the distribution.
+    The values of `primary_origin_id` and `failover_origin_id` must correspond to origin IDs existing in `var.s3_origins` or `var.custom_origins`.
+
+    If `primary_origin_id` is set to `null` or `""`, then the origin id of the origin created by this module will be used in its place.
+    This is to allow for the use case of making the origin created by this module the primary origin in an origin group.
+  EOT
 }
 
 # Variables below here are DEPRECATED and should not be used anymore

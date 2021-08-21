@@ -33,6 +33,21 @@ output "cf_identity_iam_arn" {
   description = "CloudFront Origin Access Identity IAM ARN"
 }
 
+output "cf_origin_groups" {
+  value       = try(flatten(aws_cloudfront_distribution.default.*.origin_group), [])
+  description = "List of Origin Groups in the CloudFront distribution."
+}
+
+output "cf_primary_origin_id" {
+  value       = local.origin_id
+  description = "The ID of the origin created by this module."
+}
+
+output "cf_origin_ids" {
+  value       = try(aws_cloudfront_distribution.default[0].origin.*.origin_id, [])
+  description = "List of Origin IDs in the CloudFront distribution."
+}
+
 output "cf_s3_canonical_user_id" {
   value       = try(aws_cloudfront_origin_access_identity.default[0].s3_canonical_user_id, "")
   description = "Canonical user ID for CloudFront Origin Access Identity"
@@ -65,5 +80,5 @@ output "logs" {
 
 output "aliases" {
   value       = var.aliases
-  description = "Aliases of the CloudFront distibution"
+  description = "Aliases of the CloudFront distribution."
 }
