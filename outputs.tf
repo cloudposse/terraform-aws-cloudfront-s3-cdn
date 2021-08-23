@@ -46,6 +46,7 @@ output "cf_primary_origin_id" {
 output "cf_origin_ids" {
   value       = try(aws_cloudfront_distribution.default[0].origin.*.origin_id, [])
   description = "List of Origin IDs in the CloudFront distribution."
+  sensitive = true
 }
 
 output "cf_s3_canonical_user_id" {
