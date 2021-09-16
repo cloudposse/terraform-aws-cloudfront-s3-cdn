@@ -69,7 +69,7 @@ variable "origin_force_destroy" {
 
 variable "compress" {
   type        = bool
-  default     = false
+  default     = true
   description = "Compress content for web requests that include Accept-Encoding: gzip in the request header"
 }
 
@@ -364,9 +364,11 @@ variable "ordered_cache" {
     target_origin_id = string
     path_pattern     = string
 
-    allowed_methods = list(string)
-    cached_methods  = list(string)
-    compress        = bool
+    allowed_methods    = list(string)
+    cached_methods     = list(string)
+    compress           = bool
+    trusted_signers    = list(string)
+    trusted_key_groups = list(string)
 
     cache_policy_id          = string
     origin_request_policy_id = string

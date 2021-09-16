@@ -88,7 +88,7 @@ locals {
 
 module "origin_label" {
   source  = "cloudposse/label/null"
-  version = "0.24.1"
+  version = "0.25.0"
 
   attributes = var.extra_origin_attributes
 
@@ -295,7 +295,7 @@ resource "aws_s3_bucket_public_access_block" "origin" {
 
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
-  version                  = "0.20.0"
+  version                  = "0.24.1"
   enabled                  = local.create_cf_log_bucket
   attributes               = var.extra_logs_attributes
   lifecycle_prefix         = local.cloudfront_access_log_prefix
@@ -494,8 +494,8 @@ resource "aws_cloudfront_distribution" "default" {
       cached_methods     = ordered_cache_behavior.value.cached_methods
       target_origin_id   = ordered_cache_behavior.value.target_origin_id == "" ? local.origin_id : ordered_cache_behavior.value.target_origin_id
       compress           = ordered_cache_behavior.value.compress
-      trusted_signers    = var.trusted_signers
-      trusted_key_groups = var.trusted_key_groups
+      trusted_signers    = ordered_cache_behavior.value.trusted_signers
+      trusted_key_groups = ordered_cache_behavior.value.trusted_key_groups
 
       cache_policy_id          = ordered_cache_behavior.value.cache_policy_id
       origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
