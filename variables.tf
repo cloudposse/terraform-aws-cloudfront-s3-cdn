@@ -202,6 +202,15 @@ variable "cache_policy_id" {
     EOT
 }
 
+variable "origin_request_policy_id" {
+  type        = string
+  default     = null
+  description = <<-EOT
+    The unique identifier of the origin request policy that is attached to the behavior.
+    Should be used in conjunction with `cache_policy_id`.
+    EOT
+}
+
 variable "default_ttl" {
   type        = number
   default     = 60
