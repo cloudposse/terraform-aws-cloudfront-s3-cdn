@@ -364,8 +364,9 @@ variable "ordered_cache" {
     trusted_signers    = list(string)
     trusted_key_groups = list(string)
 
-    cache_policy_id          = string
-    origin_request_policy_id = string
+    cache_policy_id            = string
+    origin_request_policy_id   = string
+    response_headers_policy_id = string
 
     viewer_protocol_policy = string
     min_ttl                = number
