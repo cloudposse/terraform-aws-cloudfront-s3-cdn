@@ -444,6 +444,7 @@ resource "aws_cloudfront_distribution" "default" {
     compress           = var.compress
     trusted_signers    = var.trusted_signers
     trusted_key_groups = var.trusted_key_groups
+    response_headers_policy_id = var.response_headers_policy_id
 
     dynamic "forwarded_values" {
       # If a cache policy is specified, we cannot include a `forwarded_values` block at all in the API request
@@ -459,11 +460,10 @@ resource "aws_cloudfront_distribution" "default" {
       }
     }
 
-    response_headers_policy_id = var.response_headers_policy_id
-    viewer_protocol_policy     = var.viewer_protocol_policy
-    default_ttl                = var.default_ttl
-    min_ttl                    = var.min_ttl
-    max_ttl                    = var.max_ttl
+    viewer_protocol_policy = var.viewer_protocol_policy
+    default_ttl            = var.default_ttl
+    min_ttl                = var.min_ttl
+    max_ttl                = var.max_ttl
 
     realtime_log_config_arn = var.realtime_log_config_arn
 
