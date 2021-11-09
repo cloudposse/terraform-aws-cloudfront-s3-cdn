@@ -459,10 +459,11 @@ resource "aws_cloudfront_distribution" "default" {
       }
     }
 
-    viewer_protocol_policy = var.viewer_protocol_policy
-    default_ttl            = var.default_ttl
-    min_ttl                = var.min_ttl
-    max_ttl                = var.max_ttl
+    response_headers_policy_id = var.response_headers_policy_id
+    viewer_protocol_policy     = var.viewer_protocol_policy
+    default_ttl                = var.default_ttl
+    min_ttl                    = var.min_ttl
+    max_ttl                    = var.max_ttl
 
     realtime_log_config_arn = var.realtime_log_config_arn
 
@@ -499,7 +500,6 @@ resource "aws_cloudfront_distribution" "default" {
 
       cache_policy_id          = ordered_cache_behavior.value.cache_policy_id
       origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
-      response_headers_policy_id = ordered_cache_behavior.value.response_headers_policy_id
 
       dynamic "forwarded_values" {
         # If a cache policy or origin request policy is specified, we cannot include a `forwarded_values` block at all in the API request

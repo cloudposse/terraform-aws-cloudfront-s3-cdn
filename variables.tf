@@ -175,6 +175,13 @@ variable "price_class" {
   description = "Price class for this distribution: `PriceClass_All`, `PriceClass_200`, `PriceClass_100`"
 }
 
+
+variable "response_headers_policy_id" {
+  type        = string
+  description = "The identifier for a response headers policy - optional"
+  default     = ""
+}
+
 variable "viewer_protocol_policy" {
   type        = string
   description = "Limit the protocol users can use to access content. One of `allow-all`, `https-only`, or `redirect-to-https`"
@@ -366,7 +373,6 @@ variable "ordered_cache" {
 
     cache_policy_id            = string
     origin_request_policy_id   = string
-    response_headers_policy_id = string
 
     viewer_protocol_policy = string
     min_ttl                = number
