@@ -447,8 +447,8 @@ resource "aws_cloudfront_distribution" "default" {
     trusted_key_groups       = var.trusted_key_groups
 
     dynamic "forwarded_values" {
-      # If a cache policy is specified, we cannot include a `forwarded_values` block at all in the API request
-      for_each = var.cache_policy_id == null ? [true] : []
+      # If a cache policy or origin request policy is specified, we cannot include a `forwarded_values` block at all in the API request
+      for_each = var.cache_policy_id == null && var.origin_request_policy_id == null ? [true] : []
       content {
         query_string            = var.forward_query_string
         query_string_cache_keys = var.query_string_cache_keys
