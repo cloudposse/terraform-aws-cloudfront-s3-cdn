@@ -437,13 +437,13 @@ resource "aws_cloudfront_distribution" "default" {
   }
 
   default_cache_behavior {
-    allowed_methods    = var.allowed_methods
-    cached_methods     = var.cached_methods
-    cache_policy_id    = var.cache_policy_id
-    target_origin_id   = local.origin_id
-    compress           = var.compress
-    trusted_signers    = var.trusted_signers
-    trusted_key_groups = var.trusted_key_groups
+    allowed_methods            = var.allowed_methods
+    cached_methods             = var.cached_methods
+    cache_policy_id            = var.cache_policy_id
+    target_origin_id           = local.origin_id
+    compress                   = var.compress
+    trusted_signers            = var.trusted_signers
+    trusted_key_groups         = var.trusted_key_groups
     response_headers_policy_id = var.response_headers_policy_id
 
     dynamic "forwarded_values" {
