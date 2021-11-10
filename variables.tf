@@ -175,7 +175,6 @@ variable "price_class" {
   description = "Price class for this distribution: `PriceClass_All`, `PriceClass_200`, `PriceClass_100`"
 }
 
-
 variable "response_headers_policy_id" {
   type        = string
   description = "The identifier for a response headers policy - optional"
