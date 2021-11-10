@@ -177,7 +177,7 @@ variable "price_class" {
 
 variable "response_headers_policy_id" {
   type        = string
-  description = "The identifier for a response headers policy - optional"
+  description = "The identifier for a response headers policy"
   default     = ""
 }
 
