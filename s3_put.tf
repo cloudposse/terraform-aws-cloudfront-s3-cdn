@@ -17,18 +17,18 @@ resource "aws_s3_bucket_object" "error" {
 resource "aws_s3_bucket_object" "images" {
   for_each = fileset("${path.cwd}/images/", "*")
 
-  bucket = module.venom_cloud.s3_bucket
-  key    = "/images/${each.value}"
-  source = "${path.cwd}/images/${each.value}"
+  bucket       = module.venom_cloud.s3_bucket
+  key          = "/images/${each.value}"
+  source       = "${path.cwd}/images/${each.value}"
   content_type = "image/jpg"
-  etag   = filemd5("${path.cwd}/images/${each.value}") # changes file to latest version
+  etag         = filemd5("${path.cwd}/images/${each.value}") # changes file to latest version
 }
 
 resource "aws_s3_bucket_object" "assets" {
   for_each = fileset("${path.cwd}/assets/", "**")
 
   bucket = module.venom_cloud.s3_bucket
-  key           = "assets/${each.value}"
+  key    = "assets/${each.value}"
   source = "${path.cwd}/assets/${each.value}"
   etag   = filemd5("${path.cwd}/assets/${each.value}") # changes file to latest version
 }
