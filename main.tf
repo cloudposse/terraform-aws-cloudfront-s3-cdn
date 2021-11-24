@@ -509,7 +509,8 @@ resource "aws_cloudfront_distribution" "default" {
           headers      = ordered_cache_behavior.value.forward_header_values
 
           cookies {
-            forward = ordered_cache_behavior.value.forward_cookies
+            forward           = ordered_cache_behavior.value.forward_cookies
+            whitelisted_names = ordered_cache_behavior.value.forward_cookies_whitelisted_names
           }
         }
       }
