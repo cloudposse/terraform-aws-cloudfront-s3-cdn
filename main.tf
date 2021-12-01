@@ -270,7 +270,7 @@ resource "aws_s3_bucket" "origin" {
   }
 
   dynamic "cors_rule" {
-    for_each = distinct(compact(concat(var.cors_allowed_origins, var.aliases)))
+    for_each = distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
     content {
       allowed_headers = var.cors_allowed_headers
       allowed_methods = var.cors_allowed_methods
@@ -338,7 +338,7 @@ resource "aws_cloudfront_distribution" "default" {
     }
   }
 
-  aliases = var.acm_certificate_arn != "" ? var.aliases : []
+  aliases = var.acm_certificate_arn != "" ? concat(var.aliases, var.external_aliases) : []
 
   dynamic "origin_group" {
     for_each = var.origin_groups

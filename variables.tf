@@ -27,6 +27,12 @@ variable "aliases" {
   default     = []
 }
 
+variable "external_aliases" {
+  type        = list(string)
+  description = "List of FQDN's - Used to set the Alternate Domain Names (CNAMEs) setting on Cloudfront. No new route53 records will be created for these"
+  default     = []
+}
+
 variable "additional_bucket_policy" {
   type        = string
   default     = "{}"
