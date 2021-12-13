@@ -270,10 +270,6 @@ resource "aws_s3_bucket" "origin" {
   }
 
   dynamic "cors_rule" {
-    #bridgecrew:skip=BC_AWS_NETWORKING_52:Skipping `Ensure S3 Bucket has public access blocks`
-    #bridgecrew:skip=BC_AWS_GENERAL_72:Skipping `Ensure S3 bucket has cross-region replication enabled`
-    #bridgecrew:skip=BC_AWS_GENERAL_56:Skipping `Ensure S3 buckets are encrypted with KMS by default`
-
     for_each = distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
     content {
       allowed_headers = var.cors_allowed_headers
@@ -323,7 +319,6 @@ data "aws_s3_bucket" "cf_logs" {
 }
 
 resource "aws_cloudfront_distribution" "default" {
-  #bridgecrew:skip=BC_AWS_GENERAL_27:Skipping `Ensure CloudFront distribution has WAF enabled`
   count = local.enabled ? 1 : 0
 
   enabled             = var.distribution_enabled
