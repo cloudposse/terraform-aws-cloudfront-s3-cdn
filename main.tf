@@ -86,6 +86,10 @@ locals {
   "$${cloudfront_origin_access_identity_iam_arn}", local.cf_access.arn)
 }
 
+data "aws_partition" "current" {
+  count = local.enabled ? 1 : 0
+}
+
 module "origin_label" {
   source  = "cloudposse/label/null"
   version = "0.25.0"
@@ -117,7 +121,7 @@ data "aws_iam_policy_document" "s3_origin" {
     sid = "S3GetObjectForCloudFront"
 
     actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::${local.bucket}${local.origin_path}*"]
+    resources = ["arn:${join("", data.aws_partition.current.*.partition)}:s3:::${local.bucket}${local.origin_path}*"]
 
     principals {
       type        = "AWS"
@@ -129,7 +133,7 @@ data "aws_iam_policy_document" "s3_origin" {
     sid = "S3ListBucketForCloudFront"
 
     actions   = ["s3:ListBucket"]
-    resources = ["arn:aws:s3:::${local.bucket}"]
+    resources = ["arn:${join("", data.aws_partition.current.*.partition)}:s3:::${local.bucket}"]
 
     principals {
       type        = "AWS"
@@ -147,7 +151,7 @@ data "aws_iam_policy_document" "s3_website_origin" {
     sid = "S3GetObjectForCloudFront"
 
     actions   = ["s3:GetObject"]
-    resources = ["arn:aws:s3:::${local.bucket}${local.origin_path}*"]
+    resources = ["arn:${join("", data.aws_partition.current.*.partition)}:s3:::${local.bucket}${local.origin_path}*"]
 
     principals {
       type        = "AWS"
