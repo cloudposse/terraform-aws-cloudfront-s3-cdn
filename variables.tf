@@ -175,6 +175,12 @@ variable "price_class" {
   description = "Price class for this distribution: `PriceClass_All`, `PriceClass_200`, `PriceClass_100`"
 }
 
+variable "response_headers_policy_id" {
+  type        = string
+  description = "The identifier for a response headers policy"
+  default     = ""
+}
+
 variable "viewer_protocol_policy" {
   type        = string
   description = "Limit the protocol users can use to access content. One of `allow-all`, `https-only`, or `redirect-to-https`"
@@ -199,6 +205,15 @@ variable "cache_policy_id" {
   description = <<-EOT
     The unique identifier of the existing cache policy to attach to the default cache behavior.
     If not provided, this module will add a default cache policy using other provided inputs.
+    EOT
+}
+
+variable "origin_request_policy_id" {
+  type        = string
+  default     = null
+  description = <<-EOT
+    The unique identifier of the origin request policy that is attached to the behavior.
+    Should be used in conjunction with `cache_policy_id`.
     EOT
 }
 
@@ -372,9 +387,10 @@ variable "ordered_cache" {
     default_ttl            = number
     max_ttl                = number
 
-    forward_query_string  = bool
-    forward_header_values = list(string)
-    forward_cookies       = string
+    forward_query_string              = bool
+    forward_header_values             = list(string)
+    forward_cookies                   = string
+    forward_cookies_whitelisted_names = list(string)
 
     lambda_function_association = list(object({
       event_type   = string

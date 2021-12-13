@@ -295,7 +295,7 @@ resource "aws_s3_bucket_public_access_block" "origin" {
 
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
-  version                  = "0.24.1"
+  version                  = "0.26.0"
   enabled                  = local.create_cf_log_bucket
   attributes               = var.extra_logs_attributes
   lifecycle_prefix         = local.cloudfront_access_log_prefix
@@ -437,17 +437,20 @@ resource "aws_cloudfront_distribution" "default" {
   }
 
   default_cache_behavior {
-    allowed_methods    = var.allowed_methods
-    cached_methods     = var.cached_methods
-    cache_policy_id    = var.cache_policy_id
-    target_origin_id   = local.origin_id
-    compress           = var.compress
-    trusted_signers    = var.trusted_signers
-    trusted_key_groups = var.trusted_key_groups
+    allowed_methods            = var.allowed_methods
+    cached_methods             = var.cached_methods
+    cache_policy_id            = var.cache_policy_id
+    origin_request_policy_id   = var.origin_request_policy_id
+    target_origin_id           = local.origin_id
+    compress                   = var.compress
+    trusted_signers            = var.trusted_signers
+    trusted_key_groups         = var.trusted_key_groups
+    response_headers_policy_id = var.response_headers_policy_id
 
     dynamic "forwarded_values" {
-      # If a cache policy is specified, we cannot include a `forwarded_values` block at all in the API request
-      for_each = var.cache_policy_id == null ? [true] : []
+      # If a cache policy or origin request policy is specified,
+      # we cannot include a `forwarded_values` block at all in the API request.
+      for_each = (var.cache_policy_id == null && var.origin_request_policy_id == null) ? [true] : []
       content {
         query_string            = var.forward_query_string
         query_string_cache_keys = var.query_string_cache_keys
@@ -508,7 +511,8 @@ resource "aws_cloudfront_distribution" "default" {
           headers      = ordered_cache_behavior.value.forward_header_values
 
           cookies {
-            forward = ordered_cache_behavior.value.forward_cookies
+            forward           = ordered_cache_behavior.value.forward_cookies
+            whitelisted_names = ordered_cache_behavior.value.forward_cookies_whitelisted_names
           }
         }
       }
@@ -562,7 +566,7 @@ resource "aws_cloudfront_distribution" "default" {
 
 module "dns" {
   source           = "cloudposse/route53-alias/aws"
-  version          = "0.12.0"
+  version          = "0.12.1"
   enabled          = (local.enabled && var.dns_alias_enabled)
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
