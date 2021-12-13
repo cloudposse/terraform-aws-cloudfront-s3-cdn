@@ -7,6 +7,10 @@ locals {
   additional_origin_groups = concat(local.additional_custom_origin_groups, local.additional_s3_origin_groups)
 }
 
+data "aws_partition" "current" {
+  count = local.enabled ? 1 : 0
+}
+
 data "aws_iam_policy_document" "document" {
   count = local.enabled ? 1 : 0
 
