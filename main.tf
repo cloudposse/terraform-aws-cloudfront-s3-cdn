@@ -295,7 +295,7 @@ resource "aws_s3_bucket_public_access_block" "origin" {
 
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
-  version                  = "0.24.1"
+  version                  = "0.26.0"
   enabled                  = local.create_cf_log_bucket
   attributes               = var.extra_logs_attributes
   lifecycle_prefix         = local.cloudfront_access_log_prefix
@@ -566,7 +566,7 @@ resource "aws_cloudfront_distribution" "default" {
 
 module "dns" {
   source           = "cloudposse/route53-alias/aws"
-  version          = "0.12.0"
+  version          = "0.12.1"
   enabled          = (local.enabled && var.dns_alias_enabled)
   aliases          = var.aliases
   parent_zone_id   = var.parent_zone_id
