@@ -7,6 +7,10 @@ locals {
   additional_origin_groups = concat(local.additional_custom_origin_groups, local.additional_s3_origin_groups)
 }
 
+data "aws_partition" "current" {
+  count = local.enabled ? 1 : 0
+}
+
 data "aws_iam_policy_document" "document" {
   count = local.enabled ? 1 : 0
 
@@ -15,7 +19,7 @@ data "aws_iam_policy_document" "document" {
 
     actions = ["s3:GetObject"]
     resources = [
-      "arn:aws:s3:::$${bucket_name}$${origin_path}testprefix/*"
+      "arn:${join("", data.aws_partition.current.*.partition)}:s3:::$${bucket_name}$${origin_path}testprefix/*"
     ]
 
     principals {
