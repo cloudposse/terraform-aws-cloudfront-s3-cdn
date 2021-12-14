@@ -326,7 +326,7 @@ data "aws_s3_bucket" "cf_logs" {
 }
 
 resource "aws_cloudfront_distribution" "default" {
-  #bridgecrew:skip=BC_AWS_GENERAL_27:Skipping `Ensure CloudFront distribution has WAF enabled`
+  #bridgecrew:skip=BC_AWS_GENERAL_27:Skipping `Ensure CloudFront distribution has WAF enabled` because AWS WAF is indeed configurable and is managed via `var.web_acl_id`.
   count = local.enabled ? 1 : 0
 
   enabled             = var.distribution_enabled
