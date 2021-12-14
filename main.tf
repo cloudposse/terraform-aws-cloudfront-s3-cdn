@@ -232,6 +232,9 @@ resource "aws_s3_bucket_policy" "default" {
 resource "aws_s3_bucket" "origin" {
   #bridgecrew:skip=BC_AWS_S3_13:Skipping `Enable S3 Bucket Logging` because we cannot enable it by default because we do not have a default destination for it.
   #bridgecrew:skip=CKV_AWS_52:Skipping `Ensure S3 bucket has MFA delete enabled` due to issue in terraform (https://github.com/hashicorp/terraform-provider-aws/issues/629).
+  #bridgecrew:skip=BC_AWS_NETWORKING_52:Skipping `Ensure S3 Bucket has public access blocks` because we have an `aws_s3_bucket_public_access_block` resource rather than inline `block_public_*` attributes.
+  #bridgecrew:skip=BC_AWS_GENERAL_72:Skipping `Ensure S3 bucket has cross-region replication enabled` because this is out of scope of this module's use case.
+  #bridgecrew:skip=BC_AWS_GENERAL_56:Skipping `Ensure S3 buckets are encrypted with KMS by default` because this module has configurable encryption via `var.encryption_enabled`.
   count = local.create_s3_origin_bucket ? 1 : 0
 
   bucket        = module.origin_label.id
@@ -274,9 +277,6 @@ resource "aws_s3_bucket" "origin" {
   }
 
   dynamic "cors_rule" {
-    #bridgecrew:skip=BC_AWS_NETWORKING_52:Skipping `Ensure S3 Bucket has public access blocks`
-    #bridgecrew:skip=BC_AWS_GENERAL_72:Skipping `Ensure S3 bucket has cross-region replication enabled`
-    #bridgecrew:skip=BC_AWS_GENERAL_56:Skipping `Ensure S3 buckets are encrypted with KMS by default`
     for_each = distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
     content {
       allowed_headers = var.cors_allowed_headers
