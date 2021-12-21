@@ -1,7 +1,7 @@
 variable "functions" {
   description = "TODO"
   type = map(object({
-    source      = list(object({
+    source = list(object({
       filename = string
       content  = string
     }))

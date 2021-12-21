@@ -1,12 +1,12 @@
 locals {
-  enabled = module.this.enabled
+  enabled   = module.this.enabled
   functions = local.enabled ? var.functions : {}
 }
 
 module "function_label" {
   for_each = local.functions
 
-  source   = "cloudposse/label/null"
+  source  = "cloudposse/label/null"
   version = "0.25.0"
 
   attributes = [each.key]
@@ -31,7 +31,7 @@ data "aws_iam_policy_document" "lambda_write_logs" {
 module "role" {
   for_each = local.functions
 
-  source = "cloudposse/iam-role/aws"
+  source  = "cloudposse/iam-role/aws"
   version = "0.14.0"
 
   use_fullname       = true
