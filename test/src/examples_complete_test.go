@@ -40,6 +40,8 @@ func TestExamplesComplete(t *testing.T) {
 	// Run tests in parallel
 	t.Run("Enabled", testExamplesCompleteEnabled)
 	t.Run("Disabled", testExamplesCompleteDisabled)
+	t.Run("ExtraOrigins", testExamplesCompleteExtraOrigins)
+	t.Run("Lambda@Edge", testExamplesCompleteLambdaEdge)
 }
 
 // Test the Terraform module in examples/complete using Terratest.
@@ -54,6 +56,9 @@ func testExamplesCompleteEnabled(t *testing.T) {
 		// The path to where our Terraform code is located
 		TerraformDir: "../../examples/complete",
 		Upgrade:      true,
+		EnvVars: map[string]string{
+			"TF_CLI_ARGS": "-state=terraform-enabled-test.tfstate",
+		},
 		// Variables to pass to our Terraform code using -var-file options
 		VarFiles: []string{"fixtures.us-east-2.tfvars"},
 		Vars: map[string]interface{}{
@@ -120,7 +125,7 @@ func testExamplesCompleteDisabled(t *testing.T) {
 }
 
 // Test the Terraform module in examples/complete with extra origins (extra-origins.us-east-2.tfvars)
-func TestExamplesCompleteExtraOrigins(t *testing.T) {
+func testExamplesCompleteExtraOrigins(t *testing.T) {
 	t.Parallel()
 
 	rand.Seed(time.Now().UnixNano() + 1)
@@ -131,6 +136,9 @@ func TestExamplesCompleteExtraOrigins(t *testing.T) {
 		// The path to where our Terraform code is located
 		TerraformDir: "../../examples/complete",
 		Upgrade:      true,
+		EnvVars: map[string]string{
+			"TF_CLI_ARGS": "-state=terraform-extra-origins-test.tfstate",
+		},
 		// Variables to pass to our Terraform code using -var-file options
 		VarFiles: []string{"extra-origins.us-east-2.tfvars"},
 		Vars: map[string]interface{}{
@@ -161,6 +169,52 @@ func TestExamplesCompleteExtraOrigins(t *testing.T) {
 	assert.Equal(t, `arn:aws:s3:::`+expectedS3BucketName+`/testprefix/*`, getTestResource(policyString),
 		"Templating of var.additional_bucket_policy failed")
 
+	validateOriginIDs(t, terraformOptions)
+}
+
+// Test the Terraform module in examples/complete with extra origins (extra-origins.us-east-2.tfvars)
+func testExamplesCompleteLambdaEdge(t *testing.T) {
+	t.Parallel()
+
+	rand.Seed(time.Now().UnixNano() + 2)
+
+	attributes := []string{strconv.Itoa(rand.Intn(100000))}
+
+	terraformOptions := &terraform.Options{
+		// The path to where our Terraform code is located
+		TerraformDir: "../../examples/complete",
+		Upgrade:      true,
+		EnvVars: map[string]string{
+			"TF_CLI_ARGS": "-state=terraform-lambda-test.tfstate",
+		},
+		// Variables to pass to our Terraform code using -var-file options
+		VarFiles: []string{"lambda-at-edge.us-east-2.tfvars"},
+		Vars: map[string]interface{}{
+			"attributes": attributes,
+		},
+	}
+
+	// At the end of the test, run `terraform destroy` to clean up any resources that were created
+	defer terraform.Destroy(t, terraformOptions)
+
+	// This will run `terraform init` and `terraform apply` and fail the test if there are any errors
+	terraform.Apply(t, terraformOptions)
+
+	// Run `terraform output` to get the value of an output variable
+	cfArn := terraform.Output(t, terraformOptions, "cf_arn")
+	// Verify we're getting back the outputs we expect
+	assert.Contains(t, cfArn, "arn:aws:cloudfront::")
+
+	// Run `terraform output` to get the value of an output variable
+	s3BucketName := terraform.Output(t, terraformOptions, "s3_bucket")
+	expectedS3BucketName := "eg-test-cf-s3-cdn-lambda-" + attributes[0] + "-origin"
+	// Verify we're getting back the outputs we expect
+	assert.Equal(t, expectedS3BucketName, s3BucketName)
+
+	// Run `terraform output` to get the value of an output variable
+	lambdaAssociations := terraform.Output(t, terraformOptions, "lambda_function_association")
+	// Verify we're getting back the outputs we expect
+	assert.Contains(t, lambdaAssociations, "eg-test-cf-s3-cdn-lambda-" + attributes[0] + "-originrequest")
 	validateOriginIDs(t, terraformOptions)
 }
 
