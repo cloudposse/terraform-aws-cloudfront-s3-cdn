@@ -1,5 +1,5 @@
 output "lambda_function_association" {
-  description = "TODO"
+  description = "The Lambda@Edge function association configuration to pass to `var.lambda_function_association` in the parent module."
   value = [
     for k, v in local.functions : {
       event_type   = v.event_type
