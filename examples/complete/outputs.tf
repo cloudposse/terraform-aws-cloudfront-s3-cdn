@@ -65,5 +65,5 @@ output "s3_bucket_policy" {
 
 output "lambda_function_association" {
   description = "The Lambda@Edge function association configuration."
-  value = module.lambda_at_edge.lambda_function_association
+  value       = module.lambda_at_edge.lambda_function_association
 }
