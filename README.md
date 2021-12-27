@@ -342,6 +342,10 @@ If there are warnings around the outputs when destroying using this module.
 Then you can use this method for supressing the superfluous errors.
 `TF_WARN_OUTPUT_ERRORS=1 terraform destroy`
 
+#### Lambda@Edge
+
+This module also features a Lambda@Edge submodule. Its `lambda_function_association` output is meant to feed directly into the variable of the same name in the parent module.
+
 
 
 
