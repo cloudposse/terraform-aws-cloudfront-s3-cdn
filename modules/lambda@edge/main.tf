@@ -53,6 +53,10 @@ module "role" {
 }
 
 resource "aws_lambda_function" "default" {
+  #bridgecrew:skip=BC_AWS_GENERAL_64:Lambda@Edge functions associated with CF distributions do not support DLQs.
+  #bridgecrew:skip=BC_AWS_SERVERLESS_4:Lambda@Edge functions do not support X-Ray tracing.
+  #bridgecrew:skip=BC_AWS_GENERAL_65:Lambda@Edge functions cannot be configured for connectivity inside a VPC.
+  #bridgecrew:skip=BC_AWS_GENERAL_63:Lambda@Edge functions cannot be configured for reserved concurrency.
   for_each = local.functions
 
   function_name    = module.function_label[each.key].id
