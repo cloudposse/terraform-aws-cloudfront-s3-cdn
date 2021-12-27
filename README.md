@@ -348,7 +348,7 @@ This module also features a Lambda@Edge submodule. Its `lambda_function_associat
 
 ```hcl
 module "lambda_at_edge" {
-  source = "cloudposse/cloudfront-s3-cdn/aws//modules/lambda@edge""
+  source = "cloudposse/cloudfront-s3-cdn/aws//modules/lambda@edge"
   # Cloud Posse recommends pinning every module to a specific version
   # version = "x.x.x"
 
