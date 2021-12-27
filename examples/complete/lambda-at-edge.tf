@@ -6,6 +6,7 @@ module "lambda_at_edge" {
   functions = {
     origin_request = {
       source = [{
+        # https://aws.amazon.com/blogs/networking-and-content-delivery/adding-http-security-headers-using-lambdaedge-and-amazon-cloudfront/
         content  = <<-EOT
         'use strict';
 
