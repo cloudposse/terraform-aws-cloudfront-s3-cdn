@@ -26,10 +26,21 @@ variable "functions" {
   }))
 }
 
-variable "destruction_delay_enabled" {
-  type        = bool
+variable "destruction_delay" {
+  type        = string
   description = <<-EOT
-  TODO
+  The delay, in [Golang ParseDuration](https://pkg.go.dev/time#ParseDuration) format, to wait before destroying the Lambda@Edge
+  functions.
+
+  This delay is meant to circumvent Lambda@Edge functions not being immediately deletable following their dissociation from
+  a CloudFront distribution, since they are replicated to CloudFront Edge servers around the world.
+
+  If set to `null`, no delay will be introduced.
+
+  By default, the delay is 20 minutes. This is because it takes about 3 minutes to destroy a CloudFront distribution, and
+  around 15 minutes until the Lambda@Edge function is available for deletion, in most cases.
+
+  For more information, see: https://github.com/hashicorp/terraform-provider-aws/issues/1721.
   EOT
-  default     = false
+  default     = "20m"
 }
