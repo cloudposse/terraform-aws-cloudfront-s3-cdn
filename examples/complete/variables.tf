@@ -29,3 +29,9 @@ variable "origin_group_failover_criteria_status_codes" {
     502
   ]
 }
+
+variable "lambda_at_edge_enabled" {
+  type        = bool
+  description = "Whether or not to enable Lambda@Edge functions."
+  default     = false
+}
