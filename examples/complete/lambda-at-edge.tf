@@ -9,6 +9,33 @@ module "lambda_at_edge" {
   enabled = local.enabled && var.lambda_at_edge_enabled
 
   functions = {
+    # Just for the sake of a viewer-request example, inject a useless header into the request from the viewer to CF
+    viewer_request = {
+      source = [{
+        content  = <<-EOT
+        'use strict';
+
+        exports.handler = (event, context, callback) => {
+            const { request } = event.Records[0].cf;
+
+            request.headers['useless-header'] = [
+                {
+                    key: 'Useless-Header',
+                    value: 'This header is absolutely useless.'
+                }
+            ];
+
+            return callback(null, request);
+        };
+        EOT
+        filename = "index.js"
+      }]
+      runtime      = "nodejs12.x"
+      handler      = "index.handler"
+      event_type   = "viewer-request"
+      include_body = false
+    },
+    # Add security headers to the request from CF to the origin
     origin_request = {
       source = [{
         # https://aws.amazon.com/blogs/networking-and-content-delivery/adding-http-security-headers-using-lambdaedge-and-amazon-cloudfront/
@@ -41,6 +68,8 @@ module "lambda_at_edge" {
       include_body = false
     }
   }
+
+  destruction_delay_enabled = true # Always true because of automated tests
 
   providers = {
     aws = aws.us-east-1

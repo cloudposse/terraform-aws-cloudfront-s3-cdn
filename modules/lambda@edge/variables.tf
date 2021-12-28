@@ -25,3 +25,11 @@ variable "functions" {
     include_body = bool
   }))
 }
+
+variable "destruction_delay_enabled" {
+  type        = bool
+  description = <<-EOT
+  TODO
+  EOT
+  default     = false
+}

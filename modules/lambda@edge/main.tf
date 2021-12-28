@@ -1,6 +1,21 @@
 locals {
-  enabled   = module.this.enabled
-  functions = local.enabled ? var.functions : {}
+  enabled                   = module.this.enabled
+  destruction_delay_enabled = local.enabled && var.destruction_delay_enabled
+  functions                 = local.enabled ? var.functions : {}
+}
+
+# Lambda@Edge functions are replicated and cannot be destroyed immediately
+# You may or may not want to enable var.destruction_delay_enabled in your project. But this delay is necessary for automated tests.
+# https://github.com/hashicorp/terraform-provider-aws/issues/1721
+resource "time_sleep" "lambda_at_edge_destruction_delay" {
+  for_each = local.destruction_delay_enabled ? aws_lambda_function.default : {}
+
+  destroy_duration = "1200s" # 20 minutes
+
+  # Any changes to the ARN of the functions will result in a destruction delay.
+  triggers = {
+    arn = each.value.arn
+  }
 }
 
 module "function_label" {

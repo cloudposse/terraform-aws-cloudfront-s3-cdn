@@ -100,6 +100,7 @@ module "cloudfront_s3_cdn" {
   }], local.additional_origin_groups)
 
   lambda_function_association = local.lambda_at_edge_enabled ? module.lambda_at_edge.lambda_function_association : []
+  forward_header_values       = local.lambda_at_edge_enabled ? ["useless-header"] : []
 
   context = module.this.context
 }
