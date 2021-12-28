@@ -51,8 +51,8 @@ module "role" {
   version = "0.14.0"
 
   use_fullname       = true
-  policy_description = "Allow ${module.function_label[each.key].id} Write CloudWatch Logs"
-  role_description   = "IAM role for ${module.function_label[each.key].id}"
+  policy_description = "Allow ${module.function_label[each.key].id} Lambda function to write to CloudWatch Logs"
+  role_description   = "IAM role for ${module.function_label[each.key].id} Lambda function"
 
   principals = {
     Service = [
