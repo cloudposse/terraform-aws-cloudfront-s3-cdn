@@ -4,6 +4,28 @@ Submodule which creates Lambda@Edge functions to associate with the CloudFront d
 
 The `lambda_function_association` output feeds in directly to the variable of the same name in the parent module.
 
+> **Important**: An AWS Provider configured for us-east-1 must be passed to the module, as Lambda@Edge functions must exist
+> in us-east-1. This is the primary reason why these resources exist in a submodule and not in the parent module.
+
+```hcl
+
+module "lambda_at_edge" {
+  source = "cloudposse/cloudfront-s3-cdn/aws//modules/lambda@edge"
+  # Cloud Posse recommends pinning every module to a specific version
+  # version = "x.x.x"
+
+  functions = {
+    ...
+  }
+
+  providers = {
+    aws = aws.us-east-1
+  }
+
+  context = module.this.context
+}
+```
+
 ## Requirements
 
 | Name | Version |

@@ -5,6 +5,7 @@ provider "aws" {
 locals {
   enabled                  = module.this.enabled
   additional_origin_groups = concat(local.additional_custom_origin_groups, local.additional_s3_origin_groups)
+  lambda_at_edge_enabled   = local.enabled && var.lambda_at_edge_enabled
 }
 
 data "aws_partition" "current" {
@@ -97,6 +98,8 @@ module "cloudfront_s3_cdn" {
     failover_origin_id = module.s3_bucket.bucket_id
     failover_criteria  = var.origin_group_failover_criteria_status_codes
   }], local.additional_origin_groups)
+
+  lambda_function_association = local.lambda_at_edge_enabled ? module.lambda_at_edge.lambda_function_association : []
 
   context = module.this.context
 }

@@ -1,3 +1,8 @@
+provider "aws" {
+  region = "us-east-1"
+  alias  = "us-east-1"
+}
+
 module "lambda_at_edge" {
   source = "../../modules/lambda@edge"
 
@@ -35,6 +40,10 @@ module "lambda_at_edge" {
       event_type   = "origin-response"
       include_body = false
     }
+  }
+
+  providers = {
+    aws = aws.us-east-1
   }
 
   context = module.this.context
