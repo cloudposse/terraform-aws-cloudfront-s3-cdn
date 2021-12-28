@@ -347,6 +347,15 @@ Then you can use this method for supressing the superfluous errors.
 This module also features a Lambda@Edge submodule. Its `lambda_function_association` output is meant to feed directly into the variable of the same name in the parent module.
 
 ```hcl
+provider "aws" {
+  region = var.region
+}
+
+provider "aws" {
+  region = "us-east-1"
+  alias  = "us-east-1"
+}
+
 module "lambda_at_edge" {
   source = "cloudposse/cloudfront-s3-cdn/aws//modules/lambda@edge"
   # Cloud Posse recommends pinning every module to a specific version
@@ -383,6 +392,11 @@ module "lambda_at_edge" {
       event_type   = "origin-response"
       include_body = false
     }
+  }
+
+  # An AWS Provider configured for us-east-1 must be passed to the module, as Lambda@Edge functions must exist in us-east-1
+  providers = {
+    aws = aws.us-east-1
   }
 
   context = module.this.context
