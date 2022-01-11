@@ -615,14 +615,13 @@ Like this project? Please give it a ★ on [our GitHub](https://github.com/cloud
 Are you using this project or any of our other projects? Consider [leaving a testimonial][testimonial]. =)
 
 
+
 ## Related Projects
 
 Check out these related projects.
 
 - [terraform-aws-cloudfront-cdn](https://github.com/cloudposse/terraform-aws-cloudfront-cdn) - Terraform Module that implements a CloudFront Distribution (CDN) for a custom origin.
 - [terraform-aws-s3-log-storage](https://github.com/cloudposse/terraform-aws-s3-log-storage) - S3 bucket with built in IAM policy to allow CloudTrail logs
-
-
 
 ## Help
 
