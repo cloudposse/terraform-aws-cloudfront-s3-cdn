@@ -91,7 +91,7 @@ module "cloudfront_s3_cdn" {
     origin_path = null
     origin_shield = {
       enabled = false
-      region = "auto"
+      region  = "auto"
     }
     s3_origin_config = {
       origin_access_identity = null # will get translated to the origin_access_identity used by the origin created by this module.
@@ -107,8 +107,8 @@ module "cloudfront_s3_cdn" {
   forward_header_values       = local.lambda_at_edge_enabled ? ["useless-header"] : []
 
   origin_shield = {
-      enabled = false
-      region = "auto"
+    enabled = false
+    region  = "auto"
   }
 
   context = module.this.context

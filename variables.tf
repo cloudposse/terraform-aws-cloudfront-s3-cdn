@@ -228,7 +228,10 @@ variable "origin_shield" {
     enabled = bool
     region  = string
   })
-  description = "The CloudFront Origin Shield settings"
+  description = <<-EOT
+    The CloudFront Origin Shield settings.
+    If `region` is set to `auto` it will determine the closest region where Origin Shield is available.
+    EOT
   default     = null
 }
 

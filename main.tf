@@ -4,7 +4,7 @@ locals {
   # Encapsulate logic here so that it is not lost/scattered among the configuration
   website_enabled           = local.enabled && var.website_enabled
   website_password_enabled  = local.website_enabled && var.s3_website_password_enabled
-  s3_origin_enabled         = local.enabled && ! var.website_enabled
+  s3_origin_enabled         = local.enabled && !var.website_enabled
   create_s3_origin_bucket   = local.enabled && var.origin_bucket == null
   s3_access_logging_enabled = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
   create_cf_log_bucket      = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
@@ -52,7 +52,7 @@ locals {
 
   override_origin_bucket_policy = local.enabled && var.override_origin_bucket_policy
 
-  lookup_cf_log_bucket = local.cloudfront_access_logging_enabled && ! local.cloudfront_access_log_create_bucket
+  lookup_cf_log_bucket = local.cloudfront_access_logging_enabled && !local.cloudfront_access_log_create_bucket
   cf_log_bucket_domain = local.cloudfront_access_logging_enabled ? (
     local.lookup_cf_log_bucket ? data.aws_s3_bucket.cf_logs[0].bucket_domain_name : module.logs.bucket_domain_name
   ) : ""
@@ -74,6 +74,34 @@ locals {
       }
     ]
   }
+
+  # Origin Shield mapping configuration
+  # See: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html
+  origin_shield_region_mapping = {
+    # Regions where Origin Shield is available
+    us-east-2      = "us-east-2"      # US East (Ohio)
+    us-east-1      = "us-east-1"      # US East (N. Virginia)
+    us-west-2      = "us-west-2"      # US West (Oregon)
+    ap-south-1     = "ap-south-1"     # Asia Pacific (Mumbai)
+    ap-northeast-2 = "ap-northeast-2" # Asia Pacific (Seoul)
+    ap-southeast-1 = "ap-southeast-1" # Asia Pacific (Singapore)
+    ap-southeast-2 = "ap-southeast-2" # Asia Pacific (Sydney)
+    ap-northeast-1 = "ap-northeast-1" # Asia Pacific (Tokyo)
+    eu-central-1   = "eu-central-1"   # Europe (Frankfurt)
+    eu-west-1      = "eu-west-1"      # Europe (Ireland)
+    eu-west-2      = "eu-west-2"      # Europe (London)
+    sa-east-1      = "sa-east-1"      # South America (São Paulo)
+
+    # Regions where Origin Shield is NOT available (choose closest region)
+    us-west-1    = "us-west-2"      # US West (N. California)
+    af-south-1   = "eu-west-1"      # Africa (Cape Town)
+    ap-east-1    = "ap-southeast-1" # Asia Pacific (Hong Kong)
+    ca-central-1 = "us-east-1"      # Canada (Central)
+    eu-south-1   = "eu-central-1"   # Europe (Milan)
+    eu-west-3    = "eu-west-2"      # Europe (Paris)
+    eu-north-1   = "eu-west-2"      # Europe (Stockholm)
+    me-south-1   = "ap-south-1"     # Middle East (Bahrain)
+  }
 }
 
 ## Make up for deprecated template_file and lack of templatestring
@@ -89,6 +117,11 @@ locals {
 data "aws_partition" "current" {
   count = local.enabled ? 1 : 0
 }
+
+data "aws_region" "current" {
+  count = local.enabled ? 1 : 0
+}
+
 
 module "origin_label" {
   source  = "cloudposse/label/null"
@@ -375,7 +408,7 @@ resource "aws_cloudfront_distribution" "default" {
     origin_path = var.origin_path
 
     dynamic "s3_origin_config" {
-      for_each = ! var.website_enabled ? [1] : []
+      for_each = !var.website_enabled ? [1] : []
       content {
         origin_access_identity = local.cf_access.path
       }
@@ -394,8 +427,12 @@ resource "aws_cloudfront_distribution" "default" {
     dynamic "origin_shield" {
       for_each = var.origin_shield != null ? ["true"] : []
       content {
-        enabled              = var.origin_shield.enabled
-        origin_shield_region = var.origin_shield.region
+        enabled = var.origin_shield.enabled
+        origin_shield_region = var.origin_shield.region == "auto" ? lookup(
+          local.origin_shield_region_mapping,
+          join("", data.aws_region.current.*.name),
+          null
+        ) : var.origin_shield.region
       }
     }
 
@@ -423,8 +460,12 @@ resource "aws_cloudfront_distribution" "default" {
         }
       }
       origin_shield {
-        enabled              = lookup(origin.value.origin_shield, "enabled", false)
-        origin_shield_region = lookup(origin.value.origin_shield, "region", "auto")
+        enabled = lookup(origin.value.origin_shield, "enabled", false)
+        origin_shield_region = lookup(origin.value.origin_shield, "region", "auto") == "auto" ? lookup(
+          local.origin_shield_region_mapping,
+          join("", data.aws_region.current.*.name),
+          null
+        ) : lookup(origin.value.origin_shield, "region", "auto")
       }
       custom_origin_config {
         http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
@@ -448,15 +489,20 @@ resource "aws_cloudfront_distribution" "default" {
         origin_access_identity = try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.cf_access.path
       }
       origin_shield {
-        enabled              = lookup(origin.value.origin_shield, "enabled", false)
-        origin_shield_region = lookup(origin.value.origin_shield, "region", "auto")
+        enabled = lookup(origin.value.origin_shield, "enabled", false)
+        origin_shield_region = lookup(origin.value.origin_shield, "region", "auto") == "auto" ? lookup(
+          local.origin_shield_region_mapping,
+          join("", data.aws_region.current.*.name),
+          null
+        ) : lookup(origin.value.origin_shield, "region", "auto")
       }
     }
   }
 
   viewer_certificate {
-    acm_certificate_arn            = var.acm_certificate_arn
-    ssl_support_method             = local.use_default_acm_certificate ? "" : "sni-only"
+    acm_certificate_arn = var.acm_certificate_arn
+    # ssl_support_method             = local.use_default_acm_certificate ? "" : "sni-only"
+    ssl_support_method             = "sni-only"
     minimum_protocol_version       = local.minimum_protocol_version
     cloudfront_default_certificate = local.use_default_acm_certificate
   }

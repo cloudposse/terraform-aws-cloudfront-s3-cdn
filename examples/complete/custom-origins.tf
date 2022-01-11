@@ -15,7 +15,7 @@ locals {
     }
     origin_shield = {
       enabled = false
-      region = "auto"
+      region  = "auto"
     }
   }
   additional_custom_origin_primary = local.additional_custom_origins_enabled ? merge(

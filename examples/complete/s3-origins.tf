@@ -6,7 +6,7 @@ locals {
     origin_path = null
     origin_shield = {
       enabled = false
-      region = "auto"
+      region  = "auto"
     }
     s3_origin_config = {
       origin_access_identity = ""
