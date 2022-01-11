@@ -13,6 +13,10 @@ locals {
       origin_keepalive_timeout = 60
       origin_read_timeout      = 60
     }
+    origin_shield = {
+      enabled = false
+      region = "auto"
+    }
   }
   additional_custom_origin_primary = local.additional_custom_origins_enabled ? merge(
     local.default_custom_origin_configuration, {

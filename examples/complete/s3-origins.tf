@@ -4,6 +4,10 @@ locals {
     domain_name = null
     origin_id   = null
     origin_path = null
+    origin_shield = {
+      enabled = false
+      region = "auto"
+    }
     s3_origin_config = {
       origin_access_identity = ""
     }

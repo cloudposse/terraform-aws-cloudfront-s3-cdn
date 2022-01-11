@@ -390,6 +390,15 @@ resource "aws_cloudfront_distribution" "default" {
         origin_ssl_protocols   = var.origin_ssl_protocols
       }
     }
+
+    dynamic "origin_shield" {
+      for_each = var.origin_shield != null ? ["true"] : []
+      content {
+        enabled              = var.origin_shield.enabled
+        origin_shield_region = var.origin_shield.region
+      }
+    }
+
     dynamic "custom_header" {
       for_each = local.website_password_enabled ? concat([{ name = "referer", value = random_password.referer[0].result }], var.custom_origin_headers) : var.custom_origin_headers
 
@@ -413,6 +422,10 @@ resource "aws_cloudfront_distribution" "default" {
           value = custom_header.value["value"]
         }
       }
+      origin_shield {
+        enabled              = lookup(origin.value.origin_shield, "enabled", false)
+        origin_shield_region = lookup(origin.value.origin_shield, "region", "auto")
+      }
       custom_origin_config {
         http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
         https_port               = lookup(origin.value.custom_origin_config, "https_port", 443)
@@ -433,6 +446,10 @@ resource "aws_cloudfront_distribution" "default" {
       s3_origin_config {
         # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
         origin_access_identity = try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.cf_access.path
+      }
+      origin_shield {
+        enabled              = lookup(origin.value.origin_shield, "enabled", false)
+        origin_shield_region = lookup(origin.value.origin_shield, "region", "auto")
       }
     }
   }

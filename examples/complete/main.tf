@@ -89,6 +89,10 @@ module "cloudfront_s3_cdn" {
     domain_name = module.s3_bucket.bucket_regional_domain_name
     origin_id   = module.s3_bucket.bucket_id
     origin_path = null
+    origin_shield = {
+      enabled = false
+      region = "auto"
+    }
     s3_origin_config = {
       origin_access_identity = null # will get translated to the origin_access_identity used by the origin created by this module.
     }
@@ -101,6 +105,11 @@ module "cloudfront_s3_cdn" {
 
   lambda_function_association = local.lambda_at_edge_enabled ? module.lambda_at_edge.lambda_function_association : []
   forward_header_values       = local.lambda_at_edge_enabled ? ["useless-header"] : []
+
+  origin_shield = {
+      enabled = false
+      region = "auto"
+  }
 
   context = module.this.context
 }

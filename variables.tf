@@ -223,6 +223,15 @@ variable "origin_request_policy_id" {
     EOT
 }
 
+variable "origin_shield" {
+  type = object({
+    enabled = bool
+    region  = string
+  })
+  description = "The CloudFront Origin Shield settings"
+  default     = null
+}
+
 variable "default_ttl" {
   type        = number
   default     = 60
@@ -434,6 +443,10 @@ variable "custom_origins" {
       origin_keepalive_timeout = number
       origin_read_timeout      = number
     })
+    origin_shield = object({
+      enabled = bool
+      region  = string
+    })
   }))
   default     = []
   description = <<-EOT
@@ -446,6 +459,10 @@ variable "s3_origins" {
     domain_name = string
     origin_id   = string
     origin_path = string
+    origin_shield = object({
+      enabled = bool
+      region  = string
+    })
     s3_origin_config = object({
       origin_access_identity = string
     })
