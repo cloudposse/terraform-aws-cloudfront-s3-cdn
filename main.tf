@@ -349,6 +349,8 @@ data "aws_s3_bucket" "cf_logs" {
 
 resource "aws_cloudfront_distribution" "default" {
   #bridgecrew:skip=BC_AWS_GENERAL_27:Skipping `Ensure CloudFront distribution has WAF enabled` because AWS WAF is indeed configurable and is managed via `var.web_acl_id`.
+  #bridgecrew:skip=BC_AWS_NETWORKING_63:Skipping `Verify CloudFront Distribution Viewer Certificate is using TLS v1.2` because the minimum TLS version for the viewer certificate is indeed configurable and is managed via `var.minimum_protocol_version`.
+  #bridgecrew:skip=BC_AWS_NETWORKING_65:Skipping `Ensure CloudFront distribution has a strict security headers policy attached` because the response header policy is indeed configurable and is managed via `var.response_headers_policy_id`.
   count = local.enabled ? 1 : 0
 
   enabled             = var.distribution_enabled
