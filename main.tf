@@ -333,6 +333,28 @@ resource "aws_s3_bucket_public_access_block" "origin" {
   depends_on = [aws_s3_bucket_policy.default]
 }
 
+resource "aws_s3_bucket_ownership_controls" "origin" {
+  count = local.create_s3_origin_bucket ? 1 : 0
+
+  bucket = local.bucket
+
+  rule {
+    object_ownership = var.s3_object_ownership
+  }
+
+  depends_on = [time_sleep.wait_for_aws_s3_bucket_settings]
+}
+
+# Workaround for S3 eventual consistency for settings relating to objects
+resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
+  count = local.create_s3_origin_bucket ? 1 : 0
+
+  create_duration  = "30s"
+  destroy_duration = "30s"
+
+  depends_on = [aws_s3_bucket_public_access_block.origin, aws_s3_bucket_policy.default]
+}
+
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
   version                  = "0.26.0"
@@ -360,6 +382,8 @@ data "aws_s3_bucket" "cf_logs" {
 
 resource "aws_cloudfront_distribution" "default" {
   #bridgecrew:skip=BC_AWS_GENERAL_27:Skipping `Ensure CloudFront distribution has WAF enabled` because AWS WAF is indeed configurable and is managed via `var.web_acl_id`.
+  #bridgecrew:skip=BC_AWS_NETWORKING_63:Skipping `Verify CloudFront Distribution Viewer Certificate is using TLS v1.2` because the minimum TLS version for the viewer certificate is indeed configurable and is managed via `var.minimum_protocol_version`.
+  #bridgecrew:skip=BC_AWS_NETWORKING_65:Skipping `Ensure CloudFront distribution has a strict security headers policy attached` because the response header policy is indeed configurable and is managed via `var.response_headers_policy_id`.
   count = local.enabled ? 1 : 0
 
   enabled             = var.distribution_enabled
@@ -501,7 +525,7 @@ resource "aws_cloudfront_distribution" "default" {
 
   viewer_certificate {
     acm_certificate_arn            = var.acm_certificate_arn
-    ssl_support_method             = local.use_default_acm_certificate ? "" : "sni-only"
+    ssl_support_method             = "sni-only"
     minimum_protocol_version       = local.minimum_protocol_version
     cloudfront_default_certificate = local.use_default_acm_certificate
   }
