@@ -315,9 +315,11 @@ resource "aws_s3_bucket_ownership_controls" "origin" {
 # Workaround for S3 eventual consistency for settings relating to objects
 resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
   count            = local.create_s3_origin_bucket ? 1 : 0
-  depends_on       = [aws_s3_bucket_public_access_block.origin, aws_s3_bucket_policy.default]
+
   create_duration  = "30s"
   destroy_duration = "30s"
+
+  depends_on       = [aws_s3_bucket_public_access_block.origin, aws_s3_bucket_policy.default]
 }
 
 module "logs" {
