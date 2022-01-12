@@ -540,6 +540,12 @@ variable "s3_access_log_prefix" {
   description = "Prefix to use for S3 Access Log object keys. Defaults to `logs/$${module.this.id}`"
 }
 
+variable "s3_object_ownership" {
+  type        = string
+  default     = "ObjectWriter"
+  description = "Specifies the S3 object ownership control on the origin bucket. Valid values are `ObjectWriter`, `BucketOwnerPreferred`, and 'BucketOwnerEnforced'."
+}
+
 variable "cloudfront_access_logging_enabled" {
   type        = bool
   default     = true

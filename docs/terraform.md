@@ -6,6 +6,7 @@
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.41.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 2.2 |
+| <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.7 |
 
 ## Providers
 
@@ -13,6 +14,7 @@
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.41.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | >= 2.2 |
+| <a name="provider_time"></a> [time](#provider\_time) | >= 0.7 |
 
 ## Modules
 
@@ -30,9 +32,11 @@
 | [aws_cloudfront_distribution.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution) | resource |
 | [aws_cloudfront_origin_access_identity.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_access_identity) | resource |
 | [aws_s3_bucket.origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
+| [aws_s3_bucket_ownership_controls.origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls) | resource |
 | [aws_s3_bucket_policy.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [aws_s3_bucket_public_access_block.origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) | resource |
 | [random_password.referer](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
+| [time_sleep.wait_for_aws_s3_bucket_settings](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
 | [aws_iam_policy_document.combined](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.deployment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.s3_origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -136,6 +140,7 @@
 | <a name="input_s3_access_log_bucket_name"></a> [s3\_access\_log\_bucket\_name](#input\_s3\_access\_log\_bucket\_name) | Name of the existing S3 bucket where S3 Access Logs will be delivered. Default is not to enable S3 Access Logging. | `string` | `""` | no |
 | <a name="input_s3_access_log_prefix"></a> [s3\_access\_log\_prefix](#input\_s3\_access\_log\_prefix) | Prefix to use for S3 Access Log object keys. Defaults to `logs/${module.this.id}` | `string` | `""` | no |
 | <a name="input_s3_access_logging_enabled"></a> [s3\_access\_logging\_enabled](#input\_s3\_access\_logging\_enabled) | Set `true` to deliver S3 Access Logs to the `s3_access_log_bucket_name` bucket.<br>Defaults to `false` if `s3_access_log_bucket_name` is empty (the default), `true` otherwise.<br>Must be set explicitly if the access log bucket is being created at the same time as this module is being invoked. | `bool` | `null` | no |
+| <a name="input_s3_object_ownership"></a> [s3\_object\_ownership](#input\_s3\_object\_ownership) | Specifies the S3 object ownership control on the origin bucket. Valid values are `ObjectWriter`, `BucketOwnerPreferred`, and 'BucketOwnerEnforced'. | `string` | `"ObjectWriter"` | no |
 | <a name="input_s3_origins"></a> [s3\_origins](#input\_s3\_origins) | A list of S3 [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) (in addition to the one created by this module) for this distribution.<br>S3 buckets configured as websites are `custom_origins`, not `s3_origins`.<br>Specifying `s3_origin_config.origin_access_identity` as `null` or `""` will have it translated to the `origin_access_identity` used by the origin created by the module. | <pre>list(object({<br>    domain_name = string<br>    origin_id   = string<br>    origin_path = string<br>    s3_origin_config = object({<br>      origin_access_identity = string<br>    })<br>  }))</pre> | `[]` | no |
 | <a name="input_s3_website_password_enabled"></a> [s3\_website\_password\_enabled](#input\_s3\_website\_password\_enabled) | If set to true, and `website_enabled` is also true, a password will be required in the `Referrer` field of the<br>HTTP request in order to access the website, and Cloudfront will be configured to pass this password in its requests.<br>This will make it much harder for people to bypass Cloudfront and access the S3 website directly via its website endpoint. | `bool` | `false` | no |
 | <a name="input_stage"></a> [stage](#input\_stage) | ID element. Usually used to indicate role, e.g. 'prod', 'staging', 'source', 'build', 'test', 'deploy', 'release' | `string` | `null` | no |
