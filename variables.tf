@@ -235,6 +235,41 @@ variable "origin_shield" {
   default     = null
 }
 
+variable "origin_shield_region_mapping" {
+  type = map(string)
+  default = {
+    # Regions where Origin Shield is available
+    us-east-2      = "us-east-2"      # US East (Ohio)
+    us-east-1      = "us-east-1"      # US East (N. Virginia)
+    us-west-2      = "us-west-2"      # US West (Oregon)
+    ap-south-1     = "ap-south-1"     # Asia Pacific (Mumbai)
+    ap-northeast-2 = "ap-northeast-2" # Asia Pacific (Seoul)
+    ap-southeast-1 = "ap-southeast-1" # Asia Pacific (Singapore)
+    ap-southeast-2 = "ap-southeast-2" # Asia Pacific (Sydney)
+    ap-northeast-1 = "ap-northeast-1" # Asia Pacific (Tokyo)
+    eu-central-1   = "eu-central-1"   # Europe (Frankfurt)
+    eu-west-1      = "eu-west-1"      # Europe (Ireland)
+    eu-west-2      = "eu-west-2"      # Europe (London)
+    sa-east-1      = "sa-east-1"      # South America (São Paulo)
+
+    # Regions where Origin Shield is NOT available (choose closest region)
+    us-west-1    = "us-west-2"      # US West (N. California)
+    af-south-1   = "eu-west-1"      # Africa (Cape Town)
+    ap-east-1    = "ap-southeast-1" # Asia Pacific (Hong Kong)
+    ca-central-1 = "us-east-1"      # Canada (Central)
+    eu-south-1   = "eu-central-1"   # Europe (Milan)
+    eu-west-3    = "eu-west-2"      # Europe (Paris)
+    eu-north-1   = "eu-west-2"      # Europe (Stockholm)
+    me-south-1   = "ap-south-1"     # Middle East (Bahrain)
+  }
+  description = <<-EOT
+    A map of [regions that support Origin Shield](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html#choose-origin-shield-region).
+    If a region does not support Origin Shield, it will be mapped to the closest region that does.
+
+    This mapping will be used when any of the origin shield `region` parameters is set to `auto`
+  EOT
+}
+
 variable "default_ttl" {
   type        = number
   default     = 60
