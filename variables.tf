@@ -388,10 +388,11 @@ variable "ordered_cache" {
     cache_policy_id          = string
     origin_request_policy_id = string
 
-    viewer_protocol_policy = string
-    min_ttl                = number
-    default_ttl            = number
-    max_ttl                = number
+    viewer_protocol_policy     = string
+    min_ttl                    = number
+    default_ttl                = number
+    max_ttl                    = number
+    response_headers_policy_id = string
 
     forward_query_string              = bool
     forward_header_values             = list(string)
