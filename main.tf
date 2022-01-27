@@ -549,10 +549,10 @@ resource "aws_cloudfront_distribution" "default" {
         }
       }
 
-      viewer_protocol_policy = ordered_cache_behavior.value.viewer_protocol_policy
-      default_ttl            = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.default_ttl
-      min_ttl                = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.min_ttl
-      max_ttl                = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.max_ttl
+      viewer_protocol_policy     = ordered_cache_behavior.value.viewer_protocol_policy
+      default_ttl                = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.default_ttl
+      min_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.min_ttl
+      max_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.max_ttl
       response_headers_policy_id = ordered_cache_behavior.value.response_headers_policy_id
 
       dynamic "lambda_function_association" {
