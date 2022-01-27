@@ -300,6 +300,28 @@ resource "aws_s3_bucket_public_access_block" "origin" {
   depends_on = [aws_s3_bucket_policy.default]
 }
 
+resource "aws_s3_bucket_ownership_controls" "origin" {
+  count = local.create_s3_origin_bucket ? 1 : 0
+
+  bucket = local.bucket
+
+  rule {
+    object_ownership = var.s3_object_ownership
+  }
+
+  depends_on = [time_sleep.wait_for_aws_s3_bucket_settings]
+}
+
+# Workaround for S3 eventual consistency for settings relating to objects
+resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
+  count = local.create_s3_origin_bucket ? 1 : 0
+
+  create_duration  = "30s"
+  destroy_duration = "30s"
+
+  depends_on = [aws_s3_bucket_public_access_block.origin, aws_s3_bucket_policy.default]
+}
+
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
   version                  = "0.26.0"
@@ -327,6 +349,8 @@ data "aws_s3_bucket" "cf_logs" {
 
 resource "aws_cloudfront_distribution" "default" {
   #bridgecrew:skip=BC_AWS_GENERAL_27:Skipping `Ensure CloudFront distribution has WAF enabled` because AWS WAF is indeed configurable and is managed via `var.web_acl_id`.
+  #bridgecrew:skip=BC_AWS_NETWORKING_63:Skipping `Verify CloudFront Distribution Viewer Certificate is using TLS v1.2` because the minimum TLS version for the viewer certificate is indeed configurable and is managed via `var.minimum_protocol_version`.
+  #bridgecrew:skip=BC_AWS_NETWORKING_65:Skipping `Ensure CloudFront distribution has a strict security headers policy attached` because the response header policy is indeed configurable and is managed via `var.response_headers_policy_id`.
   count = local.enabled ? 1 : 0
 
   enabled             = var.distribution_enabled
@@ -439,7 +463,7 @@ resource "aws_cloudfront_distribution" "default" {
 
   viewer_certificate {
     acm_certificate_arn            = var.acm_certificate_arn
-    ssl_support_method             = local.use_default_acm_certificate ? "" : "sni-only"
+    ssl_support_method             = local.use_default_acm_certificate ? null : "sni-only"
     minimum_protocol_version       = local.minimum_protocol_version
     cloudfront_default_certificate = local.use_default_acm_certificate
   }
@@ -458,7 +482,7 @@ resource "aws_cloudfront_distribution" "default" {
     dynamic "forwarded_values" {
       # If a cache policy or origin request policy is specified,
       # we cannot include a `forwarded_values` block at all in the API request.
-      for_each = (var.cache_policy_id == null && var.origin_request_policy_id == null) ? [true] : []
+      for_each = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? [] : [true]
       content {
         query_string            = var.forward_query_string
         query_string_cache_keys = var.query_string_cache_keys
@@ -471,9 +495,9 @@ resource "aws_cloudfront_distribution" "default" {
     }
 
     viewer_protocol_policy = var.viewer_protocol_policy
-    default_ttl            = var.default_ttl
-    min_ttl                = var.min_ttl
-    max_ttl                = var.max_ttl
+    default_ttl            = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? 0 : var.default_ttl
+    min_ttl                = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? 0 : var.min_ttl
+    max_ttl                = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? 0 : var.max_ttl
 
     realtime_log_config_arn = var.realtime_log_config_arn
 
@@ -513,7 +537,7 @@ resource "aws_cloudfront_distribution" "default" {
 
       dynamic "forwarded_values" {
         # If a cache policy or origin request policy is specified, we cannot include a `forwarded_values` block at all in the API request
-        for_each = ordered_cache_behavior.value.cache_policy_id == null || ordered_cache_behavior.value.origin_request_policy_id == null ? [true] : []
+        for_each = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? [] : [true]
         content {
           query_string = ordered_cache_behavior.value.forward_query_string
           headers      = ordered_cache_behavior.value.forward_header_values
@@ -525,13 +549,14 @@ resource "aws_cloudfront_distribution" "default" {
         }
       }
 
-      viewer_protocol_policy = ordered_cache_behavior.value.viewer_protocol_policy
-      default_ttl            = ordered_cache_behavior.value.default_ttl
-      min_ttl                = ordered_cache_behavior.value.min_ttl
-      max_ttl                = ordered_cache_behavior.value.max_ttl
+      viewer_protocol_policy     = ordered_cache_behavior.value.viewer_protocol_policy
+      default_ttl                = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.default_ttl
+      min_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.min_ttl
+      max_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.max_ttl
+      response_headers_policy_id = ordered_cache_behavior.value.response_headers_policy_id
 
       dynamic "lambda_function_association" {
-        for_each = ordered_cache_behavior.value.lambda_function_association
+        for_each = try(ordered_cache_behavior.value.lambda_function_association, [])
         content {
           event_type   = lambda_function_association.value.event_type
           include_body = lookup(lambda_function_association.value, "include_body", null)
@@ -540,7 +565,7 @@ resource "aws_cloudfront_distribution" "default" {
       }
 
       dynamic "function_association" {
-        for_each = lookup(ordered_cache_behavior.value, "function_association", [])
+        for_each = try(ordered_cache_behavior.value.function_association, [])
         content {
           event_type   = function_association.value.event_type
           function_arn = function_association.value.function_arn
