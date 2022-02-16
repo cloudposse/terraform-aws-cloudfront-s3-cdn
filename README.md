@@ -286,7 +286,7 @@ certificate in `acm_certificate_arn`. Note that for Cloudfront, the certificate 
 # For cloudfront, the acm has to be created in us-east-1 or it will not work
 provider "aws" {
   region = "us-east-1"
-  alias  = "us-east-1"
+  alias  = "aws.us-east-1"
 }
 
 # create acm and explicitly set it to us-east-1 provider
