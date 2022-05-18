@@ -148,7 +148,7 @@
 | <a name="input_tenant"></a> [tenant](#input\_tenant) | ID element \_(Rarely used, not included by default)\_. A customer identifier, indicating who this instance of a resource is for | `string` | `null` | no |
 | <a name="input_trusted_key_groups"></a> [trusted\_key\_groups](#input\_trusted\_key\_groups) | A list of key group IDs that CloudFront can use to validate signed URLs or signed cookies. | `list(string)` | `[]` | no |
 | <a name="input_trusted_signers"></a> [trusted\_signers](#input\_trusted\_signers) | The AWS accounts, if any, that you want to allow to create signed URLs for private content. 'self' is acceptable. | `list(string)` | `[]` | no |
-| <a name="input_versioning_enabled"></a> [versioning\_enabled](#input\_versioning\_enabled) | When set to 'true' the s3 origin bucket will have versioning enabled | `bool` | `true` | no |
+| <a name="input_versioning_enabled"></a> [versioning\_enabled](#input\_versioning\_enabled) | When set to 'true' the s3 origin bucket will have versioning enabled | `bool` | `false` | no |
 | <a name="input_viewer_protocol_policy"></a> [viewer\_protocol\_policy](#input\_viewer\_protocol\_policy) | Limit the protocol users can use to access content. One of `allow-all`, `https-only`, or `redirect-to-https` | `string` | `"redirect-to-https"` | no |
 | <a name="input_wait_for_deployment"></a> [wait\_for\_deployment](#input\_wait\_for\_deployment) | When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed | `bool` | `true` | no |
 | <a name="input_web_acl_id"></a> [web\_acl\_id](#input\_web\_acl\_id) | ID of the AWS WAF web ACL that is associated with the distribution | `string` | `""` | no |
