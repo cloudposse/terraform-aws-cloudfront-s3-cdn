@@ -35,6 +35,9 @@ resource "aws_lambda_function" "openidconnect" {
   runtime          = "nodejs12.x"
   handler          = "index.auth"
   publish          = true
+  tracing_config {
+    mode = "PassThrough"
+  }
 }
 
 resource "aws_iam_role" "auth_lambda" {
