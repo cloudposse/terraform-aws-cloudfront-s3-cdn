@@ -4,6 +4,7 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.0 |
+| <a name="requirement_archive"></a> [archive](#requirement\_archive) | 2.2.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.64.0, < 4.0.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 2.2 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.7 |
@@ -12,7 +13,10 @@
 
 | Name | Version |
 |------|---------|
+| <a name="provider_archive"></a> [archive](#provider\_archive) | 2.2.0 |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.64.0, < 4.0.0 |
+| <a name="provider_aws.us-east-1"></a> [aws.us-east-1](#provider\_aws.us-east-1) | >= 3.64.0, < 4.0.0 |
+| <a name="provider_local"></a> [local](#provider\_local) | n/a |
 | <a name="provider_random"></a> [random](#provider\_random) | >= 2.2 |
 | <a name="provider_time"></a> [time](#provider\_time) | >= 0.7 |
 
@@ -31,12 +35,16 @@
 |------|------|
 | [aws_cloudfront_distribution.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution) | resource |
 | [aws_cloudfront_origin_access_identity.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_access_identity) | resource |
+| [aws_iam_role.auth_lambda](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_lambda_function.openidconnect](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) | resource |
 | [aws_s3_bucket.origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_ownership_controls.origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls) | resource |
 | [aws_s3_bucket_policy.default](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [aws_s3_bucket_public_access_block.origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) | resource |
+| [local_file.openidconnect_secrets](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [random_password.referer](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [time_sleep.wait_for_aws_s3_bucket_settings](https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/sleep) | resource |
+| [archive_file.openidconnect_archive](https://registry.terraform.io/providers/hashicorp/archive/2.2.0/docs/data-sources/file) | data source |
 | [aws_iam_policy_document.combined](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.deployment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.s3_origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
@@ -120,6 +128,14 @@
 | <a name="input_minimum_protocol_version"></a> [minimum\_protocol\_version](#input\_minimum\_protocol\_version) | Cloudfront TLS minimum protocol version.<br>If `var.acm_certificate_arn` is unset, only "TLSv1" can be specified. See: [AWS Cloudfront create-distribution documentation](https://docs.aws.amazon.com/cli/latest/reference/cloudfront/create-distribution.html)<br>and [Supported protocols and ciphers between viewers and CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html#secure-connections-supported-ciphers) for more information.<br>Defaults to "TLSv1.2\_2019" unless `var.acm_certificate_arn` is unset, in which case it defaults to `TLSv1` | `string` | `""` | no |
 | <a name="input_name"></a> [name](#input\_name) | ID element. Usually the component or solution name, e.g. 'app' or 'jenkins'.<br>This is the only ID element not also included as a `tag`.<br>The "name" tag is set to the full `id` string. There is no tag with the value of the `name` input. | `string` | `null` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | ID element. Usually an abbreviation of your organization name, e.g. 'eg' or 'cp', to help ensure generated IDs are globally unique | `string` | `null` | no |
+| <a name="input_openidconnect_auth_cookie_name"></a> [openidconnect\_auth\_cookie\_name](#input\_openidconnect\_auth\_cookie\_name) | OpenID Connect cookie name | `string` | `"AUTH"` | no |
+| <a name="input_openidconnect_auth_cookie_ttl_sec"></a> [openidconnect\_auth\_cookie\_ttl\_sec](#input\_openidconnect\_auth\_cookie\_ttl\_sec) | OpenID Connect cookie ttl in sec | `string` | `5000` | no |
+| <a name="input_openidconnect_client_id"></a> [openidconnect\_client\_id](#input\_openidconnect\_client\_id) | OpenID Connect client ID | `string` | `""` | no |
+| <a name="input_openidconnect_client_secret"></a> [openidconnect\_client\_secret](#input\_openidconnect\_client\_secret) | OpenID Connect client secret | `string` | `""` | no |
+| <a name="input_openidconnect_domain"></a> [openidconnect\_domain](#input\_openidconnect\_domain) | OpenID Connect domain | `string` | `""` | no |
+| <a name="input_openidconnect_jwt_secret"></a> [openidconnect\_jwt\_secret](#input\_openidconnect\_jwt\_secret) | OpenID Connect jwt\_secret | `string` | `""` | no |
+| <a name="input_openidconnect_tenant_id"></a> [openidconnect\_tenant\_id](#input\_openidconnect\_tenant\_id) | OpenID Connect tenant ID | `string` | `""` | no |
+| <a name="input_openidconnect_timeout_ms"></a> [openidconnect\_timeout\_ms](#input\_openidconnect\_timeout\_ms) | OpenID Connect timeout in ms | `string` | `5000` | no |
 | <a name="input_ordered_cache"></a> [ordered\_cache](#input\_ordered\_cache) | An ordered list of [cache behaviors](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#cache-behavior-arguments) resource for this distribution.<br>List in order of precedence (first match wins). This is in addition to the default cache policy.<br>Set `target_origin_id` to `""` to specify the S3 bucket origin created by this module. | <pre>list(object({<br>    target_origin_id = string<br>    path_pattern     = string<br><br>    allowed_methods    = list(string)<br>    cached_methods     = list(string)<br>    compress           = bool<br>    trusted_signers    = list(string)<br>    trusted_key_groups = list(string)<br><br>    cache_policy_id          = string<br>    origin_request_policy_id = string<br><br>    viewer_protocol_policy     = string<br>    min_ttl                    = number<br>    default_ttl                = number<br>    max_ttl                    = number<br>    response_headers_policy_id = string<br><br>    forward_query_string              = bool<br>    forward_header_values             = list(string)<br>    forward_cookies                   = string<br>    forward_cookies_whitelisted_names = list(string)<br><br>    lambda_function_association = list(object({<br>      event_type   = string<br>      include_body = bool<br>      lambda_arn   = string<br>    }))<br><br>    function_association = list(object({<br>      event_type   = string<br>      function_arn = string<br>    }))<br>  }))</pre> | `[]` | no |
 | <a name="input_origin_bucket"></a> [origin\_bucket](#input\_origin\_bucket) | Name of an existing S3 bucket to use as the origin. If this is not provided, it will create a new s3 bucket using `var.name` and other context related inputs | `string` | `null` | no |
 | <a name="input_origin_force_destroy"></a> [origin\_force\_destroy](#input\_origin\_force\_destroy) | Delete all objects from the bucket so that the bucket can be destroyed without error (e.g. `true` or `false`) | `bool` | `false` | no |
