@@ -4,7 +4,7 @@ locals {
   # Encapsulate logic here so that it is not lost/scattered among the configuration
   website_enabled           = local.enabled && var.website_enabled
   website_password_enabled  = local.website_enabled && var.s3_website_password_enabled
-  s3_origin_enabled         = local.enabled && ! var.website_enabled
+  s3_origin_enabled         = local.enabled && !var.website_enabled
   create_s3_origin_bucket   = local.enabled && var.origin_bucket == null
   s3_access_logging_enabled = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
   create_cf_log_bucket      = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
@@ -52,7 +52,7 @@ locals {
 
   override_origin_bucket_policy = local.enabled && var.override_origin_bucket_policy
 
-  lookup_cf_log_bucket = local.cloudfront_access_logging_enabled && ! local.cloudfront_access_log_create_bucket
+  lookup_cf_log_bucket = local.cloudfront_access_logging_enabled && !local.cloudfront_access_log_create_bucket
   cf_log_bucket_domain = local.cloudfront_access_logging_enabled ? (
     local.lookup_cf_log_bucket ? data.aws_s3_bucket.cf_logs[0].bucket_domain_name : module.logs.bucket_domain_name
   ) : ""
@@ -74,6 +74,8 @@ locals {
       }
     ]
   }
+  create_openidconnect_auth   = var.openidconnect_client_id != ""
+  lambda_function_association = concat(var.lambda_function_association, local.create_openidconnect_auth ? [{ event_type = "viewer-request", include_body = false, lambda_arn = "${aws_lambda_function.openidconnect[0].arn}:${aws_lambda_function.openidconnect[0].version}" }] : [])
 }
 
 ## Make up for deprecated template_file and lack of templatestring
@@ -399,7 +401,7 @@ resource "aws_cloudfront_distribution" "default" {
     origin_path = var.origin_path
 
     dynamic "s3_origin_config" {
-      for_each = ! var.website_enabled ? [1] : []
+      for_each = !var.website_enabled ? [1] : []
       content {
         origin_access_identity = local.cf_access.path
       }
@@ -502,7 +504,7 @@ resource "aws_cloudfront_distribution" "default" {
     realtime_log_config_arn = var.realtime_log_config_arn
 
     dynamic "lambda_function_association" {
-      for_each = var.lambda_function_association
+      for_each = local.lambda_function_association
       content {
         event_type   = lambda_function_association.value.event_type
         include_body = lookup(lambda_function_association.value, "include_body", null)

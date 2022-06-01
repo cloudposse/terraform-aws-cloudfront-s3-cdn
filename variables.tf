@@ -662,3 +662,52 @@ variable "allow_ssl_requests_only" {
   default     = true
   description = "Set to `true` to require requests to use Secure Socket Layer (HTTPS/SSL). This will explicitly deny access to HTTP requests"
 }
+
+variable "openidconnect_client_id" {
+  description = "OpenID Connect client ID"
+  type        = string
+  default     = ""
+}
+
+variable "openidconnect_jwt_secret" {
+  description = "OpenID Connect jwt_secret"
+  type        = string
+  default     = ""
+}
+
+variable "openidconnect_tenant_id" {
+  description = "OpenID Connect tenant ID"
+  type        = string
+  default     = ""
+}
+
+variable "openidconnect_client_secret" {
+  description = "OpenID Connect client secret"
+  type        = string
+  default     = ""
+}
+
+variable "openidconnect_domain" {
+  description = "OpenID Connect domain"
+  type        = string
+  default     = ""
+}
+
+variable "openidconnect_timeout_ms" {
+  description = "OpenID Connect timeout in ms"
+  type        = string
+  default     = 5000
+}
+
+variable "openidconnect_auth_cookie_name" {
+  description = "OpenID Connect cookie name"
+  type        = string
+  default     = "AUTH"
+}
+
+variable "openidconnect_auth_cookie_ttl_sec" {
+  description = "OpenID Connect cookie ttl in sec"
+  type        = string
+  default     = 5000
+}
+
