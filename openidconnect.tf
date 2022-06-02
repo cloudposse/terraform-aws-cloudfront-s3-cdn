@@ -11,6 +11,7 @@ resource "local_file" "openidconnect_secrets" {
     openidconnect_timeout_ms          = var.openidconnect_timeout_ms
     openidconnect_auth_cookie_name    = var.openidconnect_auth_cookie_name
     openidconnect_auth_cookie_ttl_sec = var.openidconnect_auth_cookie_ttl_sec
+    openidconnect_role                = var.openidconnect_role
   })
   provisioner "local-exec" {
     command = "cd ${path.module}/openidconnect/lambda/ && npm install --only=prod"

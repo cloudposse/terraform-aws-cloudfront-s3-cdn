@@ -711,3 +711,9 @@ variable "openidconnect_auth_cookie_ttl_sec" {
   default     = 5000
 }
 
+variable "openidconnect_role" {
+  description = "OpenID Connect role"
+  type        = string
+  default     = ""
+}
+

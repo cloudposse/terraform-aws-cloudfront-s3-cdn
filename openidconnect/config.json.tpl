@@ -6,5 +6,6 @@
     "DOMAIN": "${openidconnect_domain}",
     "TIMEOUT_MS": ${openidconnect_timeout_ms},
     "AUTH_COOKIE_NAME": "${openidconnect_auth_cookie_name}",
-    "AUTH_COOKIE_TTL_SEC": "${openidconnect_auth_cookie_ttl_sec}"
+    "AUTH_COOKIE_TTL_SEC": "${openidconnect_auth_cookie_ttl_sec}",
+    "ROLE": "${openidconnect_role}"
 }

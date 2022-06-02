@@ -102,11 +102,16 @@ function getTokens(authCode, lambdaHost) {
                 });
 
                 res.on('end', () => {
-                    console.log(rawData, res);
                     const jsonResponse = JSON.parse(rawData);
-
                     if (    'id_token' in jsonResponse) {
                         console.debug('request succeeded');
+                        const payload = jwt.decode(jsonResponse.access_token);
+                        if (PARAMETERS.ROLE && PARAMETERS.ROLE != "") {
+                          if (!payload.roles.includes(PARAMETERS.ROLE)) {
+                            console.debug('Role ' + PARAMETERS.ROLE + ' not in ', payload.roles);
+                            resolve(null);
+                          }
+                        }
                         resolve({idToken: jsonResponse.id_token});
                     } else {
                         console.error('request failed: unexpected response');
@@ -209,7 +214,6 @@ async function generateLoginSuccessfulResponse(Tokens) {
 exports.auth = async (event, context, callback) => {
     const request = event.Records[0].cf.request;
     const headers = request.headers;
-    console.log(headers)
     const lambdaHost = headers.host[0].value;
     const queryParams = querystring.parse(request.querystring);
 
