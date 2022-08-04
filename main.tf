@@ -4,10 +4,12 @@ locals {
   # Encapsulate logic here so that it is not lost/scattered among the configuration
   website_enabled           = local.enabled && var.website_enabled
   website_password_enabled  = local.website_enabled && var.s3_website_password_enabled
-  s3_origin_enabled         = local.enabled && ! var.website_enabled
+  s3_origin_enabled         = local.enabled && !var.website_enabled
   create_s3_origin_bucket   = local.enabled && var.origin_bucket == null
   s3_access_logging_enabled = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
   create_cf_log_bucket      = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
+
+  ignore_web_acl_changes = local.enabled && var.ignore_web_acl_changes
 
   create_cloudfront_origin_access_identity = local.enabled && length(compact([var.cloudfront_origin_access_identity_iam_arn])) == 0 # "" or null
 
@@ -52,7 +54,7 @@ locals {
 
   override_origin_bucket_policy = local.enabled && var.override_origin_bucket_policy
 
-  lookup_cf_log_bucket = local.cloudfront_access_logging_enabled && ! local.cloudfront_access_log_create_bucket
+  lookup_cf_log_bucket = local.cloudfront_access_logging_enabled && !local.cloudfront_access_log_create_bucket
   cf_log_bucket_domain = local.cloudfront_access_logging_enabled ? (
     local.lookup_cf_log_bucket ? data.aws_s3_bucket.cf_logs[0].bucket_domain_name : module.logs.bucket_domain_name
   ) : ""
@@ -372,6 +374,16 @@ resource "aws_cloudfront_distribution" "default" {
 
   aliases = var.acm_certificate_arn != "" ? concat(var.aliases, var.external_aliases) : []
 
+  dynamic "ignore_web_acl_changes" {
+    for_each = local.ignore_web_acl_changes ? ["true"] : []
+    lifecycle {
+      ignore_changes = [
+        # Ignore changes web_acl_id if using an AWS managed Web ACL
+        web_acl_id,
+      ]
+    }
+  }
+
   dynamic "origin_group" {
     for_each = var.origin_groups
     content {
@@ -399,7 +411,7 @@ resource "aws_cloudfront_distribution" "default" {
     origin_path = var.origin_path
 
     dynamic "s3_origin_config" {
-      for_each = ! var.website_enabled ? [1] : []
+      for_each = !var.website_enabled ? [1] : []
       content {
         origin_access_identity = local.cf_access.path
       }
