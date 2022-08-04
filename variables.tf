@@ -662,3 +662,9 @@ variable "allow_ssl_requests_only" {
   default     = true
   description = "Set to `true` to require requests to use Secure Socket Layer (HTTPS/SSL). This will explicitly deny access to HTTP requests"
 }
+
+variable "ignore_web_acl_changes" {
+  type        = bool
+  default     = false
+  description = "Set to `true` if you usde an AWS managed central Web ACL to avoid terraform re-deploying."
+}
