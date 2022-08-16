@@ -4,7 +4,7 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.64.0, < 4.0.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.64.0, != 4.0.0, != 4.1.0, != 4.2.0, != 4.3.0, != 4.4.0, != 4.5.0, != 4.6.0, != 4.7.0, != 4.8.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 2.2 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.7 |
 
@@ -12,7 +12,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.64.0, < 4.0.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.64.0, != 4.0.0, != 4.1.0, != 4.2.0, != 4.3.0, != 4.4.0, != 4.5.0, != 4.6.0, != 4.7.0, != 4.8.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | >= 2.2 |
 | <a name="provider_time"></a> [time](#provider\_time) | >= 0.7 |
 
