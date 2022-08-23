@@ -359,6 +359,7 @@ resource "aws_cloudfront_distribution" "default" {
   default_root_object = var.default_root_object
   price_class         = var.price_class
   depends_on          = [aws_s3_bucket.origin]
+  http_version        = "http2and3"
 
   dynamic "logging_config" {
     for_each = local.cloudfront_access_logging_enabled ? ["true"] : []
