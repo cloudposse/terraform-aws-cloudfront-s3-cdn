@@ -664,7 +664,7 @@ variable "allow_ssl_requests_only" {
 }
 
 variable "create_cloudfront_origin_access_identity" {
-  type = bool
-  default = true
+  type        = bool
+  default     = true
   description = "Set to `true` to create a CloudFront Origin Access Identity. You should disable this if you set `cloudfront_origin_access_identity_iam_arn` and `cloudfront_origin_access_identity_path`"
 }
