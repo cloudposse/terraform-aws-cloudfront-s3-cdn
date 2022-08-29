@@ -492,13 +492,13 @@ variable "deployment_actions" {
 variable "cloudfront_origin_access_identity_iam_arn" {
   type        = string
   default     = ""
-  description = "Existing cloudfront origin access identity iam arn that is supplied in the s3 bucket policy"
+  description = "Existing cloudfront origin access identity iam arn that is supplied in the s3 bucket policy. If you set this, you must also set `cloudfront_origin_access_identity_path` and disable `create_cloudfront_origin_access_identity`"
 }
 
 variable "cloudfront_origin_access_identity_path" {
   type        = string
   default     = ""
-  description = "Existing cloudfront origin access identity path used in the cloudfront distribution's s3_origin_config content"
+  description = "Existing cloudfront origin access identity path used in the cloudfront distribution's s3_origin_config content. If you set this, you must also set `cloudfront_origin_access_identity_iam_arn` and disable `create_cloudfront_origin_access_identity`"
 }
 
 variable "custom_origin_headers" {
@@ -661,4 +661,10 @@ variable "allow_ssl_requests_only" {
   type        = bool
   default     = true
   description = "Set to `true` to require requests to use Secure Socket Layer (HTTPS/SSL). This will explicitly deny access to HTTP requests"
+}
+
+variable "create_cloudfront_origin_access_identity" {
+  type = bool
+  default = true
+  description = "Set to `true` to create a CloudFront Origin Access Identity. You should disable this if you set `cloudfront_origin_access_identity_iam_arn` and `cloudfront_origin_access_identity_path`"
 }
