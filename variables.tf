@@ -288,8 +288,8 @@ variable "dns_alias_enabled" {
 }
 
 variable "dns_allow_overwrite" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Allow creation of DNS records in Terraform to overwrite an existing record, if any. This does not affect the ability to update the record in Terraform and does not prevent other resources within Terraform or manual Route 53 changes outside Terraform from overwriting this record. false by default. This configuration is not recommended for most environments"
 }
 
