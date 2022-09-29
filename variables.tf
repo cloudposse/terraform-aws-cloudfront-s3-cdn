@@ -287,6 +287,12 @@ variable "dns_alias_enabled" {
   description = "Create a DNS alias for the CDN. Requires `parent_zone_id` or `parent_zone_name`"
 }
 
+variable "dns_allow_overwrite" {
+  type = bool
+  default = false
+  description = "Allow creation of DNS records in Terraform to overwrite an existing record, if any. This does not affect the ability to update the record in Terraform and does not prevent other resources within Terraform or manual Route 53 changes outside Terraform from overwriting this record. false by default. This configuration is not recommended for most environments"
+}
+
 variable "custom_error_response" {
   # http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages.html#custom-error-pages-procedure
   # https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#custom-error-response-arguments
