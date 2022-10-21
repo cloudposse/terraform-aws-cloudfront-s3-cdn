@@ -238,7 +238,6 @@ resource "aws_s3_bucket" "origin" {
   count = local.create_s3_origin_bucket ? 1 : 0
 
   bucket        = module.origin_label.id
-  acl           = "private"
   tags          = module.origin_label.tags
   force_destroy = var.origin_force_destroy
 
@@ -286,6 +285,13 @@ resource "aws_s3_bucket" "origin" {
       max_age_seconds = var.cors_max_age_seconds
     }
   }
+}
+
+resource "aws_s3_bucket_acl" "origin" {
+  count = local.create_s3_origin_bucket ? 1 : 0
+
+  acl    = "private"
+  bucket = aws_s3_bucket.origin[0].id
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
