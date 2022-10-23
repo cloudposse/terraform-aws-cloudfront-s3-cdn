@@ -74,6 +74,20 @@ locals {
       }
     ]
   }
+
+  # Based on https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html#choose-origin-shield-region
+  # If a region is not specified, we assume it supports Origin Shield.
+  origin_shield_region_fallback_map = {
+    "us-west-1"    = "us-west-2"
+    "af-south-1"   = "eu-west-1"
+    "ap-east-1"    = "ap-southeast-1"
+    "ca-central-1" = "us-east-1"
+    "eu-south-1"   = "eu-central-1"
+    "eu-west-3"    = "eu-west-2"
+    "eu-north-1"   = "eu-west-2"
+    "me-south-1"   = "ap-south-1"
+  }
+  origin_shield_region = local.enabled ? lookup(local.origin_shield_region_fallback_map, data.aws_region.current[0].name, data.aws_region.current[0].name) : "this string is never used"
 }
 
 ## Make up for deprecated template_file and lack of templatestring
@@ -87,6 +101,10 @@ locals {
 }
 
 data "aws_partition" "current" {
+  count = local.enabled ? 1 : 0
+}
+
+data "aws_region" "current" {
   count = local.enabled ? 1 : 0
 }
 
@@ -423,9 +441,12 @@ resource "aws_cloudfront_distribution" "default" {
       }
     }
 
-    origin_shield {
-      enabled              = var.origin_shield_region != null
-      origin_shield_region = var.origin_shield_region
+    dynamic "origin_shield" {
+      for_each = var.origin_shield_enabled ? [1] : []
+      content {
+        enabled              = true
+        origin_shield_region = local.origin_shield_region
+      }
     }
   }
 

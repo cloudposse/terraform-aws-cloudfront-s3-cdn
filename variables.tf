@@ -669,8 +669,8 @@ variable "allow_ssl_requests_only" {
   description = "Set to `true` to require requests to use Secure Socket Layer (HTTPS/SSL). This will explicitly deny access to HTTP requests"
 }
 
-variable "origin_shield_region" {
-  type        = string
-  default     = null
-  description = "If set, origin shield will be enabled for the default origin with the specified region"
+variable "origin_shield_enabled" {
+  type        = bool
+  default     = false
+  description = "If enabled, origin shield will be enabled for the default origin"
 }
