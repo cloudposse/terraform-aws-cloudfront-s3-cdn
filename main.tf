@@ -246,7 +246,7 @@ resource "aws_s3_bucket" "origin" {
 }
 
 resource "aws_s3_bucket_acl" "origin" {
-  count = local.create_s3_origin_bucket ? 1 : 0
+  count  = local.create_s3_origin_bucket ? 1 : 0
   bucket = aws_s3_bucket.origin[0].id
   acl    = "private"
 }
@@ -263,7 +263,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "origin" {
 }
 
 resource "aws_s3_bucket_versioning" "origin" {
-  count = local.create_s3_origin_bucket ? 1 : 0
+  count  = local.create_s3_origin_bucket ? 1 : 0
   bucket = aws_s3_bucket.origin[0].id
 
   versioning_configuration {
@@ -279,8 +279,8 @@ resource "aws_s3_bucket_logging" "origin" {
 }
 
 resource "aws_s3_bucket_website_configuration" "origin" {
-  count = (local.create_s3_origin_bucket && var.website_enabled) ? 1 : 0
-  bucket   = aws_s3_bucket.origin[0].id
+  count  = (local.create_s3_origin_bucket && var.website_enabled) ? 1 : 0
+  bucket = aws_s3_bucket.origin[0].id
 
   dynamic "error_document" {
     for_each = var.redirect_all_requests_to == "" ? [1] : []
@@ -309,7 +309,7 @@ resource "aws_s3_bucket_website_configuration" "origin" {
 }
 
 resource "aws_s3_bucket_cors_configuration" "origin" {
-  count = !local.create_s3_origin_bucket && length(distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))) == 0 ? 0 : 1
+  count  = !local.create_s3_origin_bucket && length(distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))) == 0 ? 0 : 1
   bucket = aws_s3_bucket.origin[0].id
 
   cors_rule {
