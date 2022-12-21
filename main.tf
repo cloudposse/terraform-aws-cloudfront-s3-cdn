@@ -528,7 +528,7 @@ resource "aws_cloudfront_distribution" "default" {
     realtime_log_config_arn = var.realtime_log_config_arn
 
     dynamic "lambda_function_association" {
-      for_each = { for k, v in var.lambda_function_association : k => v if ! local.website_enabled }
+      for_each = var.lambda_function_association
       content {
         event_type   = lambda_function_association.value.event_type
         include_body = lookup(lambda_function_association.value, "include_body", null)
