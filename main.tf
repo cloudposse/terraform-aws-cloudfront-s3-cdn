@@ -235,7 +235,7 @@ data "aws_iam_policy_document" "combined" {
   source_policy_documents = compact(concat(
     data.aws_iam_policy_document.s3_origin.*.json,
     data.aws_iam_policy_document.s3_website_origin.*.json,
-    local.website_enabled ? [] : data.aws_iam_policy_document.s3_ssl_only.*.json,
+    data.aws_iam_policy_document.s3_ssl_only.*.json,
     values(data.aws_iam_policy_document.deployment)[*].json
   ))
 }
@@ -528,7 +528,7 @@ resource "aws_cloudfront_distribution" "default" {
     realtime_log_config_arn = var.realtime_log_config_arn
 
     dynamic "lambda_function_association" {
-      for_each = { for k, v in var.lambda_function_association : k => v if ! local.website_enabled }
+      for_each = var.lambda_function_association
       content {
         event_type   = lambda_function_association.value.event_type
         include_body = lookup(lambda_function_association.value, "include_body", null)
