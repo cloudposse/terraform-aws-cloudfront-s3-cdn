@@ -235,7 +235,7 @@ data "aws_iam_policy_document" "combined" {
   source_policy_documents = compact(concat(
     data.aws_iam_policy_document.s3_origin.*.json,
     data.aws_iam_policy_document.s3_website_origin.*.json,
-    local.website_enabled ? [] : data.aws_iam_policy_document.s3_ssl_only.*.json,
+    data.aws_iam_policy_document.s3_ssl_only.*.json,
     values(data.aws_iam_policy_document.deployment)[*].json
   ))
 }
