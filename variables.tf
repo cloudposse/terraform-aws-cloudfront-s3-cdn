@@ -674,3 +674,9 @@ variable "origin_shield_enabled" {
   default     = false
   description = "If enabled, origin shield will be enabled for the default origin"
 }
+
+variable "http_version" {
+  type        = string
+  default     = "http2"
+  description = "The maximum HTTP version to support on the distribution. Allowed values are http1.1, http2, http2and3 and http3"
+}
