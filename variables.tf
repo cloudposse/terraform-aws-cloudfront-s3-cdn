@@ -480,8 +480,8 @@ variable "versioning_enabled" {
   description = "When set to 'true' the s3 origin bucket will have versioning enabled"
 }
 
-variable "deployment_principal_arns" {
-  type        = map(list(string))
+variable "deployment_principals" {
+  type        = map(object({ path_prefix = string, arn = string }))
   default     = {}
   description = <<-EOT
     (Optional) Map of IAM Principal ARNs to lists of S3 path prefixes to grant `deployment_actions` permissions.
@@ -632,6 +632,13 @@ variable "origin_groups" {
 }
 
 # Variables below here are DEPRECATED and should not be used anymore
+
+variable "deployment_principal_arns" {
+  type        = map(list(string))
+  default     = null
+  description = "DEPRECATED. Use `deployment_principals` instead."
+}
+
 
 variable "access_log_bucket_name" {
   type        = string

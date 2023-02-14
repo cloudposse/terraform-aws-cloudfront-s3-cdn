@@ -183,19 +183,19 @@ data "aws_iam_policy_document" "s3_website_origin" {
 }
 
 data "aws_iam_policy_document" "deployment" {
-  for_each = local.enabled ? var.deployment_principal_arns : {}
+  for_each = local.enabled ? local.deployment_principals : {}
 
   statement {
     actions = var.deployment_actions
 
     resources = distinct(flatten([
       [local.origin_bucket.arn],
-      formatlist("${local.origin_bucket.arn}/%s*", each.value),
+      formatlist("${local.origin_bucket.arn}/%s*", each.value.path_prefix),
     ]))
 
     principals {
       type        = "AWS"
-      identifiers = [each.key]
+      identifiers = [each.value.arn]
     }
   }
 }

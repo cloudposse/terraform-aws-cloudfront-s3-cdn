@@ -7,6 +7,8 @@ locals {
   cloudfront_access_log_include_cookies = var.log_include_cookies == null ? var.cloudfront_access_log_include_cookies : var.log_include_cookies
   cloudfront_access_log_prefix          = var.log_prefix == null ? var.cloudfront_access_log_prefix : var.log_prefix
 
+  deployment_principals = var.deployment_principal_arns == null ? var.deployment_principals : { for arn, path_prefix in var.deployment_principal_arns : arn => { "arn" : arn, "path_prefix" : path_prefix } }
+
   # New variables, but declare them here for consistency
   cloudfront_access_log_create_bucket = var.cloudfront_access_log_create_bucket
 }
