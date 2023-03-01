@@ -1,14 +1,18 @@
 data "archive_file" "lambda_zip" {
   for_each = local.functions
 
-  dynamic "source" {
-    for_each = each.value.source
+#  dynamic "source" {
+#    for_each = each.value.source
+#
+#    content {
+#      content  = source.value.content
+#      filename = source.value.filename
+#    }
+#  }
 
-    content {
-      content  = source.value.content
-      filename = source.value.filename
-    }
-  }
+  source = can(var.functions[each.key].source_dir) ? null : flatten([
+    for source in each.value.source : source.content
+  ])
 
   source_dir       = can(var.functions[each.key].source_dir) ? each.value.source_dir : null
   type             = "zip"
