@@ -19,7 +19,7 @@ variable "functions" {
       filename = string
       content  = string
     }))
-    source_dir   = list(string)
+    source_dir   = string
     runtime      = string
     handler      = string
     event_type   = string
