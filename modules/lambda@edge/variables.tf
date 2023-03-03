@@ -4,8 +4,12 @@ variable "functions" {
 
   The key of this map is the name label of the Lambda@Edge function.
 
+  Either `source` or `source_dir` must be specified. These variables are mutually exclusive.
+
   `source.filename` and `source.content` dictate the name and content of the files that will make up the Lambda function
   source, respectively.
+
+  `source_dir` contains path to whole directory that has to be archived.
 
   `runtime` and `handler` correspond to the attributes of the same name in the [lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function)
   resource.
@@ -15,11 +19,11 @@ variable "functions" {
   resource.
   EOT
   type = map(object({
-    source = list(object({
+    source = optional(list(object({
       filename = string
       content  = string
-    }))
-    source_dir   = string
+    })))
+    source_dir   = optional(string)
     runtime      = string
     handler      = string
     event_type   = string

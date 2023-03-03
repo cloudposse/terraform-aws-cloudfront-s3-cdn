@@ -2,7 +2,7 @@ data "archive_file" "lambda_zip" {
   for_each = local.functions
 
   dynamic "source" {
-    for_each = each.value.source
+    for_each = can(var.functions[each.key].source) ? each.value.source : null
 
     content {
       content  = source.value.content
