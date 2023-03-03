@@ -29,6 +29,14 @@ variable "functions" {
     event_type   = string
     include_body = bool
   }))
+
+  validation {
+    condition = (
+      (var.functions.source != null && var.functions.source_dir == null) ||
+      (var.functions.source == null && var.functions.source_dir != null)
+    )
+    error_message = "Either 'source' or 'source_dir' field must be specified, but not both."
+  }
 }
 
 variable "destruction_delay" {
