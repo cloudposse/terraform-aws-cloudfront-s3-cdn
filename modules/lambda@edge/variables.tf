@@ -33,7 +33,7 @@ variable "functions" {
   validation {
     condition = length([
       for k, v in var.functions :
-      k if (v.source != null && v.source_dir == null) || (v.source == null && v.source_dir != null)
+      k if(v.source != null && v.source_dir == null) || (v.source == null && v.source_dir != null)
     ]) == 1
     error_message = "Either 'source' or 'source_dir' field must be specified, but not both."
   }
