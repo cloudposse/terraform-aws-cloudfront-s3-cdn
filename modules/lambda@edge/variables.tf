@@ -31,10 +31,10 @@ variable "functions" {
   }))
 
   validation {
-    condition = length([
-      for k, v in var.functions :
-      k if(v.source != null && v.source_dir == null) || (v.source == null && v.source_dir != null)
-    ]) == 1
+    condition = alltrue([
+      for f in var.functions :
+      ((f.source != null && f.source_dir == null) || (f.source == null && f.source_dir != null))
+    ])
     error_message = "Either 'source' or 'source_dir' field must be specified, but not both."
   }
 }
