@@ -35,6 +35,14 @@ module "lambda_at_edge" {
       event_type   = "viewer-request"
       include_body = false
     },
+    # Add custom header to the response
+    viewer_response = {
+      source_dir   = "lib"
+      runtime      = "nodejs12.x"
+      handler      = "index.handler"
+      event_type   = "viewer-response"
+      include_body = false
+    },
     # Add security headers to the request from CF to the origin
     origin_request = {
       source = [{
