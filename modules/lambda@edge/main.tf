@@ -82,7 +82,7 @@ resource "aws_lambda_function" "default" {
   filename         = each.value.source_zip != null ? data.local_file.lambda_zip[each.key].filename : data.archive_file.lambda_zip[each.key].output_path
   source_code_hash = each.value.source_zip != null ? data.local_file.lambda_zip[each.key].content_base64sha256 : data.archive_file.lambda_zip[each.key].output_base64sha256
   publish          = true
-}w
+}
 
 resource "aws_lambda_permission" "allow_cloudfront" {
   for_each = local.functions
