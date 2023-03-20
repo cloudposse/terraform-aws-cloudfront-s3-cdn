@@ -20,7 +20,7 @@ variable "functions" {
   of the cloudfront_distribution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#lambda-function-association)
   resource.
   EOT
-  type        = map(object({
+  type = map(object({
     source = optional(list(object({
       filename = string
       content  = string
@@ -35,11 +35,11 @@ variable "functions" {
 
   validation {
     condition = alltrue([
-      for function in values(var.functions) :length(compact([
+      for function in values(var.functions) : length(compact([
         function.source != null ? 1 : null,
         function.source_dir != null ? 1 : null,
         function.source_zip != null ? 1 : null
-      ]))==1])
+    ])) == 1])
     error_message = "Each function must have exactly one of 'source', 'source_dir', or 'source_zip' defined."
   }
 }
