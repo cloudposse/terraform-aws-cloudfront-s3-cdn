@@ -15,3 +15,9 @@ data "archive_file" "lambda_zip" {
   output_file_mode = "0666"
   output_path      = "${path.module}/archives/${each.key}.zip"
 }
+
+data "local_file" "lambda_zip" {
+  for_each = local.functions
+
+  filename = each.value.source_zip
+}
