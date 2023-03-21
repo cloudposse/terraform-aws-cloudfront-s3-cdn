@@ -1,5 +1,5 @@
 data "archive_file" "lambda_zip" {
-  for_each = local.functions
+  for_each = { for k, v in local.functions : k => v if v.source != null || v.source_dir != null }
 
   dynamic "source" {
     for_each = coalesce(each.value.source, [])
