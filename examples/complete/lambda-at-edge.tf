@@ -49,7 +49,7 @@ module "lambda_at_edge" {
       handler      = "index.handler"
       event_type   = "origin-request"
       include_body = false
-    }
+    },
     # Add security headers to the request from CF to the origin
     origin_response = {
       source = [{
