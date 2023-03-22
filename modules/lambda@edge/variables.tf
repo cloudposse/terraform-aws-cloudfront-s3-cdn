@@ -4,12 +4,14 @@ variable "functions" {
 
   The key of this map is the name label of the Lambda@Edge function.
 
-  Either `source` or `source_dir` must be specified. These variables are mutually exclusive.
+  One of `source`, `source_dir` or `source_zip` should be specified. These variables are mutually exclusive.
 
   `source.filename` and `source.content` dictate the name and content of the files that will make up the Lambda function
   source, respectively.
 
   `source_dir` contains path to whole directory that has to be archived.
+
+  `source_zip` contains path to zip file with lambda source.
 
   `runtime` and `handler` correspond to the attributes of the same name in the [lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function)
   resource.
@@ -24,6 +26,7 @@ variable "functions" {
       content  = string
     })))
     source_dir   = optional(string)
+    source_zip   = optional(string)
     runtime      = string
     handler      = string
     event_type   = string
@@ -32,10 +35,12 @@ variable "functions" {
 
   validation {
     condition = alltrue([
-      for f in var.functions :
-      ((f.source != null && f.source_dir == null) || (f.source == null && f.source_dir != null))
-    ])
-    error_message = "Either 'source' or 'source_dir' field must be specified, but not both."
+      for function in values(var.functions) : length(compact([
+        function.source != null ? 1 : null,
+        function.source_dir != null ? 1 : null,
+        function.source_zip != null ? 1 : null
+    ])) == 1])
+    error_message = "Each function must have exactly one of 'source', 'source_dir', or 'source_zip' defined."
   }
 }
 
