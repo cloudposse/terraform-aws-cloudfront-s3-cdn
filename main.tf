@@ -394,7 +394,7 @@ resource "aws_cloudfront_distribution" "default" {
   dynamic "origin_group" {
     for_each = var.origin_groups
     content {
-      origin_id = "${module.this.id}-group[${origin_group.key}]"
+      origin_id = origin_group.value.group_id == "" ? "${module.this.id}-group[${origin_group.key}]" : origin_group.value.group_id
 
       failover_criteria {
         status_codes = origin_group.value.failover_criteria
@@ -500,7 +500,7 @@ resource "aws_cloudfront_distribution" "default" {
     cached_methods             = var.cached_methods
     cache_policy_id            = var.cache_policy_id
     origin_request_policy_id   = var.origin_request_policy_id
-    target_origin_id           = local.origin_id
+    target_origin_id           = var.default_origin_id == "" ? local.origin_id : var.default_origin_id
     compress                   = var.compress
     trusted_signers            = var.trusted_signers
     trusted_key_groups         = var.trusted_key_groups

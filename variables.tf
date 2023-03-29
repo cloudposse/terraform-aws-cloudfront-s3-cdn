@@ -617,6 +617,7 @@ variable "s3_website_password_enabled" {
 
 variable "origin_groups" {
   type = list(object({
+    group_id = string
     primary_origin_id  = string
     failover_origin_id = string
     failover_criteria  = list(string)
@@ -629,6 +630,14 @@ variable "origin_groups" {
     If `primary_origin_id` is set to `null` or `""`, then the origin id of the origin created by this module will be used in its place.
     This is to allow for the use case of making the origin created by this module the primary origin in an origin group.
   EOT
+}
+
+variable "default_origin_id" {
+  type        = string
+  default     = null
+  description = <<-EOT
+    If set to true, will override the default origin group of the Cloudfront distribution. If not set, the value will be set to the origin created by this module.
+    EOT
 }
 
 # Variables below here are DEPRECATED and should not be used anymore
