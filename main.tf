@@ -623,18 +623,3 @@ resource "aws_cloudfront_distribution" "default" {
 
   tags = module.this.tags
 }
-
-module "dns" {
-  source           = "cloudposse/route53-alias/aws"
-  version          = "0.13.0"
-  enabled          = (local.enabled && var.dns_alias_enabled)
-  aliases          = var.aliases
-  allow_overwrite  = var.dns_allow_overwrite
-  parent_zone_id   = var.parent_zone_id
-  parent_zone_name = var.parent_zone_name
-  target_dns_name  = try(aws_cloudfront_distribution.default[0].domain_name, "")
-  target_zone_id   = try(aws_cloudfront_distribution.default[0].hosted_zone_id, "")
-  ipv6_enabled     = var.ipv6_enabled
-
-  context = module.this.context
-}
