@@ -8,3 +8,14 @@ output "lambda_function_association" {
     }
   ]
 }
+
+output "lambda_functions" {
+  description = "The Lambda@Edge functions"
+  value = {
+    for key, value in local.functions : key => {
+      arn           = aws_lambda_function.default[key].arn,
+      qualified_arn = aws_lambda_function.default[key].qualified_arn,
+      role_arn      = aws_lambda_function.default[key].role
+    }
+  }
+}
