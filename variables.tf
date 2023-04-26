@@ -480,6 +480,17 @@ variable "versioning_enabled" {
   description = "When set to 'true' the s3 origin bucket will have versioning enabled"
 }
 
+variable "bucket_versioning" {
+  type        = string
+  default     = "Enabled"
+  description = "State of bucket versioning option"
+
+  validation {
+    condition     = contains(["Enabled", "Disabled", "Suspended"], var.bucket_versioning)
+    error_message = "Please choose one of 'Enabled', 'Disabled', or 'Suspended'"
+  }
+}
+
 variable "deployment_principal_arns" {
   type        = map(list(string))
   default     = {}

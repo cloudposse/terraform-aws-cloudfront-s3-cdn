@@ -133,7 +133,8 @@ resource "random_password" "referer" {
 data "aws_iam_policy_document" "s3_origin" {
   count = local.s3_origin_enabled ? 1 : 0
 
-  override_json = local.override_policy
+  # override_json = local.override_policy
+  override_policy_documents = [local.override_policy]
 
   statement {
     sid = "S3GetObjectForCloudFront"
@@ -256,25 +257,8 @@ resource "aws_s3_bucket" "origin" {
   count = local.create_s3_origin_bucket ? 1 : 0
 
   bucket        = module.origin_label.id
-  acl           = "private"
   tags          = module.origin_label.tags
   force_destroy = var.origin_force_destroy
-
-  dynamic "server_side_encryption_configuration" {
-    for_each = var.encryption_enabled ? ["true"] : []
-
-    content {
-      rule {
-        apply_server_side_encryption_by_default {
-          sse_algorithm = "AES256"
-        }
-      }
-    }
-  }
-
-  versioning {
-    enabled = var.versioning_enabled
-  }
 
   dynamic "logging" {
     for_each = local.s3_access_log_bucket_name != "" ? [1] : []
@@ -293,6 +277,34 @@ resource "aws_s3_bucket" "origin" {
       routing_rules            = lookup(website.value, "routing_rules", null)
     }
   }
+}
+
+resource "aws_s3_bucket_versioning" "origin" {
+  count = local.create_s3_origin_bucket ? 1 : 0
+
+  bucket = one(aws_s3_bucket.origin).id
+
+  versioning_configuration {
+    status = var.bucket_versioning
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "origin" {
+  count = var.encryption_enabled && local.create_s3_origin_bucket ? 1 : 0
+
+  bucket = one(aws_s3_bucket.origin).id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_cors_configuration" "origin" {
+  count = local.create_s3_origin_bucket ? 1 : 0
+
+  bucket = one(aws_s3_bucket.origin).id
 
   dynamic "cors_rule" {
     for_each = distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
@@ -304,6 +316,14 @@ resource "aws_s3_bucket" "origin" {
       max_age_seconds = var.cors_max_age_seconds
     }
   }
+}
+
+resource "aws_s3_bucket_acl" "origin" {
+  depends_on = [aws_s3_bucket_ownership_controls.origin]
+  count      = local.create_s3_origin_bucket ? 1 : 0
+
+  bucket = one(aws_s3_bucket.origin).id
+  acl    = "private"
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
