@@ -513,6 +513,12 @@ variable "custom_origin_headers" {
   description = "A list of origin header parameters that will be sent to origin"
 }
 
+variable "origin_protocol_policy" {
+  type        = string
+  default     = "http-only"
+  description = "Origin protocol policy to apply to your origin. One of http-only, https-only, or match-viewer."
+}
+
 variable "origin_ssl_protocols" {
   type        = list(string)
   default     = ["TLSv1", "TLSv1.1", "TLSv1.2"]

@@ -429,7 +429,7 @@ resource "aws_cloudfront_distribution" "default" {
       content {
         http_port              = 80
         https_port             = 443
-        origin_protocol_policy = "http-only"
+        origin_protocol_policy = var.origin_protocol_policy
         origin_ssl_protocols   = var.origin_ssl_protocols
       }
     }
