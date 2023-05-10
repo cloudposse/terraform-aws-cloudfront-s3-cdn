@@ -358,7 +358,7 @@ module "logs" {
   expiration_days          = var.log_expiration_days
   force_destroy            = var.origin_force_destroy
   versioning_enabled       = var.log_versioning_enabled
-  s3_object_ownership      = var.s3_object_ownership
+  s3_object_ownership      = "BucketOwnerPreferred"
 
   context = module.this.context
 }
