@@ -315,7 +315,7 @@ resource "aws_s3_bucket_public_access_block" "origin" {
   restrict_public_buckets = var.block_origin_public_access_enabled
 
   # Don't modify this bucket in two ways at the same time, S3 API will complain.
-  depends_on = [aws_s3_bucket_policy.default]
+  depends_on = [aws_s3_bucket.default]
 }
 
 resource "aws_s3_bucket_ownership_controls" "origin" {
