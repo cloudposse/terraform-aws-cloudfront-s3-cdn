@@ -349,7 +349,7 @@ resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
 
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
-  version                  = "0.26.0"
+  version                  = "1.3.1"
   enabled                  = local.create_cf_log_bucket
   attributes               = var.extra_logs_attributes
   lifecycle_prefix         = local.cloudfront_access_log_prefix
@@ -358,6 +358,7 @@ module "logs" {
   expiration_days          = var.log_expiration_days
   force_destroy            = var.origin_force_destroy
   versioning_enabled       = var.log_versioning_enabled
+  s3_object_ownership      = var.s3_object_ownership
 
   context = module.this.context
 }
