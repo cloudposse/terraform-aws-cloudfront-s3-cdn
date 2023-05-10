@@ -242,6 +242,7 @@ data "aws_iam_policy_document" "combined" {
 
 resource "aws_s3_bucket_policy" "default" {
   count = local.create_s3_origin_bucket || local.override_origin_bucket_policy ? 1 : 0
+  depends_on = [ aws_s3_bucket_public_access_block.origin ]
 
   bucket = local.origin_bucket.bucket
   policy = join("", data.aws_iam_policy_document.combined.*.json)
