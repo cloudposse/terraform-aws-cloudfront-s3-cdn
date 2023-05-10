@@ -256,7 +256,6 @@ resource "aws_s3_bucket" "origin" {
   count = local.create_s3_origin_bucket ? 1 : 0
 
   bucket        = module.origin_label.id
-  acl           = "private"
   tags          = module.origin_label.tags
   force_destroy = var.origin_force_destroy
 
@@ -328,6 +327,14 @@ resource "aws_s3_bucket_ownership_controls" "origin" {
   }
 
   depends_on = [time_sleep.wait_for_aws_s3_bucket_settings]
+}
+
+resource "aws_s3_bucket_acl" "origin" {
+  count = (local.create_s3_origin_bucket && var.s3_object_ownership != "BucketOwnerEnforced") ? 1 : 0
+  depends_on = [aws_s3_bucket_ownership_controls.origin]
+
+  bucket = local.bucket
+  acl    = "private"
 }
 
 # Workaround for S3 eventual consistency for settings relating to objects
