@@ -306,12 +306,12 @@ resource "aws_s3_bucket" "origin" {
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
-  count                   = (local.create_s3_origin_bucket || local.override_origin_bucket_policy) && var.block_origin_public_access_enabled ? 1 : 0
+  count                   = (local.create_s3_origin_bucket || local.override_origin_bucket_policy) ? 1 : 0
   bucket                  = local.bucket
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  block_public_acls       = var.block_origin_public_access_enabled
+  block_public_policy     = var.block_origin_public_access_enabled
+  ignore_public_acls      = var.block_origin_public_access_enabled
+  restrict_public_buckets = var.block_origin_public_access_enabled
 
   # Don't modify this bucket in two ways at the same time, S3 API will complain.
   depends_on = [aws_s3_bucket_policy.default]
