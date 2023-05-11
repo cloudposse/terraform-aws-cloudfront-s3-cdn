@@ -242,7 +242,7 @@ data "aws_iam_policy_document" "combined" {
 
 resource "aws_s3_bucket_policy" "default" {
   count = local.create_s3_origin_bucket || local.override_origin_bucket_policy ? 1 : 0
-  depends_on = [ aws_s3_bucket_public_access_block.origin ]
+  depends_on = [ time_sleep.wait_for_aws_s3_bucket_public_access_block ]
 
   bucket = local.origin_bucket.bucket
   policy = join("", data.aws_iam_policy_document.combined.*.json)
@@ -316,6 +316,16 @@ resource "aws_s3_bucket_public_access_block" "origin" {
 
   # Don't modify this bucket in two ways at the same time, S3 API will complain.
   depends_on = [aws_s3_bucket.origin]
+}
+
+# Workaround for S3 eventual consistency for settings relating to objects
+resource "time_sleep" "wait_for_aws_s3_bucket_public_access_block" {
+  count = (local.create_s3_origin_bucket || local.override_origin_bucket_policy) ? 1 : 0
+
+  create_duration  = "30s"
+  destroy_duration = "30s"
+
+  depends_on = [aws_s3_bucket_public_access_block.origin]
 }
 
 resource "aws_s3_bucket_ownership_controls" "origin" {
