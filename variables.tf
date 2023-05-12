@@ -4,7 +4,7 @@ variable "extra_origin_attributes" {
   description = "Additional attributes to put onto the origin label"
 }
 
-variable "acm_certificate_arn" {
+variable "acm_certificate_arns" {
   type        = string
   description = "Existing ACM Certificate ARN"
   default     = ""
