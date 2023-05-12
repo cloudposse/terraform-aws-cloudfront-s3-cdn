@@ -4,7 +4,7 @@ locals {
   # Encapsulate logic here so that it is not lost/scattered among the configuration
   website_enabled           = local.enabled && var.website_enabled
   website_password_enabled  = local.website_enabled && var.s3_website_password_enabled
-  s3_origin_enabled         = local.enabled && ! var.website_enabled
+  s3_origin_enabled         = local.enabled && !var.website_enabled
   create_s3_origin_bucket   = local.enabled && var.origin_bucket == null
   s3_access_logging_enabled = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
   create_cf_log_bucket      = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
@@ -52,7 +52,7 @@ locals {
 
   override_origin_bucket_policy = local.enabled && var.override_origin_bucket_policy
 
-  lookup_cf_log_bucket = local.cloudfront_access_logging_enabled && ! local.cloudfront_access_log_create_bucket
+  lookup_cf_log_bucket = local.cloudfront_access_logging_enabled && !local.cloudfront_access_log_create_bucket
   cf_log_bucket_domain = local.cloudfront_access_logging_enabled ? (
     local.lookup_cf_log_bucket ? data.aws_s3_bucket.cf_logs[0].bucket_domain_name : module.logs.bucket_domain_name
   ) : ""
@@ -74,6 +74,20 @@ locals {
       }
     ]
   }
+
+  # Based on https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html#choose-origin-shield-region
+  # If a region is not specified, we assume it supports Origin Shield.
+  origin_shield_region_fallback_map = {
+    "us-west-1"    = "us-west-2"
+    "af-south-1"   = "eu-west-1"
+    "ap-east-1"    = "ap-southeast-1"
+    "ca-central-1" = "us-east-1"
+    "eu-south-1"   = "eu-central-1"
+    "eu-west-3"    = "eu-west-2"
+    "eu-north-1"   = "eu-west-2"
+    "me-south-1"   = "ap-south-1"
+  }
+  origin_shield_region = local.enabled ? lookup(local.origin_shield_region_fallback_map, data.aws_region.current[0].name, data.aws_region.current[0].name) : "this string is never used"
 }
 
 ## Make up for deprecated template_file and lack of templatestring
@@ -87,6 +101,10 @@ locals {
 }
 
 data "aws_partition" "current" {
+  count = local.enabled ? 1 : 0
+}
+
+data "aws_region" "current" {
   count = local.enabled ? 1 : 0
 }
 
@@ -359,6 +377,7 @@ resource "aws_cloudfront_distribution" "default" {
   default_root_object = var.default_root_object
   price_class         = var.price_class
   depends_on          = [aws_s3_bucket.origin]
+  http_version        = var.http_version
 
   dynamic "logging_config" {
     for_each = local.cloudfront_access_logging_enabled ? ["true"] : []
@@ -399,7 +418,7 @@ resource "aws_cloudfront_distribution" "default" {
     origin_path = var.origin_path
 
     dynamic "s3_origin_config" {
-      for_each = ! var.website_enabled ? [1] : []
+      for_each = !var.website_enabled ? [1] : []
       content {
         origin_access_identity = local.cf_access.path
       }
@@ -420,6 +439,14 @@ resource "aws_cloudfront_distribution" "default" {
       content {
         name  = custom_header.value["name"]
         value = custom_header.value["value"]
+      }
+    }
+
+    dynamic "origin_shield" {
+      for_each = var.origin_shield_enabled ? [1] : []
+      content {
+        enabled              = true
+        origin_shield_region = local.origin_shield_region
       }
     }
   }
@@ -602,6 +629,7 @@ module "dns" {
   version          = "0.13.0"
   enabled          = (local.enabled && var.dns_alias_enabled)
   aliases          = var.aliases
+  allow_overwrite  = var.dns_allow_overwrite
   parent_zone_id   = var.parent_zone_id
   parent_zone_name = var.parent_zone_name
   target_dns_name  = try(aws_cloudfront_distribution.default[0].domain_name, "")

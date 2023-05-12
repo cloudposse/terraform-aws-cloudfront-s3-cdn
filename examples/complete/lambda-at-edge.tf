@@ -35,8 +35,23 @@ module "lambda_at_edge" {
       event_type   = "viewer-request"
       include_body = false
     },
-    # Add security headers to the request from CF to the origin
+    # Add custom header to the response
+    viewer_response = {
+      source_dir   = "lib"
+      runtime      = "nodejs12.x"
+      handler      = "index.handler"
+      event_type   = "viewer-response"
+      include_body = false
+    },
     origin_request = {
+      source_zip   = "origin-request.zip"
+      runtime      = "nodejs12.x"
+      handler      = "index.handler"
+      event_type   = "origin-request"
+      include_body = false
+    },
+    # Add security headers to the request from CF to the origin
+    origin_response = {
       source = [{
         # https://aws.amazon.com/blogs/networking-and-content-delivery/adding-http-security-headers-using-lambdaedge-and-amazon-cloudfront/
         content  = <<-EOT
