@@ -453,7 +453,7 @@ Available targets:
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_dns"></a> [dns](#module\_dns) | cloudposse/route53-alias/aws | 0.13.0 |
-| <a name="module_logs"></a> [logs](#module\_logs) | cloudposse/s3-log-storage/aws | 0.26.0 |
+| <a name="module_logs"></a> [logs](#module\_logs) | cloudposse/s3-log-storage/aws | 1.4.0 |
 | <a name="module_origin_label"></a> [origin\_label](#module\_origin\_label) | cloudposse/label/null | 0.25.0 |
 | <a name="module_this"></a> [this](#module\_this) | cloudposse/label/null | 0.25.0 |
 
