@@ -33,7 +33,7 @@ resource "aws_lambda_function" "openidconnect" {
   role             = aws_iam_role.auth_lambda[0].arn
   filename         = data.archive_file.openidconnect_archive[0].output_path
   source_code_hash = data.archive_file.openidconnect_archive[0].output_base64sha256
-  runtime          = "nodejs12.x"
+  runtime          = "nodejs14.x"
   handler          = "index.auth"
   publish          = true
   tracing_config {
