@@ -139,7 +139,7 @@ data "aws_iam_policy_document" "s3_origin" {
     sid = "S3GetObjectForCloudFront"
 
     actions   = ["s3:GetObject"]
-    resources = ["arn:${join("", data.aws_partition.current.*.partition)}:s3:::${local.bucket}${local.origin_path}*"]
+    resources = ["arn:${join("", data.aws_partition.current[*].partition)}:s3:::${local.bucket}${local.origin_path}*"]
 
     principals {
       type        = "AWS"
@@ -151,7 +151,7 @@ data "aws_iam_policy_document" "s3_origin" {
     sid = "S3ListBucketForCloudFront"
 
     actions   = ["s3:ListBucket"]
-    resources = ["arn:${join("", data.aws_partition.current.*.partition)}:s3:::${local.bucket}"]
+    resources = ["arn:${join("", data.aws_partition.current[*].partition)}:s3:::${local.bucket}"]
 
     principals {
       type        = "AWS"
@@ -169,7 +169,7 @@ data "aws_iam_policy_document" "s3_website_origin" {
     sid = "S3GetObjectForCloudFront"
 
     actions   = ["s3:GetObject"]
-    resources = ["arn:${join("", data.aws_partition.current.*.partition)}:s3:::${local.bucket}${local.origin_path}*"]
+    resources = ["arn:${join("", data.aws_partition.current[*].partition)}:s3:::${local.bucket}${local.origin_path}*"]
 
     principals {
       type        = "AWS"
@@ -233,9 +233,9 @@ data "aws_iam_policy_document" "combined" {
   count = local.enabled ? 1 : 0
 
   source_policy_documents = compact(concat(
-    data.aws_iam_policy_document.s3_origin.*.json,
-    data.aws_iam_policy_document.s3_website_origin.*.json,
-    data.aws_iam_policy_document.s3_ssl_only.*.json,
+    data.aws_iam_policy_document.s3_origin[*].json,
+    data.aws_iam_policy_document.s3_website_origin[*].json,
+    data.aws_iam_policy_document.s3_ssl_only[*].json,
     values(data.aws_iam_policy_document.deployment)[*].json
   ))
 }
@@ -244,7 +244,7 @@ resource "aws_s3_bucket_policy" "default" {
   count = local.create_s3_origin_bucket || local.override_origin_bucket_policy ? 1 : 0
 
   bucket = local.origin_bucket.bucket
-  policy = join("", data.aws_iam_policy_document.combined.*.json)
+  policy = join("", data.aws_iam_policy_document.combined[*].json)
 }
 
 resource "aws_s3_bucket" "origin" {
