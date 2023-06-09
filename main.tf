@@ -163,7 +163,7 @@ data "aws_iam_policy_document" "s3_origin" {
 data "aws_iam_policy_document" "s3_website_origin" {
   count = local.website_enabled ? 1 : 0
 
-  override_json = local.override_policy
+  override_policy_documents = [local.override_policy]
 
   statement {
     sid = "S3GetObjectForCloudFront"
