@@ -36,7 +36,7 @@ data "aws_canonical_user_id" "current" {
 
 module "s3_bucket" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "0.39.0"
+  version = "3.1.2"
 
   acl                = null
   force_destroy      = true
