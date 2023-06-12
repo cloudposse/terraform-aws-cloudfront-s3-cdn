@@ -105,7 +105,7 @@ module "cloudfront_s3_cdn" {
   context = module.this.context
 }
 
-resource "aws_s3_bucket_object" "index" {
+resource "aws_s3_object" "index" {
   count = local.enabled ? 1 : 0
 
   bucket       = module.cloudfront_s3_cdn.s3_bucket
