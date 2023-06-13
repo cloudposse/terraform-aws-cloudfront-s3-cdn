@@ -255,10 +255,10 @@ resource "aws_s3_bucket" "origin" {
   #bridgecrew:skip=BC_AWS_GENERAL_56:Skipping `Ensure S3 buckets are encrypted with KMS by default` because this module has configurable encryption via `var.encryption_enabled`.
   count = local.create_s3_origin_bucket ? 1 : 0
 
-  bucket        = module.origin_label.id
-  aws_s3_bucket_acl           = "private"
-  tags          = module.origin_label.tags
-  force_destroy = var.origin_force_destroy
+  bucket            = module.origin_label.id
+  aws_s3_bucket_acl = "private"
+  tags              = module.origin_label.tags
+  force_destroy     = var.origin_force_destroy
 
   dynamic "server_side_encryption_configuration" {
     for_each = var.encryption_enabled ? ["true"] : []
