@@ -88,6 +88,10 @@ locals {
     "me-south-1"   = "ap-south-1"
   }
   origin_shield_region = local.enabled ? lookup(local.origin_shield_region_fallback_map, data.aws_region.current[0].name, data.aws_region.current[0].name) : "this string is never used"
+
+  # Public access is blocked if the explicit block setting is enabled, or if
+  # the bucket is not configured as a static website.
+  block_origin_public_access = var.block_origin_public_access_enabled || !var.website_enabled
 }
 
 ## Make up for deprecated template_file and lack of templatestring
@@ -245,6 +249,9 @@ resource "aws_s3_bucket_policy" "default" {
 
   bucket = local.origin_bucket.bucket
   policy = join("", data.aws_iam_policy_document.combined.*.json)
+
+  # Don't modify this bucket in two ways at the same time, S3 API will complain.
+  depends_on = [aws_s3_bucket_public_access_block.origin]
 }
 
 resource "aws_s3_bucket" "origin" {
@@ -307,15 +314,12 @@ resource "aws_s3_bucket" "origin" {
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
-  count                   = (local.create_s3_origin_bucket || local.override_origin_bucket_policy) && var.block_origin_public_access_enabled ? 1 : 0
+  count                   = local.create_s3_origin_bucket || local.override_origin_bucket_policy ? 1 : 0
   bucket                  = local.bucket
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-
-  # Don't modify this bucket in two ways at the same time, S3 API will complain.
-  depends_on = [aws_s3_bucket_policy.default]
+  block_public_acls       = local.block_origin_public_access
+  block_public_policy     = local.block_origin_public_access
+  ignore_public_acls      = local.block_origin_public_access
+  restrict_public_buckets = local.block_origin_public_access
 }
 
 resource "aws_s3_bucket_ownership_controls" "origin" {
@@ -337,12 +341,12 @@ resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
   create_duration  = "30s"
   destroy_duration = "30s"
 
-  depends_on = [aws_s3_bucket_public_access_block.origin, aws_s3_bucket_policy.default]
+  depends_on = [aws_s3_bucket_policy.default]
 }
 
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
-  version                  = "0.26.0"
+  version                  = "1.4.0"
   enabled                  = local.create_cf_log_bucket
   attributes               = var.extra_logs_attributes
   lifecycle_prefix         = local.cloudfront_access_log_prefix
@@ -376,7 +380,7 @@ resource "aws_cloudfront_distribution" "default" {
   comment             = var.comment
   default_root_object = var.default_root_object
   price_class         = var.price_class
-  depends_on          = [aws_s3_bucket.origin]
+  depends_on          = [aws_s3_bucket.origin, time_sleep.wait_for_aws_s3_bucket_settings]
   http_version        = var.http_version
 
   dynamic "logging_config" {
