@@ -344,7 +344,6 @@ module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
   version                  = "1.4.1"
   enabled                  = local.create_cf_log_bucket
-  acl                      = "private"
   attributes               = var.extra_logs_attributes
   lifecycle_prefix         = local.cloudfront_access_log_prefix
   standard_transition_days = var.log_standard_transition_days
