@@ -342,15 +342,29 @@ resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
 
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
-  version                  = "1.4.1"
+  version                  = "1.4.2"
   enabled                  = local.create_cf_log_bucket
   attributes               = var.extra_logs_attributes
+  allow_ssl_requests_only  = true
   lifecycle_prefix         = local.cloudfront_access_log_prefix
+  s3_object_ownership      = "BucketOwnerPreferred"
   standard_transition_days = var.log_standard_transition_days
   glacier_transition_days  = var.log_glacier_transition_days
   expiration_days          = var.log_expiration_days
   force_destroy            = var.origin_force_destroy
   versioning_enabled       = var.log_versioning_enabled
+
+  # See https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
+  acl = null
+  grants = [
+    {
+      # Canonical ID for the awslogsdelivery account
+      id          = "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0"
+      permissions = ["FULL_CONTROL"]
+      type        = "CanonicalUser"
+      uri         = null
+    },
+  ]
 
   context = module.this.context
 }
