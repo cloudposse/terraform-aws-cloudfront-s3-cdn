@@ -29,7 +29,7 @@ locals {
 
 module "additional_s3_origin" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "3.1.1"
+  version = "3.1.2"
   enabled = local.additional_s3_origins_enabled
 
   acl                = "private"
@@ -43,7 +43,7 @@ module "additional_s3_origin" {
 
 module "additional_s3_failover_origin" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "3.1.1"
+  version = "3.1.2"
   enabled = local.additional_s3_origins_enabled
 
   acl                = "private"
