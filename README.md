@@ -383,7 +383,7 @@ module "lambda_at_edge" {
         EOT
         filename = "index.js"
       }]
-      runtime      = "nodejs12.x"
+      runtime      = "nodejs18.x"
       handler      = "index.handler"
       event_type   = "origin-response"
       include_body = false

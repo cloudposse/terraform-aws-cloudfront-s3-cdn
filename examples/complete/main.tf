@@ -20,7 +20,7 @@ data "aws_iam_policy_document" "document" {
 
     actions = ["s3:GetObject"]
     resources = [
-      "arn:${join("", data.aws_partition.current.*.partition)}:s3:::$${bucket_name}$${origin_path}testprefix/*"
+      "arn:${join("", data.aws_partition.current[*].partition)}:s3:::$${bucket_name}$${origin_path}testprefix/*"
     ]
 
     principals {
