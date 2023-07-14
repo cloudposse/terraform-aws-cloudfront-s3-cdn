@@ -8,5 +8,5 @@ name = "cf-s3-cdn-extra" # name needs to be shortened due to s3 bucket name leng
 
 parent_zone_name = "testing.cloudposse.co"
 
-additional_custom_origins_enabled = true
+additional_custom_origins_enabled = false
 additional_s3_origins_enabled     = true
