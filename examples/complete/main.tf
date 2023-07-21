@@ -38,26 +38,11 @@ module "s3_bucket" {
   source  = "cloudposse/s3-bucket/aws"
   version = "3.1.2"
 
-  acl                = null
+  acl                = "log-delivery-write"
   force_destroy      = true
   user_enabled       = false
   versioning_enabled = false
   attributes         = ["existing-bucket"]
-
-  grants = [
-    {
-      id          = local.enabled ? data.aws_canonical_user_id.current[0].id : ""
-      type        = "CanonicalUser"
-      permissions = ["FULL_CONTROL"]
-      uri         = null
-    },
-    {
-      id          = null
-      type        = "Group"
-      permissions = ["READ_ACP", "WRITE"]
-      uri         = "http://acs.amazonaws.com/groups/s3/LogDelivery"
-    },
-  ]
 
   context = module.this.context
 }
