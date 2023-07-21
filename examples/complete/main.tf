@@ -38,11 +38,12 @@ module "s3_bucket" {
   source  = "cloudposse/s3-bucket/aws"
   version = "3.1.2"
 
-  acl                = "log-delivery-write"
-  force_destroy      = true
-  user_enabled       = false
-  versioning_enabled = false
-  attributes         = ["existing-bucket"]
+  acl                 = "log-delivery-write"
+  force_destroy       = true
+  user_enabled        = false
+  versioning_enabled  = false
+  block_public_policy = false
+  attributes          = ["existing-bucket"]
 
   context = module.this.context
 }
