@@ -304,7 +304,7 @@ resource "aws_s3_bucket_acl" "origin" {
   count = local.create_s3_origin_bucket ? 1 : 0
 
   bucket = join("", aws_s3_bucket.origin[*].id)
-  acl = "private"
+  acl    = "private"
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
