@@ -42,11 +42,6 @@ locals {
   }
   cf_access = local.cf_access_options[local.create_cloudfront_origin_access_identity ? "new" : "existing"]
 
-  # Pick the IAM policy document based on whether the origin is an S3 origin or a Website origin
-  iam_policy_document = local.enabled ? (
-    local.website_enabled ? data.aws_iam_policy_document.s3_website_origin[0].json : data.aws_iam_policy_document.s3_origin[0].json
-  ) : ""
-
   bucket             = local.origin_bucket.bucket
   bucket_domain_name = var.website_enabled ? local.origin_bucket.website_endpoint : local.origin_bucket.bucket_regional_domain_name
 
@@ -256,7 +251,6 @@ resource "aws_s3_bucket" "origin" {
   count = local.create_s3_origin_bucket ? 1 : 0
 
   bucket        = module.origin_label.id
-  acl           = "private"
   tags          = module.origin_label.tags
   force_destroy = var.origin_force_destroy
 
@@ -277,7 +271,7 @@ resource "aws_s3_bucket" "origin" {
   }
 
   dynamic "logging" {
-    for_each = local.s3_access_log_bucket_name != "" ? [1] : []
+    for_each = local.s3_access_logging_enabled ? [1] : []
     content {
       target_bucket = local.s3_access_log_bucket_name
       target_prefix = coalesce(var.s3_access_log_prefix, "logs/${local.origin_id}/")
@@ -304,6 +298,13 @@ resource "aws_s3_bucket" "origin" {
       max_age_seconds = var.cors_max_age_seconds
     }
   }
+}
+
+resource "aws_s3_bucket_acl" "origin" {
+  count = local.create_s3_origin_bucket ? 1 : 0
+
+  bucket = join("", aws_s3_bucket.origin[*].id)
+  acl = "private"
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
