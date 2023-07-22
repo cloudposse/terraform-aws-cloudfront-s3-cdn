@@ -32,11 +32,11 @@ module "additional_s3_origin" {
   version = "3.1.2"
   enabled = local.additional_s3_origins_enabled
 
-  force_destroy      = true
-  user_enabled       = false
-  versioning_enabled = false
-  attributes         = ["s3"]
-  acl                = null
+  force_destroy       = true
+  user_enabled        = false
+  versioning_enabled  = false
+  attributes          = ["s3"]
+  s3_object_ownership = "BucketOwnerEnforced"
 
   context = module.this.context
 }
@@ -46,11 +46,11 @@ module "additional_s3_failover_origin" {
   version = "3.1.2"
   enabled = local.additional_s3_origins_enabled
 
-  force_destroy      = true
-  user_enabled       = false
-  versioning_enabled = false
-  attributes         = ["s3", "fo"] # fo = failover
-  acl                = null
+  force_destroy       = true
+  user_enabled        = false
+  versioning_enabled  = false
+  attributes          = ["s3", "fo"] # fo = failover
+  s3_object_ownership = "BucketOwnerEnforced"
 
   context = module.this.context
 }
