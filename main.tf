@@ -349,7 +349,7 @@ module "logs" {
   versioning_enabled       = var.log_versioning_enabled
 
   s3_object_ownership = "BucketOwnerPreferred"
-  acl                 = "log-delivery-write"
+  acl                 = "bucket-owner-full-control"
 
   context = module.this.context
 }
