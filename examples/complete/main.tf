@@ -63,8 +63,26 @@ module "s3_bucket" {
   context = module.this.context
 }
 
+# Workaround for S3 eventual consistency for settings relating to objects
+resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
+  count = local.enabled ? 1 : 0
+
+  create_duration  = "30s"
+  destroy_duration = "30s"
+
+  depends_on = [
+    data.aws_iam_policy_document.document,
+    module.aws_s3_bucket
+  ]
+}
+
 module "cloudfront_s3_cdn" {
   source = "../../"
+
+  depends_on = [
+    time_sleep.wait_for_aws_s3_bucket_settings,
+    time_sleep.wait_for_aws_s3_origin
+  ]
 
   parent_zone_name     = var.parent_zone_name
   dns_alias_enabled    = true
