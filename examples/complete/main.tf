@@ -44,7 +44,6 @@ module "s3_bucket" {
   block_public_policy = false
   attributes          = ["existing-bucket"]
 
-  s3_object_ownership = "BucketOwnerPreferred"
   acl                 = null
   grants = [
     {
