@@ -251,6 +251,7 @@ resource "aws_s3_bucket" "origin" {
   count = local.create_s3_origin_bucket ? 1 : 0
 
   bucket        = module.origin_label.id
+  acl           = "private"
   tags          = module.origin_label.tags
   force_destroy = var.origin_force_destroy
 
@@ -348,17 +349,7 @@ module "logs" {
   force_destroy            = var.origin_force_destroy
   versioning_enabled       = var.log_versioning_enabled
 
-  # See https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
-  acl = null
-  grants = [
-    {
-      # Canonical ID for the awslogsdelivery account
-      id          = "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0"
-      permissions = ["FULL_CONTROL"]
-      type        = "CanonicalUser"
-      uri         = null
-    },
-  ]
+  acl = "log-delivery-write"
 
   context = module.this.context
 }
