@@ -44,7 +44,7 @@ module "s3_bucket" {
   block_public_policy = false
   attributes          = ["existing-bucket"]
 
-  acl                 = null
+  acl = null
   grants = [
     {
       id          = local.enabled ? data.aws_canonical_user_id.current[0].id : ""
