@@ -83,6 +83,7 @@ module "cloudfront_s3_cdn" {
 
   cloudfront_access_logging_enabled = true
   cloudfront_access_log_prefix      = "logs/cf_access"
+  s3_object_ownership               = "BucketOwnerPreferred"
 
   additional_bucket_policy = local.enabled ? data.aws_iam_policy_document.document[0].json : ""
 
