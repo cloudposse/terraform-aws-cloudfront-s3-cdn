@@ -348,8 +348,18 @@ module "logs" {
   force_destroy            = var.origin_force_destroy
   versioning_enabled       = var.log_versioning_enabled
 
+  # See https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
   s3_object_ownership = "BucketOwnerPreferred"
-  acl                 = "bucket-owner-full-control"
+  acl = null
+  grants = [
+    {
+      # Canonical ID for the awslogsdelivery account
+      id          = "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0"
+      permissions = ["FULL_CONTROL"]
+      type        = "CanonicalUser"
+      uri         = null
+    },
+  ]
 
   context = module.this.context
 }
