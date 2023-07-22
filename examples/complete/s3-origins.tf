@@ -32,10 +32,10 @@ module "additional_s3_origin" {
   version = "3.1.2"
   enabled = local.additional_s3_origins_enabled
 
-  force_destroy       = true
-  user_enabled        = false
-  versioning_enabled  = false
-  attributes          = ["s3"]
+  force_destroy      = true
+  user_enabled       = false
+  versioning_enabled = false
+  attributes         = ["s3"]
 
   acl                 = null
   s3_object_ownership = "BucketOwnerPreferred"
@@ -62,10 +62,10 @@ module "additional_s3_failover_origin" {
   version = "3.1.2"
   enabled = local.additional_s3_origins_enabled
 
-  force_destroy       = true
-  user_enabled        = false
-  versioning_enabled  = false
-  attributes          = ["s3", "fo"] # fo = failover
+  force_destroy      = true
+  user_enabled       = false
+  versioning_enabled = false
+  attributes         = ["s3", "fo"] # fo = failover
 
   acl                 = null
   s3_object_ownership = "BucketOwnerPreferred"
