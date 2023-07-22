@@ -37,19 +37,6 @@ module "additional_s3_origin" {
   versioning_enabled = false
   attributes         = ["s3"]
 
-  # See https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
-  s3_object_ownership = "BucketOwnerPreferred"
-  acl                 = null
-  grants = [
-    {
-      # Canonical ID for the awslogsdelivery account
-      id          = "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0"
-      permissions = ["FULL_CONTROL"]
-      type        = "CanonicalUser"
-      uri         = null
-    },
-  ]
-
   context = module.this.context
 }
 
@@ -62,19 +49,6 @@ module "additional_s3_failover_origin" {
   user_enabled       = false
   versioning_enabled = false
   attributes         = ["s3", "fo"] # fo = failover
-
-  # See https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
-  s3_object_ownership = "BucketOwnerPreferred"
-  acl                 = null
-  grants = [
-    {
-      # Canonical ID for the awslogsdelivery account
-      id          = "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0"
-      permissions = ["FULL_CONTROL"]
-      type        = "CanonicalUser"
-      uri         = null
-    },
-  ]
 
   context = module.this.context
 }

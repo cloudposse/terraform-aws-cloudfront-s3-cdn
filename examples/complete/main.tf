@@ -44,8 +44,22 @@ module "s3_bucket" {
   block_public_policy = false
   attributes          = ["existing-bucket"]
 
-  s3_object_ownership = "ObjectWriter"
-  acl                 = "log-delivery-write"
+  s3_object_ownership = "BucketOwnerPreferred"
+  acl                 = null
+  grants = [
+    {
+      id          = local.enabled ? data.aws_canonical_user_id.current[0].id : ""
+      type        = "CanonicalUser"
+      permissions = ["FULL_CONTROL"]
+      uri         = null
+    },
+    {
+      id          = null
+      type        = "Group"
+      permissions = ["READ_ACP", "WRITE"]
+      uri         = "http://acs.amazonaws.com/groups/s3/LogDelivery"
+    },
+  ]
 
   context = module.this.context
 }
