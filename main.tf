@@ -348,7 +348,7 @@ module "logs" {
   force_destroy            = var.origin_force_destroy
   versioning_enabled       = var.log_versioning_enabled
 
-  s3_object_ownership = "ObjectWriter"
+  s3_object_ownership = "BucketOwnerPreferred"
   acl                 = "log-delivery-write"
 
   context = module.this.context
