@@ -334,7 +334,6 @@ resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
 
   depends_on = [
     aws_s3_bucket_public_access_block.origin,
-    aws_s3_bucket_ownership_controls.origin,
     aws_s3_bucket_policy.default
   ]
 }
@@ -389,8 +388,13 @@ resource "aws_cloudfront_distribution" "default" {
   comment             = var.comment
   default_root_object = var.default_root_object
   price_class         = var.price_class
-  depends_on          = [aws_s3_bucket.origin, time_sleep.wait_for_aws_s3_bucket_settings]
   http_version        = var.http_version
+
+  depends_on = [
+    aws_s3_bucket.origin,
+    aws_s3_bucket_ownership_controls.origin,
+    time_sleep.wait_for_aws_s3_bucket_settings
+  ]
 
   dynamic "logging_config" {
     for_each = local.cloudfront_access_logging_enabled ? ["true"] : []
