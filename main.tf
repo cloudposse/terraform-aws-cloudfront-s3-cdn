@@ -342,14 +342,14 @@ module "logs" {
   attributes               = var.extra_logs_attributes
   allow_ssl_requests_only  = true
   lifecycle_prefix         = local.cloudfront_access_log_prefix
-  s3_object_ownership      = "BucketOwnerPreferred"
   standard_transition_days = var.log_standard_transition_days
   glacier_transition_days  = var.log_glacier_transition_days
   expiration_days          = var.log_expiration_days
   force_destroy            = var.origin_force_destroy
   versioning_enabled       = var.log_versioning_enabled
 
-  acl = "log-delivery-write"
+  s3_object_ownership = "ObjectWriter"
+  acl                 = "log-delivery-write"
 
   context = module.this.context
 }
