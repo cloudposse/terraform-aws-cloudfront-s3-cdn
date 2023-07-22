@@ -350,7 +350,7 @@ module "logs" {
 
   # See https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
   s3_object_ownership = "BucketOwnerPreferred"
-  acl = null
+  acl                 = null
   grants = [
     {
       # Canonical ID for the awslogsdelivery account
