@@ -72,7 +72,7 @@ resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
 
   depends_on = [
     data.aws_iam_policy_document.document,
-    module.aws_s3_bucket
+    module.s3_bucket
   ]
 }
 
