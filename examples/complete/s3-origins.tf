@@ -36,6 +36,7 @@ module "additional_s3_origin" {
   user_enabled       = false
   versioning_enabled = false
   attributes         = ["s3"]
+  acl                = null
 
   context = module.this.context
 }
@@ -49,19 +50,7 @@ module "additional_s3_failover_origin" {
   user_enabled       = false
   versioning_enabled = false
   attributes         = ["s3", "fo"] # fo = failover
+  acl                = null
 
   context = module.this.context
-}
-
-# Workaround for S3 eventual consistency for settings relating to objects
-resource "time_sleep" "wait_for_aws_s3_origin" {
-  count = local.additional_s3_origins_enabled ? 1 : 0
-
-  create_duration  = "30s"
-  destroy_duration = "30s"
-
-  depends_on = [
-    module.additional_s3_origin,
-    module.additional_s3_failover_origin
-  ]
 }

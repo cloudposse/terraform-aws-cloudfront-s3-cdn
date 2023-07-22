@@ -44,7 +44,8 @@ module "s3_bucket" {
   block_public_policy = false
   attributes          = ["existing-bucket"]
 
-  acl = null
+  acl                 = null
+  s3_object_ownership = "BucketOwnerPreferred"
   grants = [
     {
       id          = local.enabled ? data.aws_canonical_user_id.current[0].id : ""
@@ -80,8 +81,7 @@ module "cloudfront_s3_cdn" {
   source = "../../"
 
   depends_on = [
-    time_sleep.wait_for_aws_s3_bucket_settings,
-    time_sleep.wait_for_aws_s3_origin
+    time_sleep.wait_for_aws_s3_bucket_settings
   ]
 
   parent_zone_name     = var.parent_zone_name
