@@ -64,6 +64,7 @@ module "cloudfront_s3_cdn" {
   s3_access_logging_enabled = true
   s3_access_log_bucket_name = module.s3_bucket.bucket_id
   s3_access_log_prefix      = "logs/s3_access"
+  s3_object_ownership       = "BucketOwnerEnforced"
 
   cloudfront_access_logging_enabled = true
   cloudfront_access_log_prefix      = "logs/cf_access"
