@@ -240,6 +240,9 @@ resource "aws_s3_bucket_policy" "default" {
 
   bucket = local.origin_bucket.bucket
   policy = join("", data.aws_iam_policy_document.combined[*].json)
+
+  # Don't modify this bucket in two ways at the same time, S3 API will complain.
+  depends_on = [aws_s3_bucket_public_access_block.origin]
 }
 
 resource "aws_s3_bucket" "origin" {
@@ -308,9 +311,6 @@ resource "aws_s3_bucket_public_access_block" "origin" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
-
-  # Don't modify this bucket in two ways at the same time, S3 API will complain.
-  depends_on = [aws_s3_bucket_policy.default]
 }
 
 resource "aws_s3_bucket_ownership_controls" "origin" {
