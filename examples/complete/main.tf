@@ -81,7 +81,8 @@ module "cloudfront_s3_cdn" {
   source = "../../"
 
   depends_on = [
-    time_sleep.wait_for_aws_s3_bucket_settings
+    time_sleep.wait_for_aws_s3_bucket_settings,
+    time_sleep.wait_for_additional_s3_origins
   ]
 
   parent_zone_name     = var.parent_zone_name

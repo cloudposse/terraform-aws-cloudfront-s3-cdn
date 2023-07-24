@@ -38,7 +38,7 @@ module "additional_s3_origin" {
   attributes         = ["s3"]
 
   acl                 = null
-  s3_object_ownership = "BucketOwnerEnforced"
+  s3_object_ownership = "ObjectWriter"
 
   context = module.this.context
 }
@@ -54,7 +54,20 @@ module "additional_s3_failover_origin" {
   attributes         = ["s3", "fo"] # fo = failover
 
   acl                 = null
-  s3_object_ownership = "BucketOwnerEnforced"
+  s3_object_ownership = "ObjectWriter"
 
   context = module.this.context
 }
+
+resource "time_sleep" "wait_for_additional_s3_origins" {
+  count = local.additional_s3_origins_enabled ? 1 : 0
+
+  create_duration  = "30s"
+  destroy_duration = "30s"
+
+  depends_on = [
+    module.additional_s3_origin,
+    module.additional_s3_failover_origin
+  ]
+}
+
