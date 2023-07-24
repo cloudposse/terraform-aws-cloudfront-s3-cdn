@@ -32,13 +32,28 @@ module "additional_s3_origin" {
   version = "3.1.2"
   enabled = local.additional_s3_origins_enabled
 
-  force_destroy      = true
-  user_enabled       = false
-  versioning_enabled = false
-  attributes         = ["s3"]
+  force_destroy       = true
+  user_enabled        = false
+  versioning_enabled  = false
+  block_public_policy = false
+  attributes          = ["s3"]
 
   acl                 = null
-  s3_object_ownership = "ObjectWriter"
+  s3_object_ownership = "BucketOwnerPreferred"
+  grants = [
+    {
+      id          = local.enabled ? data.aws_canonical_user_id.current[0].id : ""
+      type        = "CanonicalUser"
+      permissions = ["FULL_CONTROL"]
+      uri         = null
+    },
+    {
+      id          = null
+      type        = "Group"
+      permissions = ["READ_ACP", "WRITE"]
+      uri         = "http://acs.amazonaws.com/groups/s3/LogDelivery"
+    },
+  ]
 
   context = module.this.context
 }
@@ -48,13 +63,28 @@ module "additional_s3_failover_origin" {
   version = "3.1.2"
   enabled = local.additional_s3_origins_enabled
 
-  force_destroy      = true
-  user_enabled       = false
-  versioning_enabled = false
-  attributes         = ["s3", "fo"] # fo = failover
+  force_destroy       = true
+  user_enabled        = false
+  versioning_enabled  = false
+  block_public_policy = false
+  attributes          = ["s3", "fo"] # fo = failover
 
   acl                 = null
-  s3_object_ownership = "ObjectWriter"
+  s3_object_ownership = "BucketOwnerPreferred"
+  grants = [
+    {
+      id          = local.enabled ? data.aws_canonical_user_id.current[0].id : ""
+      type        = "CanonicalUser"
+      permissions = ["FULL_CONTROL"]
+      uri         = null
+    },
+    {
+      id          = null
+      type        = "Group"
+      permissions = ["READ_ACP", "WRITE"]
+      uri         = "http://acs.amazonaws.com/groups/s3/LogDelivery"
+    },
+  ]
 
   context = module.this.context
 }
