@@ -7,7 +7,7 @@ locals {
   } : {}
 
   our_account_id            = local.enabled ? data.aws_caller_identity.current[0].account_id : ""
-  our_role_arn_prefix       = "arn:${join("", data.aws_partition.current.*.partition)}:iam::${local.our_account_id}:role"
+  our_role_arn_prefix       = "arn:${join("", data.aws_partition.current[*].partition)}:iam::${local.our_account_id}:role"
   role_names                = { for k, v in local.test_deployment_role_prefix_map : k => module.role_labels[k].id }
   deployment_principal_arns = { for k, v in local.role_names : format("%v/%v", local.our_role_arn_prefix, v) => local.test_deployment_role_prefix_map[k] }
 }
