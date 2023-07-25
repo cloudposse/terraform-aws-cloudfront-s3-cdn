@@ -66,7 +66,7 @@ module "additional_custom_origin" {
 
   enabled = local.additional_custom_origins_enabled
 
-  bucket                = format("%s.%s", module.additional_custom_origin_label.id, var.parent_zone_name)
+  bucket_name           = format("%s.%s", module.additional_custom_origin_label.id, var.parent_zone_name)
   force_destroy         = true
   website_configuration = local.website_configuration
   cors_configuration    = local.cors_configuration
@@ -93,7 +93,7 @@ resource "aws_s3_bucket_public_access_block" "additional_custom_origin" {
 resource "aws_s3_bucket_ownership_controls" "additional_custom_origin" {
   count = local.additional_custom_origins_enabled ? 1 : 0
 
-  bucket = module.additional_custom_origin.bucket_id
+  bucket_name = module.additional_custom_origin.bucket_id
   rule {
     object_ownership = "BucketOwnerEnforced"
   }
