@@ -305,12 +305,17 @@ resource "aws_s3_bucket" "origin" {
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
-  count                   = (local.create_s3_origin_bucket || local.override_origin_bucket_policy) ? 1 : 0
-  bucket                  = local.bucket
-  block_public_acls       = true
+  count = (local.create_s3_origin_bucket || local.override_origin_bucket_policy) ? 1 : 0
+
+  bucket = local.bucket
+
+  # Allows the bucket to be publicly accessible by policy
   block_public_policy     = var.block_origin_public_access_enabled
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  restrict_public_buckets = var.block_origin_public_access_enabled
+
+  # Always block ACL access. We're using policies instead
+  block_public_acls  = true
+  ignore_public_acls = true
 }
 
 resource "aws_s3_bucket_ownership_controls" "origin" {
