@@ -152,14 +152,16 @@ module "cdn" {
   aliases           = ["assets.cloudposse.com"]
   dns_alias_enabled = true
   parent_zone_name  = "cloudposse.com"
-  s3_origins = {
-    domain_name = module.s3_bucket.bucket_regional_domain_name
-    origin_id   = module.s3_bucket.bucket_id
-    origin_path = null
-    s3_origin_config = {
-      origin_access_identity = null # will get translated to the origin_access_identity used by the origin created by this module.
+  s3_origins = [
+    {
+      domain_name = module.s3_bucket.bucket_regional_domain_name
+      origin_id   = module.s3_bucket.bucket_id
+      origin_path = null
+      s3_origin_config = {
+        origin_access_identity = null # will get translated to the origin_access_identity used by the origin created by this module.
+      }
     }
-  }
+  ]
   origin_groups = {
     primary_origin_id  = null # will get translated to the origin id of the origin created by this module.
     failover_origin_id = module.s3_bucket.bucket_id
