@@ -34,7 +34,7 @@ output "cf_identity_iam_arn" {
 }
 
 output "cf_origin_groups" {
-  value       = try(flatten(aws_cloudfront_distribution.default.*.origin_group), [])
+  value       = try(flatten(aws_cloudfront_distribution.default[*].origin_group), [])
   description = "List of Origin Groups in the CloudFront distribution."
 }
 
@@ -44,7 +44,7 @@ output "cf_primary_origin_id" {
 }
 
 output "cf_origin_ids" {
-  value       = try(aws_cloudfront_distribution.default[0].origin.*.origin_id, [])
+  value       = try(aws_cloudfront_distribution.default[0].origin[*].origin_id, [])
   description = "List of Origin IDs in the CloudFront distribution."
 }
 
@@ -69,7 +69,7 @@ output "s3_bucket_arn" {
 }
 
 output "s3_bucket_policy" {
-  value       = join("", aws_s3_bucket_policy.default.*.policy)
+  value       = join("", aws_s3_bucket_policy.default[*].policy)
   description = "Final computed S3 bucket policy"
 }
 
