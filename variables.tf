@@ -481,10 +481,11 @@ variable "versioning_enabled" {
 }
 
 variable "deployment_principals" {
-  type        = map(object({ path_prefix = string, arn = string }))
+  type        = map(object({ path_prefix = list(string), arn = string }))
   default     = {}
   description = <<-EOT
-    (Optional) Map of IAM Principal ARNs to lists of S3 path prefixes to grant `deployment_actions` permissions.
+    (Optional) Map of objects that define the IAM Principal's to grant `deployment_actions` permissions. Each object in the map should have an IAM Principal ARN and a list of S3 path
+    prefixes to scope that principal's actions in the bucket.
     Resource list will include the bucket itself along with all the prefixes. Prefixes should not begin with '/'.
     EOT
 }
@@ -492,7 +493,7 @@ variable "deployment_principals" {
 variable "deployment_actions" {
   type        = list(string)
   default     = ["s3:PutObject", "s3:PutObjectAcl", "s3:GetObject", "s3:DeleteObject", "s3:ListBucket", "s3:ListBucketMultipartUploads", "s3:GetBucketLocation", "s3:AbortMultipartUpload"]
-  description = "List of actions to permit `deployment_principal_arns` to perform on bucket and bucket prefixes (see `deployment_principal_arns`)"
+  description = "List of actions to permit `deployment_principals` to perform on bucket and bucket prefixes (see `deployment_principals`)"
 }
 
 variable "cloudfront_origin_access_identity_iam_arn" {

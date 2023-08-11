@@ -79,9 +79,15 @@ usage: |-
     dns_alias_enabled = true
     parent_zone_name  = "cloudposse.com"
 
-    deployment_principal_arns = {
-      "arn:aws:iam::123456789012:role/principal1" = ["prefix1/", "prefix2/"]
-      "arn:aws:iam::123456789012:role/principal2" = [""]
+    deployment_principals = {
+      "principal1": {
+        "arn": "arn:aws:iam::123456789012:role/principal1"
+        "path_prefixes": ["prefix1/", "prefix2/"]
+      },
+      "principal2": {
+        "arn": "arn:aws:iam::123456789012:role/principal2"
+        "path_prefixes": [""]
+      }
     }
   }
   ```

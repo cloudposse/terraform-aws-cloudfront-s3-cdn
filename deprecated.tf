@@ -19,4 +19,3 @@ locals {
   # New variables, but declare them here for consistency
   cloudfront_access_log_create_bucket = var.cloudfront_access_log_create_bucket
 }
-
