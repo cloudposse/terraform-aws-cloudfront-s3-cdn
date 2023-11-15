@@ -42,11 +42,6 @@ locals {
   }
   cf_access = local.cf_access_options[local.create_cloudfront_origin_access_identity ? "new" : "existing"]
 
-  # Pick the IAM policy document based on whether the origin is an S3 origin or a Website origin
-  iam_policy_document = local.enabled ? (
-    local.website_enabled ? data.aws_iam_policy_document.s3_website_origin[0].json : data.aws_iam_policy_document.s3_origin[0].json
-  ) : ""
-
   bucket             = local.origin_bucket.bucket
   bucket_domain_name = var.website_enabled ? local.origin_bucket.website_endpoint : local.origin_bucket.bucket_regional_domain_name
 
@@ -135,13 +130,13 @@ resource "random_password" "referer" {
 data "aws_iam_policy_document" "s3_origin" {
   count = local.s3_origin_enabled ? 1 : 0
 
-  override_json = local.override_policy
+  override_policy_documents = [local.override_policy]
 
   statement {
     sid = "S3GetObjectForCloudFront"
 
     actions   = ["s3:GetObject"]
-    resources = ["arn:${join("", data.aws_partition.current.*.partition)}:s3:::${local.bucket}${local.origin_path}*"]
+    resources = ["arn:${join("", data.aws_partition.current[*].partition)}:s3:::${local.bucket}${local.origin_path}*"]
 
     principals {
       type        = "AWS"
@@ -153,7 +148,7 @@ data "aws_iam_policy_document" "s3_origin" {
     sid = "S3ListBucketForCloudFront"
 
     actions   = ["s3:ListBucket"]
-    resources = ["arn:${join("", data.aws_partition.current.*.partition)}:s3:::${local.bucket}"]
+    resources = ["arn:${join("", data.aws_partition.current[*].partition)}:s3:::${local.bucket}"]
 
     principals {
       type        = "AWS"
@@ -165,13 +160,13 @@ data "aws_iam_policy_document" "s3_origin" {
 data "aws_iam_policy_document" "s3_website_origin" {
   count = local.website_enabled ? 1 : 0
 
-  override_json = local.override_policy
+  override_policy_documents = [local.override_policy]
 
   statement {
     sid = "S3GetObjectForCloudFront"
 
     actions   = ["s3:GetObject"]
-    resources = ["arn:${join("", data.aws_partition.current.*.partition)}:s3:::${local.bucket}${local.origin_path}*"]
+    resources = ["arn:${join("", data.aws_partition.current[*].partition)}:s3:::${local.bucket}${local.origin_path}*"]
 
     principals {
       type        = "AWS"
@@ -235,9 +230,9 @@ data "aws_iam_policy_document" "combined" {
   count = local.enabled ? 1 : 0
 
   source_policy_documents = compact(concat(
-    data.aws_iam_policy_document.s3_origin.*.json,
-    data.aws_iam_policy_document.s3_website_origin.*.json,
-    data.aws_iam_policy_document.s3_ssl_only.*.json,
+    data.aws_iam_policy_document.s3_origin[*].json,
+    data.aws_iam_policy_document.s3_website_origin[*].json,
+    data.aws_iam_policy_document.s3_ssl_only[*].json,
     values(data.aws_iam_policy_document.deployment)[*].json
   ))
 }
@@ -245,8 +240,11 @@ data "aws_iam_policy_document" "combined" {
 resource "aws_s3_bucket_policy" "default" {
   count = local.create_s3_origin_bucket || local.override_origin_bucket_policy ? 1 : 0
 
-  bucket = local.origin_bucket.bucket
-  policy = join("", data.aws_iam_policy_document.combined.*.json)
+  bucket = local.bucket
+  policy = join("", data.aws_iam_policy_document.combined[*].json)
+
+  # Don't modify this bucket in two ways at the same time, S3 API will complain.
+  depends_on = [aws_s3_bucket_public_access_block.origin]
 }
 
 resource "aws_s3_bucket" "origin" {
@@ -279,7 +277,7 @@ resource "aws_s3_bucket" "origin" {
   }
 
   dynamic "logging" {
-    for_each = local.s3_access_log_bucket_name != "" ? [1] : []
+    for_each = local.s3_access_logging_enabled ? [1] : []
     content {
       target_bucket = local.s3_access_log_bucket_name
       target_prefix = coalesce(var.s3_access_log_prefix, "logs/${local.origin_id}/")
@@ -309,15 +307,17 @@ resource "aws_s3_bucket" "origin" {
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
-  count                   = (local.create_s3_origin_bucket || local.override_origin_bucket_policy) && var.block_origin_public_access_enabled ? 1 : 0
-  bucket                  = local.bucket
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  count = (local.create_s3_origin_bucket || local.override_origin_bucket_policy) ? 1 : 0
 
-  # Don't modify this bucket in two ways at the same time, S3 API will complain.
-  depends_on = [aws_s3_bucket_policy.default]
+  bucket = local.bucket
+
+  # Allows the bucket to be publicly accessible by policy
+  block_public_policy     = var.block_origin_public_access_enabled
+  restrict_public_buckets = var.block_origin_public_access_enabled
+
+  # Always block ACL access. We're using policies instead
+  block_public_acls  = true
+  ignore_public_acls = true
 }
 
 resource "aws_s3_bucket_ownership_controls" "origin" {
@@ -339,20 +339,37 @@ resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
   create_duration  = "30s"
   destroy_duration = "30s"
 
-  depends_on = [aws_s3_bucket_public_access_block.origin, aws_s3_bucket_policy.default]
+  depends_on = [
+    aws_s3_bucket_public_access_block.origin,
+    aws_s3_bucket_policy.default
+  ]
 }
 
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
-  version                  = "0.26.0"
+  version                  = "1.4.2"
   enabled                  = local.create_cf_log_bucket
   attributes               = var.extra_logs_attributes
+  allow_ssl_requests_only  = true
   lifecycle_prefix         = local.cloudfront_access_log_prefix
   standard_transition_days = var.log_standard_transition_days
   glacier_transition_days  = var.log_glacier_transition_days
   expiration_days          = var.log_expiration_days
   force_destroy            = var.origin_force_destroy
   versioning_enabled       = var.log_versioning_enabled
+
+  # See https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
+  s3_object_ownership = "BucketOwnerPreferred"
+  acl                 = null
+  grants = [
+    {
+      # Canonical ID for the awslogsdelivery account
+      id          = "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0"
+      permissions = ["FULL_CONTROL"]
+      type        = "CanonicalUser"
+      uri         = null
+    },
+  ]
 
   context = module.this.context
 }
@@ -369,6 +386,7 @@ data "aws_s3_bucket" "cf_logs" {
 
 resource "aws_cloudfront_distribution" "default" {
   #bridgecrew:skip=BC_AWS_GENERAL_27:Skipping `Ensure CloudFront distribution has WAF enabled` because AWS WAF is indeed configurable and is managed via `var.web_acl_id`.
+  #bridgecrew:skip=CKV2_AWS_47:Skipping `Ensure AWS CloudFront attached WAFv2 WebACL is configured with AMR for Log4j Vulnerability` for the same reason as above.
   #bridgecrew:skip=BC_AWS_NETWORKING_63:Skipping `Verify CloudFront Distribution Viewer Certificate is using TLS v1.2` because the minimum TLS version for the viewer certificate is indeed configurable and is managed via `var.minimum_protocol_version`.
   #bridgecrew:skip=BC_AWS_NETWORKING_65:Skipping `Ensure CloudFront distribution has a strict security headers policy attached` because the response header policy is indeed configurable and is managed via `var.response_headers_policy_id`.
   count = local.enabled ? 1 : 0
@@ -378,8 +396,13 @@ resource "aws_cloudfront_distribution" "default" {
   comment             = var.comment
   default_root_object = var.default_root_object
   price_class         = var.price_class
-  depends_on          = [aws_s3_bucket.origin]
   http_version        = var.http_version
+
+  depends_on = [
+    aws_s3_bucket.origin,
+    aws_s3_bucket_ownership_controls.origin,
+    time_sleep.wait_for_aws_s3_bucket_settings
+  ]
 
   dynamic "logging_config" {
     for_each = local.cloudfront_access_logging_enabled ? ["true"] : []

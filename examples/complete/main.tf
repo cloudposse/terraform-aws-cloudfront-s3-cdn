@@ -20,7 +20,7 @@ data "aws_iam_policy_document" "document" {
 
     actions = ["s3:GetObject"]
     resources = [
-      "arn:${join("", data.aws_partition.current.*.partition)}:s3:::$${bucket_name}$${origin_path}testprefix/*"
+      "arn:${join("", data.aws_partition.current[*].partition)}:s3:::$${bucket_name}$${origin_path}testprefix/*"
     ]
 
     principals {
@@ -36,14 +36,16 @@ data "aws_canonical_user_id" "current" {
 
 module "s3_bucket" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "0.36.0"
+  version = "3.1.2"
 
-  acl                = null
-  force_destroy      = true
-  user_enabled       = false
-  versioning_enabled = false
-  attributes         = ["existing-bucket"]
+  force_destroy       = true
+  user_enabled        = false
+  versioning_enabled  = false
+  block_public_policy = false
+  attributes          = ["existing-bucket"]
 
+  acl                 = null
+  s3_object_ownership = "BucketOwnerPreferred"
   grants = [
     {
       id          = local.enabled ? data.aws_canonical_user_id.current[0].id : ""
@@ -62,8 +64,26 @@ module "s3_bucket" {
   context = module.this.context
 }
 
+# Workaround for S3 eventual consistency for settings relating to objects
+resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
+  count = local.enabled ? 1 : 0
+
+  create_duration  = "30s"
+  destroy_duration = "30s"
+
+  depends_on = [
+    data.aws_iam_policy_document.document,
+    module.s3_bucket
+  ]
+}
+
 module "cloudfront_s3_cdn" {
   source = "../../"
+
+  depends_on = [
+    time_sleep.wait_for_aws_s3_bucket_settings,
+    time_sleep.wait_for_additional_s3_origins
+  ]
 
   parent_zone_name     = var.parent_zone_name
   dns_alias_enabled    = true
@@ -81,6 +101,7 @@ module "cloudfront_s3_cdn" {
 
   cloudfront_access_logging_enabled = true
   cloudfront_access_log_prefix      = "logs/cf_access"
+  s3_object_ownership               = "BucketOwnerPreferred"
 
   additional_bucket_policy = local.enabled ? data.aws_iam_policy_document.document[0].json : ""
 
@@ -105,7 +126,7 @@ module "cloudfront_s3_cdn" {
   context = module.this.context
 }
 
-resource "aws_s3_bucket_object" "index" {
+resource "aws_s3_object" "index" {
   count = local.enabled ? 1 : 0
 
   bucket       = module.cloudfront_s3_cdn.s3_bucket

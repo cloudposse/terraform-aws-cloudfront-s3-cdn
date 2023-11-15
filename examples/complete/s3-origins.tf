@@ -29,28 +29,75 @@ locals {
 
 module "additional_s3_origin" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "0.39.0"
+  version = "3.1.2"
   enabled = local.additional_s3_origins_enabled
 
-  acl                = "private"
-  force_destroy      = true
-  user_enabled       = false
-  versioning_enabled = false
-  attributes         = ["s3"]
+  force_destroy       = true
+  user_enabled        = false
+  versioning_enabled  = false
+  block_public_policy = false
+  attributes          = ["s3"]
+
+  acl                 = null
+  s3_object_ownership = "BucketOwnerPreferred"
+  grants = [
+    {
+      id          = local.enabled ? data.aws_canonical_user_id.current[0].id : ""
+      type        = "CanonicalUser"
+      permissions = ["FULL_CONTROL"]
+      uri         = null
+    },
+    {
+      id          = null
+      type        = "Group"
+      permissions = ["READ_ACP", "WRITE"]
+      uri         = "http://acs.amazonaws.com/groups/s3/LogDelivery"
+    },
+  ]
 
   context = module.this.context
 }
 
 module "additional_s3_failover_origin" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "0.39.0"
+  version = "3.1.2"
   enabled = local.additional_s3_origins_enabled
 
-  acl                = "private"
-  force_destroy      = true
-  user_enabled       = false
-  versioning_enabled = false
-  attributes         = ["s3", "fo"] # fo = failover
+  force_destroy       = true
+  user_enabled        = false
+  versioning_enabled  = false
+  block_public_policy = false
+  attributes          = ["s3", "fo"] # fo = failover
+
+  acl                 = null
+  s3_object_ownership = "BucketOwnerPreferred"
+  grants = [
+    {
+      id          = local.enabled ? data.aws_canonical_user_id.current[0].id : ""
+      type        = "CanonicalUser"
+      permissions = ["FULL_CONTROL"]
+      uri         = null
+    },
+    {
+      id          = null
+      type        = "Group"
+      permissions = ["READ_ACP", "WRITE"]
+      uri         = "http://acs.amazonaws.com/groups/s3/LogDelivery"
+    },
+  ]
 
   context = module.this.context
 }
+
+resource "time_sleep" "wait_for_additional_s3_origins" {
+  count = local.additional_s3_origins_enabled ? 1 : 0
+
+  create_duration  = "30s"
+  destroy_duration = "30s"
+
+  depends_on = [
+    module.additional_s3_origin,
+    module.additional_s3_failover_origin
+  ]
+}
+
