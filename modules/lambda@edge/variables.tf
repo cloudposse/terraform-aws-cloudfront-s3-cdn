@@ -16,6 +16,9 @@ variable "functions" {
   `runtime` and `handler` correspond to the attributes of the same name in the [lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function)
   resource.
 
+  `env_vars` sets the variables key in environment variable in the [lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function)
+  resource.
+
   `event_type` and `include_body` correspond to the attributes of the same name in the [Lambda Function association block
   of the cloudfront_distribution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#lambda-function-association)
   resource.
@@ -31,6 +34,7 @@ variable "functions" {
     handler      = string
     event_type   = string
     include_body = bool
+    env_vars = optional(map(string))
   }))
 
   validation {
