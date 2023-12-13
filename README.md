@@ -585,7 +585,7 @@ Available targets:
 | <a name="input_wait_for_deployment"></a> [wait\_for\_deployment](#input\_wait\_for\_deployment) | When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed | `bool` | `true` | no |
 | <a name="input_web_acl_id"></a> [web\_acl\_id](#input\_web\_acl\_id) | ID of the AWS WAF web ACL that is associated with the distribution | `string` | `""` | no |
 | <a name="input_website_enabled"></a> [website\_enabled](#input\_website\_enabled) | Set to true to enable the created S3 bucket to serve as a website independently of Cloudfront,<br>and to use that website as the origin. See the README for details and caveats. See also `s3_website_password_enabled`. | `bool` | `false` | no |
-| <a name="bucket_versioning"></a> [bucket\_versioning](#input\_bucket\_versioning) | Set to `Enabled` to enable bucket versioning. | `string` | `Disabled` | no |
+| <a name="bucket_versioning"></a> [bucket\_versioning](#input\_bucket\_versioning) | Set to `Enabled` to enable bucket versioning. | `string` | `"Disabled"` | no |
 
 ## Outputs
 
