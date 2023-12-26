@@ -30,7 +30,7 @@ module "lambda_at_edge" {
         EOT
         filename = "index.js"
       }]
-      runtime      = "nodejs12.x"
+      runtime      = "nodejs16.x"
       handler      = "index.handler"
       event_type   = "viewer-request"
       include_body = false
@@ -38,14 +38,14 @@ module "lambda_at_edge" {
     # Add custom header to the response
     viewer_response = {
       source_dir   = "lib"
-      runtime      = "nodejs12.x"
+      runtime      = "nodejs16.x"
       handler      = "index.handler"
       event_type   = "viewer-response"
       include_body = false
     },
     origin_request = {
       source_zip   = "origin-request.zip"
-      runtime      = "nodejs12.x"
+      runtime      = "nodejs16.x"
       handler      = "index.handler"
       event_type   = "origin-request"
       include_body = false
@@ -77,7 +77,7 @@ module "lambda_at_edge" {
         EOT
         filename = "index.js"
       }]
-      runtime      = "nodejs12.x"
+      runtime      = "nodejs16.x"
       handler      = "index.handler"
       event_type   = "origin-response"
       include_body = false

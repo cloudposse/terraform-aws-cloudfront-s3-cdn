@@ -88,10 +88,6 @@ We highly recommend that in your code you pin the version to the exact version y
 using so that your infrastructure remains stable, and update versions in a
 systematic way so that they do not catch you by surprise.
 
-Also, because of a bug in the Terraform registry ([hashicorp/terraform#21417](https://github.com/hashicorp/terraform/issues/21417)),
-the registry shows many of our inputs as required when in fact they are optional.
-The table below correctly indicates which inputs are required.
-
 
 
 For a complete example, see [examples/complete](examples/complete).
@@ -156,15 +152,15 @@ module "cdn" {
   aliases           = ["assets.cloudposse.com"]
   dns_alias_enabled = true
   parent_zone_name  = "cloudposse.com"
-  s3_origins = {
+  s3_origins = [{
     domain_name = module.s3_bucket.bucket_regional_domain_name
     origin_id   = module.s3_bucket.bucket_id
     origin_path = null
     s3_origin_config = {
       origin_access_identity = null # will get translated to the origin_access_identity used by the origin created by this module.
     }
-  }
-  origin_groups = {
+  }]
+  origin_groups = [{
     primary_origin_id  = null # will get translated to the origin id of the origin created by this module.
     failover_origin_id = module.s3_bucket.bucket_id
     failover_criteria  = [
@@ -173,7 +169,7 @@ module "cdn" {
       500,
       502
     ]
-  }
+  }]
 }
 ```
 
@@ -387,7 +383,7 @@ module "lambda_at_edge" {
         EOT
         filename = "index.js"
       }]
-      runtime      = "nodejs12.x"
+      runtime      = "nodejs16.x"
       handler      = "index.handler"
       event_type   = "origin-response"
       include_body = false
@@ -436,7 +432,7 @@ Available targets:
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.64.0, != 4.0.0, != 4.1.0, != 4.2.0, != 4.3.0, != 4.4.0, != 4.5.0, != 4.6.0, != 4.7.0, != 4.8.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.9 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 2.2 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.7 |
 
@@ -444,7 +440,7 @@ Available targets:
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.64.0, != 4.0.0, != 4.1.0, != 4.2.0, != 4.3.0, != 4.4.0, != 4.5.0, != 4.6.0, != 4.7.0, != 4.8.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.9 |
 | <a name="provider_random"></a> [random](#provider\_random) | >= 2.2 |
 | <a name="provider_time"></a> [time](#provider\_time) | >= 0.7 |
 
@@ -453,7 +449,7 @@ Available targets:
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_dns"></a> [dns](#module\_dns) | cloudposse/route53-alias/aws | 0.13.0 |
-| <a name="module_logs"></a> [logs](#module\_logs) | cloudposse/s3-log-storage/aws | 0.26.0 |
+| <a name="module_logs"></a> [logs](#module\_logs) | cloudposse/s3-log-storage/aws | 1.4.2 |
 | <a name="module_origin_label"></a> [origin\_label](#module\_origin\_label) | cloudposse/label/null | 0.25.0 |
 | <a name="module_this"></a> [this](#module\_this) | cloudposse/label/null | 0.25.0 |
 
@@ -501,7 +497,7 @@ Available targets:
 | <a name="input_cloudfront_access_logging_enabled"></a> [cloudfront\_access\_logging\_enabled](#input\_cloudfront\_access\_logging\_enabled) | Set true to enable delivery of Cloudfront Access Logs to an S3 bucket | `bool` | `true` | no |
 | <a name="input_cloudfront_origin_access_identity_iam_arn"></a> [cloudfront\_origin\_access\_identity\_iam\_arn](#input\_cloudfront\_origin\_access\_identity\_iam\_arn) | Existing cloudfront origin access identity iam arn that is supplied in the s3 bucket policy | `string` | `""` | no |
 | <a name="input_cloudfront_origin_access_identity_path"></a> [cloudfront\_origin\_access\_identity\_path](#input\_cloudfront\_origin\_access\_identity\_path) | Existing cloudfront origin access identity path used in the cloudfront distribution's s3\_origin\_config content | `string` | `""` | no |
-| <a name="input_comment"></a> [comment](#input\_comment) | Comment for the origin access identity | `string` | `"Managed by Terraform"` | no |
+| <a name="input_comment"></a> [comment](#input\_comment) | Comment for the CloudFront distribution | `string` | `"Managed by Terraform"` | no |
 | <a name="input_compress"></a> [compress](#input\_compress) | Compress content for web requests that include Accept-Encoding: gzip in the request header | `bool` | `true` | no |
 | <a name="input_context"></a> [context](#input\_context) | Single object for setting entire context at once.<br>See description of individual variables for details.<br>Leave string and numeric variables as `null` to use default value.<br>Individual variable settings (non-null) override settings in context object,<br>except for attributes, tags, and additional\_tag\_map, which are merged. | `any` | <pre>{<br>  "additional_tag_map": {},<br>  "attributes": [],<br>  "delimiter": null,<br>  "descriptor_formats": {},<br>  "enabled": true,<br>  "environment": null,<br>  "id_length_limit": null,<br>  "label_key_case": null,<br>  "label_order": [],<br>  "label_value_case": null,<br>  "labels_as_tags": [<br>    "unset"<br>  ],<br>  "name": null,<br>  "namespace": null,<br>  "regex_replace_chars": null,<br>  "stage": null,<br>  "tags": {},<br>  "tenant": null<br>}</pre> | no |
 | <a name="input_cors_allowed_headers"></a> [cors\_allowed\_headers](#input\_cors\_allowed\_headers) | List of allowed headers for S3 bucket | `list(string)` | <pre>[<br>  "*"<br>]</pre> | no |
