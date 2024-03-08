@@ -366,7 +366,7 @@ resource "time_sleep" "wait_for_aws_s3_bucket_settings" {
 
 module "logs" {
   source                   = "cloudposse/s3-log-storage/aws"
-  version                  = "1.4.2"
+  version                  = "1.4.3"
   enabled                  = local.create_cf_log_bucket
   attributes               = var.extra_logs_attributes
   allow_ssl_requests_only  = true
