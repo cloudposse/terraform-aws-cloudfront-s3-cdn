@@ -1,4 +1,3 @@
----
 #
 # This is the canonical configuration for the `README.md`
 # To rebuild `README.md`:
@@ -34,16 +33,17 @@ github_repo: cloudposse/terraform-aws-cloudfront-s3-cdn
 
 # Badges to display
 badges:
-  - name: "Codefresh Build Status"
-    image: "https://g.codefresh.io/api/badges/pipeline/cloudposse/terraform-modules%2Fterraform-aws-cloudfront-s3-cdn?type=cf-1"
-    url: "https://g.codefresh.io/public/accounts/cloudposse/pipelines/5d169121757962ff25679794"
-  - name: "Latest Release"
-    image: "https://img.shields.io/github/release/cloudposse/terraform-aws-cloudfront-s3-cdn.svg"
-    url: "https://travis-ci.org/cloudposse/terraform-aws-cloudfront-s3-cdn/releases"
-  - name: "Slack Community"
-    image: "https://slack.cloudposse.com/badge.svg"
-    url: "https://slack.cloudposse.com"
+  - name: Latest Release
+    image: https://img.shields.io/github/release/cloudposse/terraform-aws-cloudfront-s3-cdn.svg?style=for-the-badge
+    url: https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn/releases/latest
+  - name: Last Updated
+    image: https://img.shields.io/github/last-commit/cloudposse/terraform-aws-cloudfront-s3-cdn.svg?style=for-the-badge
+    url: https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn/commits
+  - name: Slack Community
+    image: https://slack.cloudposse.com/for-the-badge.svg
+    url: https://slack.cloudposse.com
 
+# List any related terraform modules that this module may be used with or that this module depends on.
 related:
   - name: "terraform-aws-cloudfront-cdn"
     description: "Terraform Module that implements a CloudFront Distribution (CDN) for a custom origin."
@@ -57,7 +57,7 @@ description: |-
   Terraform module to provision an AWS CloudFront CDN with an S3 origin.
 
 # How to use this project
-usage: |-
+usage: |2-
 
   For a complete example, see [examples/complete](examples/complete).
 
@@ -143,57 +143,57 @@ usage: |-
   ```
 
   ### Background on CDNs, "Origins", S3 Buckets, and Web Servers
-  
+
   #### CDNs and Origin Servers
-  
+
   There are some settings you need to be aware of when using this module. In order to understand the settings,
   you need to understand some of the basics of CDNs and web servers, so we are providing this _highly simplified_
   explanation of how they work in order for you to understand the implications of the settings you are providing.
-  
+
   A "**CDN**" ([Content Distribution Network](https://www.cloudflare.com/learning/cdn/what-is-a-cdn/)) is a collection of
   servers scattered around the internet with the aim of making it faster for people to retrieve content from a website.
   The details of why that is wanted/needed are beyond the scope of this document, as are most of the details of how
   a CDN is implemented. For this discussion, we will simply treat a CDN as a set of web servers all serving
   the same content to different users.
-  
+
   In a normal web server (again, greatly simplified), you place files on the server and the web server software receives
   requests from browsers and responds with the contents of the files.
-  
+
   For a variety of reasons, the web servers in a  CDN do not work the way normal web servers work. Instead of getting
   their content from files on the local server, the CDN web servers get their content by acting like web browsers
   (proxies). When they get a request from a browser, they make the same request to what is called an "**Origin Server**".
   It is called an origin server because it _serves_ the original content of the website, and thus is the _origin_
   of the content.
-  
+
   As a website publisher, you put content on an Origin Server (which users usually should be prevented from accessing)
   and configure your CDN to use your Origin Server. Then you direct users to a URL hosted by your CDN provider, the
   users' browsers connect to the CDN, the CDN gets the content from your Origin Server, your Origin Server gets the
   content from a file on the server, and the data gets sent back hop by hop to the user. (The reason this ends up
   being a good idea is that the CDN can cache the content for a while, serving multiple users the same content while
   only contacting the origin server once.)
-  
+
   #### S3 Buckets: file storage and web server
-  
+
   S3 buckets were originally designed just to store files, and they are still most often used for that. The have a lot
   of access controls to make it possible to strictly limit who can read what files in the bucket, so that companies
   can store sensitive information there. You may have heard of a number of "data breaches" being caused by misconfigured
   permissions on S3 buckets, making them publicly accessible. As a result of that, Amazon has some extra settings on
   top of everything else to keep S3 buckets from being publicly accessible, which is usually a good thing.
-  
+
   However, at some point someone realized that since these files were in the cloud, and Amazon already had these web servers
   running to provide access to the files in the cloud, it was only a tiny leap to turn an S3 bucket into a web server.
   So now S3 buckets [can be published as websites](https://docs.aws.amazon.com/AmazonS3/latest/userguide/EnableWebsiteHosting.html)
   with a few configuration settings, including making the contents publicly accessible.
-  
+
   #### Web servers, files, and the different modes of S3 buckets
-  
+
   In the simplest websites, the URL "path" (the part after the site name) corresponds directly to the path (under
   a special directory we will call `/webroot`) and name
   of a file on the web server. So if the web server gets a request for "http://example.com/foo/bar/baz.html" it will
   look for a file `/webroot/foo/bar/baz.html`. If it exists, the server will return its contents, and if it does not exist,
   the server will return a `Not Found` error. An S3 bucket, whether configured as a file store or a website, will
   always do both of these things.
-  
+
   Web servers, however, do some helpful extra things. To name a few:
   - If the URL ends with a `/`, as in `http://example.com/foo/bar/`, the web server (depending on how it is configured)
   will either return a list of files in the directory or it will return the contents of a file in the directory with
@@ -204,30 +204,30 @@ usage: |-
   turns out to be quite helpful.
   - If the URL does not point to a directory or a file, instead of just sending back a cryptic `Not Found` error code,
   it can return the contents of a special file called an "error document".
-  
+
   #### Your Critical Decision: S3 bucket or website?
-  
+
   All of this background is to help you decide how to set `website_enabled` and `s3_website_password_enabled`.
   The default for `website_enabled` is `false` which is the easiest to configure and the most secure, and with
   this setting, `s3_website_password_enabled` is ignored.
-  
+
   S3 buckets, in file storage mode (`website_enabled = false`), do none of these extra things that web servers do.
   If the URL points to a file, it will return the file, and if it does not _exactly_ match a file, it will return
   `Not Found`. One big advantage, though, is that the S3 bucket can remain private (not publicly accessible). A second,
   related advantage is that you can limit the website to a portion of the S3 bucket (everything under a certain prefix)
   and keep the contents under the the other prefixes private.
-  
+
   S3 buckets configured as static websites (`website_enabled = true`), however, have these extra web server features like redirects, `index.html`,
   and error documents. The disadvantage is that you have to make the entire bucket public (although you can still
   restrict access to some portions of the bucket).
-  
+
   Another feature or drawback (depending on your point of view) of S3 buckets configured as static websites is that
   they are directly accessible via their [website endpoint](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteEndpoints.html)
   as well as through Cloudfront. This module has a feature, `s3_website_password_enabled`, that requires a password
   be passed in the HTTP request header and configures the CDN to do that, which will make it much harder to access
   the S3 website directly. So set `s3_website_password_enabled = true` to limit direct access to the S3 website
   or set it to false if you want to be able to bypass Cloudfront when you want to.
-  
+
   In addition to setting `website_enabled=true`, you must also:
 
   * Specify at least one `aliases`, like `["example.com"]` or
@@ -235,10 +235,10 @@ usage: |-
   * Specify an ACM certificate
 
   ### Custom Domain Names and Generating a TLS Certificate with ACM
-  
+
   When you set up Cloudfront, Amazon will generate a domain name for your website. You amost certainly will not
   want to publish that. Instead, you will want to use a custom domain name. This module refers to them as "aliases".
-  
+
   To use the custom domain names, you need to
   - Pass them in as `aliases` so that Cloudfront will respond to them with your content
   - Create CNAMEs for the aliases to point to the Cloudfront domain name. If your alias domains are hosted by
@@ -383,22 +383,4 @@ include:
   - "docs/terraform.md"
 
 # Contributors to this project
-contributors:
-  - name: "Erik Osterman"
-    github: "osterman"
-  - name: "Andriy Knysh"
-    github: "aknysh"
-  - name: "Jamie Nelson"
-    github: "Jamie-BitFlight"
-  - name: "Clive Zagno"
-    github: "cliveza"
-  - name: "David Mattia"
-    github: "dmattia"
-  - name: "RB"
-    github: "nitrocode"
-  - name: "John McGehee"
-    github: "jmcgeheeiv"
-  - name: "Yonatan Koren"
-    github: "korenyoni"
-  - name: "Lucas Caparelli"
-    github: "lcaparelli"
+contributors: []
