@@ -6,6 +6,7 @@ locals {
   website_password_enabled  = local.website_enabled && var.s3_website_password_enabled
   s3_origin_enabled         = local.enabled && !var.website_enabled
   create_s3_origin_bucket   = local.enabled && var.origin_bucket == null
+  create_s3_acl             = local.create_s3_origin_bucket && var.s3_object_ownership != "BucketOwnerEnforced"
   s3_access_logging_enabled = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
   create_cf_log_bucket      = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
 
@@ -318,7 +319,7 @@ resource "aws_s3_bucket_cors_configuration" "origin" {
 
 resource "aws_s3_bucket_acl" "origin" {
   depends_on = [aws_s3_bucket_ownership_controls.origin]
-  count      = local.create_s3_origin_bucket ? 1 : 0
+  count      = local.create_s3_acl ? 1 : 0
 
   bucket = one(aws_s3_bucket.origin).id
   acl    = "private"
