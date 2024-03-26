@@ -393,6 +393,7 @@ variable "ordered_cache" {
 
     cache_policy_id          = string
     origin_request_policy_id = string
+    realtime_log_config_arn  = optional(string)
 
     viewer_protocol_policy     = string
     min_ttl                    = number

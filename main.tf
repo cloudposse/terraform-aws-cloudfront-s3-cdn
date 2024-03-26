@@ -605,6 +605,7 @@ resource "aws_cloudfront_distribution" "default" {
 
       cache_policy_id          = ordered_cache_behavior.value.cache_policy_id
       origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
+      realtime_log_config_arn  = ordered_cache_behavior.value.realtime_log_config_arn
 
       dynamic "forwarded_values" {
         # If a cache policy or origin request policy is specified, we cannot include a `forwarded_values` block at all in the API request
