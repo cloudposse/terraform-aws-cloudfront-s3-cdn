@@ -393,6 +393,7 @@ variable "ordered_cache" {
 
     cache_policy_id          = string
     origin_request_policy_id = string
+    realtime_log_config_arn  = optional(string)
 
     viewer_protocol_policy     = string
     min_ttl                    = number
@@ -688,4 +689,15 @@ variable "http_version" {
   type        = string
   default     = "http2"
   description = "The maximum HTTP version to support on the distribution. Allowed values are http1.1, http2, http2and3 and http3"
+}
+
+variable "bucket_versioning" {
+  type        = string
+  default     = "Disabled"
+  description = "State of bucket versioning option"
+
+  validation {
+    condition     = contains(["Enabled", "Disabled", "Suspended"], var.bucket_versioning)
+    error_message = "Please choose one of 'Enabled', 'Disabled', or 'Suspended'"
+  }
 }
