@@ -86,7 +86,7 @@ module "cdn" {
   aliases           = ["assets.cloudposse.com"]
   dns_alias_enabled = true
   parent_zone_name  = "cloudposse.com"
-  name              = "prod"
+  name              = "eg-prod-app"
 }
 ```
 
