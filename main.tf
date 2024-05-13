@@ -133,7 +133,7 @@ resource "random_password" "referer" {
 data "aws_iam_policy_document" "s3_origin" {
   count = local.s3_origin_enabled ? 1 : 0
 
-  override_policy_documents = local.override_policy
+  override_policy_documents = [local.override_policy]
 
   statement {
     sid = "S3GetObjectForCloudFront"
