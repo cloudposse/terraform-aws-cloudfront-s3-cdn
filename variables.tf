@@ -271,7 +271,7 @@ variable "geo_restriction_locations" {
 
 variable "parent_zone_id" {
   type        = string
-  default     = ""
+  default     = null
   description = "ID of the hosted zone to contain this record (or specify `parent_zone_name`). Requires `dns_alias_enabled` set to true"
 }
 
