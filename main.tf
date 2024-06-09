@@ -168,7 +168,7 @@ data "aws_iam_policy_document" "s3_website_origin" {
 
     principals {
       type        = "AWS"
-      identifiers = ["*"]
+      identifiers = var.block_origin_public_access_enabled ? flatten([aws_cloudfront_origin_access_identity.default[*].iam_arn, [var.cloudfront_origin_access_identity_iam_arn]]) : ["*"]
     }
     dynamic "condition" {
       for_each = local.website_password_enabled ? ["password"] : []
