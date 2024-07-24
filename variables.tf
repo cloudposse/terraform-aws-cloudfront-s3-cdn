@@ -16,7 +16,7 @@ variable "minimum_protocol_version" {
     Cloudfront TLS minimum protocol version.
     If `var.acm_certificate_arn` is unset, only "TLSv1" can be specified. See: [AWS Cloudfront create-distribution documentation](https://docs.aws.amazon.com/cli/latest/reference/cloudfront/create-distribution.html)
     and [Supported protocols and ciphers between viewers and CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html#secure-connections-supported-ciphers) for more information.
-    Defaults to "TLSv1.2_2019" unless `var.acm_certificate_arn` is unset, in which case it defaults to `TLSv1`
+    Defaults to "TLSv1.2_2021" unless `var.acm_certificate_arn` is unset, in which case it defaults to `TLSv1`
     EOT
   default     = ""
 }
