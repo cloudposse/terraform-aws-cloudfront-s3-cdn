@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 locals {
   enabled = module.this.enabled
 
@@ -9,7 +11,11 @@ locals {
   s3_access_logging_enabled = local.enabled && (var.s3_access_logging_enabled == null ? length(var.s3_access_log_bucket_name) > 0 : var.s3_access_logging_enabled)
   create_cf_log_bucket      = local.cloudfront_access_logging_enabled && local.cloudfront_access_log_create_bucket
 
-  create_cloudfront_origin_access_identity = local.enabled && length(compact([var.cloudfront_origin_access_identity_iam_arn])) == 0 # "" or null
+  origin_access_identity_enabled = local.enabled && var.origin_access_type == "origin_access_identity"
+  origin_access_control_enabled  = local.enabled && var.origin_access_type == "origin_access_control"
+
+  create_cloudfront_origin_access_identity = local.origin_access_identity_enabled && length(compact([var.cloudfront_origin_access_identity_iam_arn])) == 0 # "" or null
+  create_cloudfront_origin_access_control = local.origin_access_control_enabled && length(compact([var.cloudfront_origin_access_control_id])) == 0 # "" or null
 
   origin_id   = module.this.id
   origin_path = coalesce(var.origin_path, "/")
@@ -29,8 +35,10 @@ locals {
   # Workaround for requirement that tertiary expression has to have exactly matching objects in both result values
   origin_bucket = local.origin_bucket_options[local.enabled ? (local.create_s3_origin_bucket ? "new" : "existing") : "disabled"]
 
-  # Collect the information for cloudfront_origin_access_identity_iam and shorten the variable names
-  cf_access_options = {
+  # Collect the information for cloudfront_origin_access_control and cloudfront_origin_access_identity and shorten the variable names
+  cf_origin_access_control_id_arn = "arn:${join("", data.aws_partition.current[*].partition)}:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${var.cloudfront_origin_access_control_id}"
+  
+  cf_access_options = var.origin_access_type == "origin_access_identity" ? {
     new = local.create_cloudfront_origin_access_identity ? {
       arn  = aws_cloudfront_origin_access_identity.default[0].iam_arn
       path = aws_cloudfront_origin_access_identity.default[0].cloudfront_access_identity_path
@@ -38,9 +46,16 @@ locals {
     existing = {
       arn  = var.cloudfront_origin_access_identity_iam_arn
       path = var.cloudfront_origin_access_identity_path
+    } 
+  } : var.origin_access_type == "origin_access_control" ? {
+    new = local.create_cloudfront_origin_access_control ? {
+      arn = "arn:${join("", data.aws_partition.current[*].partition)}:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_origin_access_control.default[0].id}"
+    } : null
+    existing = {
+      arn = local.cf_origin_access_control_id_arn
     }
-  }
-  cf_access = local.cf_access_options[local.create_cloudfront_origin_access_identity ? "new" : "existing"]
+  } : null
+  cf_access = local.cf_access_options[local.create_cloudfront_origin_access_identity || local.create_cloudfront_origin_access_control ? "new" : "existing"]
 
   bucket             = local.origin_bucket.bucket
   bucket_domain_name = var.website_enabled ? local.origin_bucket.website_endpoint : local.origin_bucket.bucket_regional_domain_name
@@ -89,10 +104,11 @@ locals {
 # https://github.com/hashicorp/terraform-provider-template/issues/85
 # https://github.com/hashicorp/terraform/issues/26838
 locals {
-  override_policy = replace(replace(replace(var.additional_bucket_policy,
+  override_policy = replace(replace(replace(replace(var.additional_bucket_policy,
     "$${origin_path}", local.origin_path),
     "$${bucket_name}", local.bucket),
-  "$${cloudfront_origin_access_identity_iam_arn}", local.cf_access.arn)
+    "$${cloudfront_origin_access_identity_iam_arn}", try(local.cf_access.arn, "")),
+    "$${cloudfront_origin_access_control_arn}", try(local.cf_access.arn, ""))
 }
 
 data "aws_partition" "current" {
@@ -118,6 +134,15 @@ resource "aws_cloudfront_origin_access_identity" "default" {
   comment = local.origin_id
 }
 
+resource "aws_cloudfront_origin_access_control" "default" {
+  count = local.create_cloudfront_origin_access_control ? 1 : 0
+  name                              = local.origin_id
+  description                       = local.origin_id
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = var.origin_access_control_signing_behavior
+  signing_protocol                  = "sigv4"
+}
+
 resource "random_password" "referer" {
   count = local.website_password_enabled ? 1 : 0
 
@@ -125,8 +150,8 @@ resource "random_password" "referer" {
   special = false
 }
 
-data "aws_iam_policy_document" "s3_origin" {
-  count = local.s3_origin_enabled ? 1 : 0
+data "aws_iam_policy_document" "s3_origin_access_identity" {
+  count = local.s3_origin_enabled && local.origin_access_identity_enabled ? 1 : 0
 
   override_policy_documents = [local.override_policy]
 
@@ -155,6 +180,30 @@ data "aws_iam_policy_document" "s3_origin" {
   }
 }
 
+data "aws_iam_policy_document" "s3_origin_access_control" {
+  count = local.s3_origin_enabled && local.origin_access_control_enabled ? 1 : 0
+
+  override_policy_documents = [local.override_policy]
+
+  statement {
+    sid = "S3GetObjectForCloudFrontServicePrincipal"
+
+    actions   = ["s3:GetObject"]
+    resources = ["arn:${join("", data.aws_partition.current[*].partition)}:s3:::${local.bucket}${local.origin_path}*"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+
+    condition {
+      test = "StringEquals"
+      variable = "AWS:SourceArn"
+      values = [aws_cloudfront_distribution.default[0].arn]
+    }
+  }
+}
+
 data "aws_iam_policy_document" "s3_website_origin" {
   count = local.website_enabled ? 1 : 0
 
@@ -168,7 +217,7 @@ data "aws_iam_policy_document" "s3_website_origin" {
 
     principals {
       type        = "AWS"
-      identifiers = var.block_origin_public_access_enabled ? compact(flatten([aws_cloudfront_origin_access_identity.default[*].iam_arn, [var.cloudfront_origin_access_identity_iam_arn]])) : ["*"]
+      identifiers = var.block_origin_public_access_enabled ? compact(flatten([aws_cloudfront_origin_access_identity.default[*].iam_arn, [var.cloudfront_origin_access_identity_iam_arn], [local.cf_origin_access_control_id_arn]])) : ["*"]
     }
     dynamic "condition" {
       for_each = local.website_password_enabled ? ["password"] : []
@@ -228,7 +277,8 @@ data "aws_iam_policy_document" "combined" {
   count = local.enabled ? 1 : 0
 
   source_policy_documents = compact(concat(
-    data.aws_iam_policy_document.s3_origin[*].json,
+    data.aws_iam_policy_document.s3_origin_access_identity[*].json,
+    data.aws_iam_policy_document.s3_origin_access_control[*].json,
     data.aws_iam_policy_document.s3_website_origin[*].json,
     data.aws_iam_policy_document.s3_ssl_only[*].json,
     values(data.aws_iam_policy_document.deployment)[*].json
@@ -419,8 +469,7 @@ resource "aws_cloudfront_distribution" "default" {
 
   depends_on = [
     aws_s3_bucket.origin,
-    aws_s3_bucket_ownership_controls.origin,
-    time_sleep.wait_for_aws_s3_bucket_settings
+    module.logs
   ]
 
   dynamic "logging_config" {
@@ -457,12 +506,14 @@ resource "aws_cloudfront_distribution" "default" {
   }
 
   origin {
-    domain_name = local.bucket_domain_name
-    origin_id   = local.origin_id
-    origin_path = var.origin_path
+    domain_name              = local.bucket_domain_name
+    origin_id                = local.origin_id
+    origin_path              = var.origin_path
+    # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
+    origin_access_control_id = local.create_cloudfront_origin_access_control ? aws_cloudfront_origin_access_control.default[0].id : local.origin_access_control_enabled && length(compact([var.cloudfront_origin_access_control_id])) > 0 ? var.cloudfront_origin_access_control_id : null
 
     dynamic "s3_origin_config" {
-      for_each = !var.website_enabled ? [1] : []
+      for_each = !var.website_enabled && !local.origin_access_control_enabled ? [1] : []
       content {
         origin_access_identity = local.cf_access.path
       }
@@ -525,9 +576,15 @@ resource "aws_cloudfront_distribution" "default" {
       domain_name = origin.value.domain_name
       origin_id   = origin.value.origin_id
       origin_path = lookup(origin.value, "origin_path", "")
-      s3_origin_config {
-        # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
-        origin_access_identity = try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.cf_access.path
+      # the following enables specifying the origin_access_control used by the origin created by this module, prior to the module's creation:
+      origin_access_control_id = local.origin_access_control_enabled && try(length(origin.value.s3_origin_config.origin_access_control_id), 0) > 0 ? origin.value.s3_origin_config.origin_access_control_id : local.origin_access_control_enabled ? aws_cloudfront_origin_access_control.default[0].id : null
+      
+      dynamic "s3_origin_config" {
+        for_each = local.origin_access_identity_enabled ? var.s3_origins : []
+        content {
+          # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
+          origin_access_identity = local.origin_access_identity_enabled && try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.origin_access_identity_enabled ? local.cf_access.path : ""
+        }
       }
     }
   }
