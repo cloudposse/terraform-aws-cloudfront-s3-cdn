@@ -99,6 +99,8 @@ module "cloudfront_s3_cdn" {
   s3_access_log_bucket_name = module.s3_bucket.bucket_id
   s3_access_log_prefix      = "logs/s3_access"
 
+  origin_access_type = "origin_access_control"
+
   cloudfront_access_logging_enabled = true
   cloudfront_access_log_prefix      = "logs/cf_access"
   s3_object_ownership               = "BucketOwnerPreferred"
@@ -110,6 +112,7 @@ module "cloudfront_s3_cdn" {
     domain_name = module.s3_bucket.bucket_regional_domain_name
     origin_id   = module.s3_bucket.bucket_id
     origin_path = null
+    origin_access_control_id = null
     s3_origin_config = {
       origin_access_identity = null # will get translated to the origin_access_identity used by the origin created by this module.
     }

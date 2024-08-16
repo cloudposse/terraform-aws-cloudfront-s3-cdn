@@ -4,6 +4,7 @@ locals {
     domain_name = null
     origin_id   = null
     origin_path = null
+    origin_access_control_id = null
     s3_origin_config = {
       origin_access_identity = ""
     }
