@@ -364,6 +364,8 @@ resource "aws_s3_bucket_cors_configuration" "origin" {
       max_age_seconds = var.cors_max_age_seconds
     }
   }
+
+  depends_on = [time_sleep.wait_for_aws_s3_bucket_settings]
 }
 
 resource "aws_s3_bucket_acl" "origin" {
