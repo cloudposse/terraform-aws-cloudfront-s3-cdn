@@ -15,7 +15,7 @@ locals {
   origin_access_control_enabled  = local.enabled && var.origin_access_type == "origin_access_control"
 
   create_cloudfront_origin_access_identity = local.origin_access_identity_enabled && length(compact([var.cloudfront_origin_access_identity_iam_arn])) == 0 # "" or null
-  create_cloudfront_origin_access_control = local.origin_access_control_enabled && length(compact([var.cloudfront_origin_access_control_id])) == 0 # "" or null
+  create_cloudfront_origin_access_control  = local.origin_access_control_enabled && length(compact([var.cloudfront_origin_access_control_id])) == 0        # "" or null
 
   origin_id   = module.this.id
   origin_path = coalesce(var.origin_path, "/")
@@ -37,7 +37,7 @@ locals {
 
   # Collect the information for cloudfront_origin_access_control and cloudfront_origin_access_identity and shorten the variable names
   cf_origin_access_control_id_arn = "arn:${join("", data.aws_partition.current[*].partition)}:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${var.cloudfront_origin_access_control_id}"
-  
+
   cf_access_options = var.origin_access_type == "origin_access_identity" ? {
     new = local.create_cloudfront_origin_access_identity ? {
       arn  = aws_cloudfront_origin_access_identity.default[0].iam_arn
@@ -46,8 +46,8 @@ locals {
     existing = {
       arn  = var.cloudfront_origin_access_identity_iam_arn
       path = var.cloudfront_origin_access_identity_path
-    } 
-  } : var.origin_access_type == "origin_access_control" ? {
+    }
+    } : var.origin_access_type == "origin_access_control" ? {
     new = local.create_cloudfront_origin_access_control ? {
       arn = "arn:${join("", data.aws_partition.current[*].partition)}:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_origin_access_control.default[0].id}"
     } : null
@@ -108,7 +108,7 @@ locals {
     "$${origin_path}", local.origin_path),
     "$${bucket_name}", local.bucket),
     "$${cloudfront_origin_access_identity_iam_arn}", try(local.cf_access.arn, "")),
-    "$${cloudfront_origin_access_control_arn}", try(local.cf_access.arn, ""))
+  "$${cloudfront_origin_access_control_arn}", try(local.cf_access.arn, ""))
 }
 
 data "aws_partition" "current" {
@@ -135,7 +135,7 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 }
 
 resource "aws_cloudfront_origin_access_control" "default" {
-  count = local.create_cloudfront_origin_access_control ? 1 : 0
+  count                             = local.create_cloudfront_origin_access_control ? 1 : 0
   name                              = local.origin_id
   description                       = local.origin_id
   origin_access_control_origin_type = "s3"
@@ -197,9 +197,9 @@ data "aws_iam_policy_document" "s3_origin_access_control" {
     }
 
     condition {
-      test = "StringEquals"
+      test     = "StringEquals"
       variable = "AWS:SourceArn"
-      values = [aws_cloudfront_distribution.default[0].arn]
+      values   = [aws_cloudfront_distribution.default[0].arn]
     }
   }
 }
@@ -508,9 +508,9 @@ resource "aws_cloudfront_distribution" "default" {
   }
 
   origin {
-    domain_name              = local.bucket_domain_name
-    origin_id                = local.origin_id
-    origin_path              = var.origin_path
+    domain_name = local.bucket_domain_name
+    origin_id   = local.origin_id
+    origin_path = var.origin_path
     # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
     origin_access_control_id = local.create_cloudfront_origin_access_control ? aws_cloudfront_origin_access_control.default[0].id : local.origin_access_control_enabled && length(compact([var.cloudfront_origin_access_control_id])) > 0 ? var.cloudfront_origin_access_control_id : null
 
@@ -580,7 +580,7 @@ resource "aws_cloudfront_distribution" "default" {
       origin_path = lookup(origin.value, "origin_path", "")
       # the following enables specifying the origin_access_control used by the origin created by this module, prior to the module's creation:
       origin_access_control_id = local.origin_access_control_enabled && try(length(origin.value.s3_origin_config.origin_access_control_id), 0) > 0 ? origin.value.s3_origin_config.origin_access_control_id : local.origin_access_control_enabled ? aws_cloudfront_origin_access_control.default[0].id : null
-      
+
       dynamic "s3_origin_config" {
         for_each = local.origin_access_identity_enabled ? var.s3_origins : []
         content {

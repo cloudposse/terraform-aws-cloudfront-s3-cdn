@@ -76,12 +76,12 @@ variable "cloudfront_origin_access_control_id" {
 
 variable "origin_access_control_signing_behavior" {
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_access_control#signing_behavior
-  type = string
-  default = "always"
+  type        = string
+  default     = "always"
   description = "Specifies which requests CloudFront signs. Specify always for the most common use case. Allowed values: always, never, and no-override."
-  
+
   validation {
-    condition = var.origin_access_control_signing_behavior == "always" || var.origin_access_control_signing_behavior == "no-override" || var.origin_access_control_signing_behavior == "never"
+    condition     = var.origin_access_control_signing_behavior == "always" || var.origin_access_control_signing_behavior == "no-override" || var.origin_access_control_signing_behavior == "never"
     error_message = "The origin_access_control_signing_behavior must be one of: `always`, `no-override`, or `never`."
   }
 }
@@ -470,9 +470,9 @@ variable "custom_origins" {
 
 variable "s3_origins" {
   type = list(object({
-    domain_name = string
-    origin_id   = string
-    origin_path = string
+    domain_name              = string
+    origin_id                = string
+    origin_path              = string
     origin_access_control_id = string
     s3_origin_config = object({
       origin_access_identity = string
@@ -517,11 +517,11 @@ variable "deployment_actions" {
 }
 
 variable "origin_access_type" {
-  type = string
-  default = "origin_access_identity"
+  type        = string
+  default     = "origin_access_identity"
   description = "Choose to use `origin_access_control` or `orgin_access_identity`"
   validation {
-    condition = var.origin_access_type == "origin_access_control" || var.origin_access_type == "origin_access_identity"
+    condition     = var.origin_access_type == "origin_access_control" || var.origin_access_type == "origin_access_identity"
     error_message = "The origin_access_type must be `origin_access_control` or `origin_access_identity`."
   }
 }

@@ -1,9 +1,9 @@
 locals {
   additional_s3_origins_enabled = local.enabled && var.additional_s3_origins_enabled
   default_s3_origin_configuration = {
-    domain_name = null
-    origin_id   = null
-    origin_path = null
+    domain_name              = null
+    origin_id                = null
+    origin_path              = null
     origin_access_control_id = null
     s3_origin_config = {
       origin_access_identity = ""

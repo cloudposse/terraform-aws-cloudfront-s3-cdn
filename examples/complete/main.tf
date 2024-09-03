@@ -109,9 +109,9 @@ module "cloudfront_s3_cdn" {
 
   custom_origins = var.additional_custom_origins_enabled ? [local.additional_custom_origin_primary, local.additional_custom_origin_secondary] : []
   s3_origins = concat([{
-    domain_name = module.s3_bucket.bucket_regional_domain_name
-    origin_id   = module.s3_bucket.bucket_id
-    origin_path = null
+    domain_name              = module.s3_bucket.bucket_regional_domain_name
+    origin_id                = module.s3_bucket.bucket_id
+    origin_path              = null
     origin_access_control_id = null
     s3_origin_config = {
       origin_access_identity = null # will get translated to the origin_access_identity used by the origin created by this module.
