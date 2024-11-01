@@ -1,9 +1,11 @@
 locals {
   additional_custom_origins_enabled = local.enabled && var.additional_custom_origins_enabled
   default_custom_origin_configuration = {
-    domain_name              = null
-    origin_id                = null
-    origin_path              = null
+    domain_name = null
+    origin_id   = null
+    origin_path = null
+    # Example configuration with Origin Access Control for Lambda@Edge:
+    # origin_access_control_id = aws_cloudfront_origin_access_control.example.id
     origin_access_control_id = null
     custom_headers           = []
     custom_origin_config = {
