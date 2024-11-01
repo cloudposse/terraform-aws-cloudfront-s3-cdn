@@ -67,6 +67,25 @@ variable "origin_force_destroy" {
   description = "Delete all objects from the bucket so that the bucket can be destroyed without error (e.g. `true` or `false`)"
 }
 
+variable "cloudfront_origin_access_control_id" {
+  # https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html
+  type        = string
+  default     = ""
+  description = "CloudFront provides two ways to send authenticated requests to an Amazon S3 origin: origin access control (OAC) and origin access identity (OAI). OAC helps you secure your origins, such as for Amazon S3."
+}
+
+variable "origin_access_control_signing_behavior" {
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_access_control#signing_behavior
+  type        = string
+  default     = "always"
+  description = "Specifies which requests CloudFront signs. Specify always for the most common use case. Allowed values: always, never, and no-override."
+
+  validation {
+    condition     = var.origin_access_control_signing_behavior == "always" || var.origin_access_control_signing_behavior == "no-override" || var.origin_access_control_signing_behavior == "never"
+    error_message = "The origin_access_control_signing_behavior must be one of: `always`, `no-override`, or `never`."
+  }
+}
+
 variable "compress" {
   type        = bool
   default     = true
@@ -453,9 +472,10 @@ variable "custom_origins" {
 
 variable "s3_origins" {
   type = list(object({
-    domain_name = string
-    origin_id   = string
-    origin_path = string
+    domain_name              = string
+    origin_id                = string
+    origin_path              = string
+    origin_access_control_id = string
     s3_origin_config = object({
       origin_access_identity = string
     })
@@ -496,6 +516,16 @@ variable "deployment_actions" {
   type        = list(string)
   default     = ["s3:PutObject", "s3:PutObjectAcl", "s3:GetObject", "s3:DeleteObject", "s3:ListBucket", "s3:ListBucketMultipartUploads", "s3:GetBucketLocation", "s3:AbortMultipartUpload"]
   description = "List of actions to permit `deployment_principal_arns` to perform on bucket and bucket prefixes (see `deployment_principal_arns`)"
+}
+
+variable "origin_access_type" {
+  type        = string
+  default     = "origin_access_identity"
+  description = "Choose to use `origin_access_control` or `orgin_access_identity`"
+  validation {
+    condition     = var.origin_access_type == "origin_access_control" || var.origin_access_type == "origin_access_identity"
+    error_message = "The origin_access_type must be `origin_access_control` or `origin_access_identity`."
+  }
 }
 
 variable "cloudfront_origin_access_identity_iam_arn" {
