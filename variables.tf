@@ -446,9 +446,10 @@ variable "ordered_cache" {
 
 variable "custom_origins" {
   type = list(object({
-    domain_name = string
-    origin_id   = string
-    origin_path = string
+    domain_name              = string
+    origin_id                = string
+    origin_path              = string
+    origin_access_control_id = optional(string)
     custom_headers = list(object({
       name  = string
       value = string
@@ -465,6 +466,8 @@ variable "custom_origins" {
   default     = []
   description = <<-EOT
     A list of additional custom website [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) for this distribution.
+    The `origin_access_control_id` field specifies the Origin Access Control configuration to use for this origin.
+    This is used to configure secure access between CloudFront and the origin.
     EOT
 }
 
