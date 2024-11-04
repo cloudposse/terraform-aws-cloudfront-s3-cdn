@@ -215,12 +215,14 @@ variable "viewer_protocol_policy" {
 variable "allowed_methods" {
   type        = list(string)
   default     = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+  nullable    = false
   description = "List of allowed methods (e.g. GET, PUT, POST, DELETE, HEAD) for AWS CloudFront"
 }
 
 variable "cached_methods" {
   type        = list(string)
   default     = ["GET", "HEAD"]
+  nullable    = false
   description = "List of cached methods (e.g. GET, PUT, POST, DELETE, HEAD)"
 }
 
