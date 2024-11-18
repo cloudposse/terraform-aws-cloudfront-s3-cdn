@@ -47,7 +47,6 @@ locals {
       arn  = var.cloudfront_origin_access_identity_iam_arn
       path = var.cloudfront_origin_access_identity_path
     }
-<<<<<<< HEAD
     } : var.origin_access_type == "origin_access_control" ? {
     new = local.create_cloudfront_origin_access_control ? {
       arn = "arn:${join("", data.aws_partition.current[*].partition)}:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_origin_access_control.default[0].id}"
@@ -57,10 +56,6 @@ locals {
     }
   } : null
   cf_access = local.cf_access_options[local.create_cloudfront_origin_access_identity || local.create_cloudfront_origin_access_control ? "new" : "existing"]
-=======
-  }
-  cf_access = local.cf_access_options[local.create_cloudfront_origin_access_identity ? "new" : "existing"]
->>>>>>> 5caa648 (Merge remote-tracking branch 'upstream/main' into feature/openidconnect-auth-0.92.0)
 
   bucket             = local.origin_bucket.bucket
   bucket_domain_name = var.website_enabled ? local.origin_bucket.website_endpoint : local.origin_bucket.bucket_regional_domain_name
@@ -282,12 +277,8 @@ data "aws_iam_policy_document" "combined" {
   count = local.enabled ? 1 : 0
 
   source_policy_documents = compact(concat(
-<<<<<<< HEAD
     data.aws_iam_policy_document.s3_origin_access_identity[*].json,
     data.aws_iam_policy_document.s3_origin_access_control[*].json,
-=======
-    data.aws_iam_policy_document.s3_origin[*].json,
->>>>>>> 5caa648 (Merge remote-tracking branch 'upstream/main' into feature/openidconnect-auth-0.92.0)
     data.aws_iam_policy_document.s3_website_origin[*].json,
     data.aws_iam_policy_document.s3_ssl_only[*].json,
     values(data.aws_iam_policy_document.deployment)[*].json
@@ -377,7 +368,6 @@ resource "aws_s3_bucket_cors_configuration" "origin" {
   depends_on = [time_sleep.wait_for_aws_s3_bucket_settings]
 }
 
-<<<<<<< HEAD
 resource "aws_s3_bucket_acl" "origin" {
   depends_on = [aws_s3_bucket_ownership_controls.origin]
   count      = local.create_s3_origin_bucket && var.s3_object_ownership != "BucketOwnerEnforced" ? 1 : 0
@@ -390,11 +380,6 @@ resource "aws_s3_bucket_acl" "origin" {
 resource "aws_s3_bucket_public_access_block" "origin" {
   count = (local.create_s3_origin_bucket || local.override_origin_bucket_policy) ? 1 : 0
 
-=======
-resource "aws_s3_bucket_public_access_block" "origin" {
-  count = (local.create_s3_origin_bucket || local.override_origin_bucket_policy) ? 1 : 0
-
->>>>>>> 5caa648 (Merge remote-tracking branch 'upstream/main' into feature/openidconnect-auth-0.92.0)
   bucket = local.bucket
 
   # Allows the bucket to be publicly accessible by policy
@@ -486,12 +471,7 @@ resource "aws_cloudfront_distribution" "default" {
 
   depends_on = [
     aws_s3_bucket.origin,
-<<<<<<< HEAD
     module.logs
-=======
-    aws_s3_bucket_ownership_controls.origin,
-    time_sleep.wait_for_aws_s3_bucket_settings
->>>>>>> 5caa648 (Merge remote-tracking branch 'upstream/main' into feature/openidconnect-auth-0.92.0)
   ]
 
   dynamic "logging_config" {
