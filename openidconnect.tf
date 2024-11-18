@@ -14,7 +14,13 @@ resource "local_file" "openidconnect_secrets" {
     openidconnect_role                = var.openidconnect_role
   })
   provisioner "local-exec" {
-    command = "cd ${path.module}/openidconnect/lambda/ && npm install --only=prod"
+    command = <<EOT
+      docker run --rm \
+        -v "${path.module}/openidconnect/lambda:/lambda" \
+        -w "/lambda" \
+        node:20 \
+        npm install --only=prod
+    EOT
   }
 }
 
