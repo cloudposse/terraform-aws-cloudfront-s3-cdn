@@ -32,29 +32,29 @@ module "lambda_at_edge" {
       }]
       runtime      = "nodejs16.x"
       handler      = "index.handler"
-      event_type   = "viewer-request"
-      include_body = false
       memory_size  = 128
       timeout      = 3
+      event_type   = "viewer-request"
+      include_body = false
     },
     # Add custom header to the response
     viewer_response = {
       source_dir   = "lib"
       runtime      = "nodejs16.x"
       handler      = "index.handler"
-      event_type   = "viewer-response"
-      include_body = false
       memory_size  = 128
       timeout      = 3
+      event_type   = "viewer-response"
+      include_body = false
     },
     origin_request = {
       source_zip   = "origin-request.zip"
       runtime      = "nodejs16.x"
       handler      = "index.handler"
-      event_type   = "origin-request"
-      include_body = false
       memory_size  = 128
       timeout      = 3
+      event_type   = "origin-request"
+      include_body = false
     },
     # Add security headers to the request from CF to the origin
     origin_response = {
@@ -85,10 +85,10 @@ module "lambda_at_edge" {
       }]
       runtime      = "nodejs16.x"
       handler      = "index.handler"
-      event_type   = "origin-response"
-      include_body = false
       memory_size  = 128
       timeout      = 3
+      event_type   = "origin-response"
+      include_body = false
     }
   }
 

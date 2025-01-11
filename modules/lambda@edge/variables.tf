@@ -29,10 +29,10 @@ variable "functions" {
     source_zip   = optional(string)
     runtime      = string
     handler      = string
-    event_type   = string
-    include_body = bool
     memory_size  = optional(number)
     timeout      = optional(number)
+    event_type   = string
+    include_body = bool
   }))
 
   validation {
