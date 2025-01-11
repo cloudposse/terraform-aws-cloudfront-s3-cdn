@@ -62,3 +62,15 @@ variable "destruction_delay" {
   EOT
   default     = "20m"
 }
+
+variable "memory_size" {
+  type        = number
+  description = "Amount of memory in MB the Lambda Function can use at runtime."
+  default     = 128
+}
+
+variable "timeout" {
+  type        = number
+  description = "The amount of time the Lambda Function has to run in seconds."
+  default     = 3
+}

@@ -87,6 +87,9 @@ module "lambda_at_edge" {
   # A destruction delay is always enabled due to automated tests (see variable description for more information).
   destruction_delay = "20m"
 
+  memory_size = 128
+  timeout     = 3
+
   providers = {
     aws = aws.us-east-1
   }
