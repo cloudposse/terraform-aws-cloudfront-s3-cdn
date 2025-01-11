@@ -31,6 +31,8 @@ variable "functions" {
     handler      = string
     event_type   = string
     include_body = bool
+    memory_size  = optional(number)
+    timeout      = optional(number)
   }))
 
   validation {
@@ -61,16 +63,4 @@ variable "destruction_delay" {
   For more information, see: https://github.com/hashicorp/terraform-provider-aws/issues/1721.
   EOT
   default     = "20m"
-}
-
-variable "memory_size" {
-  type        = number
-  description = "Amount of memory in MB the Lambda Function can use at runtime."
-  default     = 128
-}
-
-variable "timeout" {
-  type        = number
-  description = "The amount of time the Lambda Function has to run in seconds."
-  default     = 3
 }

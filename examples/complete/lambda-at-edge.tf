@@ -34,6 +34,8 @@ module "lambda_at_edge" {
       handler      = "index.handler"
       event_type   = "viewer-request"
       include_body = false
+      memory_size  = 128
+      timeout      = 3
     },
     # Add custom header to the response
     viewer_response = {
@@ -42,6 +44,8 @@ module "lambda_at_edge" {
       handler      = "index.handler"
       event_type   = "viewer-response"
       include_body = false
+      memory_size  = 128
+      timeout      = 3
     },
     origin_request = {
       source_zip   = "origin-request.zip"
@@ -49,6 +53,8 @@ module "lambda_at_edge" {
       handler      = "index.handler"
       event_type   = "origin-request"
       include_body = false
+      memory_size  = 128
+      timeout      = 3
     },
     # Add security headers to the request from CF to the origin
     origin_response = {
@@ -81,14 +87,13 @@ module "lambda_at_edge" {
       handler      = "index.handler"
       event_type   = "origin-response"
       include_body = false
+      memory_size  = 128
+      timeout      = 3
     }
   }
 
   # A destruction delay is always enabled due to automated tests (see variable description for more information).
   destruction_delay = "20m"
-
-  memory_size = 128
-  timeout     = 3
 
   providers = {
     aws = aws.us-east-1

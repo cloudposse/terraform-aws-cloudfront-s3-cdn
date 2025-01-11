@@ -346,6 +346,8 @@ module "lambda_at_edge" {
       handler      = "index.handler"
       event_type   = "origin-response"
       include_body = false
+      memory_size  = 128
+      timeout      = 3
     }
   }
 
