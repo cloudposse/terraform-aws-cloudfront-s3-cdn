@@ -13,8 +13,8 @@ variable "functions" {
 
   `source_zip` contains path to zip file with lambda source.
 
-  `runtime` and `handler` correspond to the attributes of the same name in the [lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function)
-  resource.
+  `runtime`, `handler`, `memory_size` and `timeout` correspond to the attributes of the same name in the [lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function)
+  resource. See [here](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-edge-function-restrictions.html) for Lambda@Edge function restrictions.
 
   `event_type` and `include_body` correspond to the attributes of the same name in the [Lambda Function association block
   of the cloudfront_distribution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#lambda-function-association)
