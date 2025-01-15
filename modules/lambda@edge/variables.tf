@@ -29,8 +29,8 @@ variable "functions" {
     source_zip   = optional(string)
     runtime      = string
     handler      = string
-    memory_size  = number
-    timeout      = number
+    memory_size  = optional(number, 128)
+    timeout      = optional(number, 3)
     event_type   = string
     include_body = bool
   }))
