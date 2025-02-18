@@ -95,9 +95,9 @@ module "lambda_at_edge" {
   # A destruction delay is always enabled due to automated tests (see variable description for more information).
   destruction_delay = "20m"
 
-  providers = {
-    aws = aws.us-east-1
-  }
+  #  providers = {
+  #    aws = aws.us-east-1
+  #  }
 
   context = module.this.context
 }
