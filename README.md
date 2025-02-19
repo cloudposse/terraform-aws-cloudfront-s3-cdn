@@ -344,6 +344,8 @@ module "lambda_at_edge" {
       }]
       runtime      = "nodejs16.x"
       handler      = "index.handler"
+      memory_size  = 128
+      timeout      = 3
       event_type   = "origin-response"
       include_body = false
     }
