@@ -95,4 +95,3 @@ resource "aws_lambda_permission" "allow_cloudfront" {
   action        = "lambda:GetFunction"
   principal     = "edgelambda.amazonaws.com"
 }
-
