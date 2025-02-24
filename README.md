@@ -37,7 +37,7 @@ Terraform module to provision an AWS CloudFront CDN with an S3 origin.
 >
 > <details>
 > <summary><strong>Watch demo of using Atmos with Terraform</strong></summary>
-> <img src="https://github.com/cloudposse/atmos/blob/master/docs/demo.gif?raw=true"/><br/>
+> <img src="https://github.com/cloudposse/atmos/blob/main/docs/demo.gif?raw=true"/><br/>
 > <i>Example of running <a href="https://atmos.tools"><code>atmos</code></a> to manage infrastructure from our <a href="https://atmos.tools/quick-start/">Quick Start</a> tutorial.</i>
 > </detalis>
 
@@ -344,6 +344,8 @@ module "lambda_at_edge" {
       }]
       runtime      = "nodejs16.x"
       handler      = "index.handler"
+      memory_size  = 128
+      timeout      = 3
       event_type   = "origin-response"
       include_body = false
     }
@@ -483,7 +485,7 @@ Available targets:
 | <a name="input_cors_max_age_seconds"></a> [cors\_max\_age\_seconds](#input\_cors\_max\_age\_seconds) | Time in seconds that browser can cache the response for S3 bucket | `number` | `3600` | no |
 | <a name="input_custom_error_response"></a> [custom\_error\_response](#input\_custom\_error\_response) | List of one or more custom error response element maps | <pre>list(object({<br/>    error_caching_min_ttl = string<br/>    error_code            = string<br/>    response_code         = string<br/>    response_page_path    = string<br/>  }))</pre> | `[]` | no |
 | <a name="input_custom_origin_headers"></a> [custom\_origin\_headers](#input\_custom\_origin\_headers) | A list of origin header parameters that will be sent to origin | `list(object({ name = string, value = string }))` | `[]` | no |
-| <a name="input_custom_origins"></a> [custom\_origins](#input\_custom\_origins) | A list of additional custom website [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) for this distribution. | <pre>list(object({<br/>    domain_name = string<br/>    origin_id   = string<br/>    origin_path = string<br/>    custom_headers = list(object({<br/>      name  = string<br/>      value = string<br/>    }))<br/>    custom_origin_config = object({<br/>      http_port                = number<br/>      https_port               = number<br/>      origin_protocol_policy   = string<br/>      origin_ssl_protocols     = list(string)<br/>      origin_keepalive_timeout = number<br/>      origin_read_timeout      = number<br/>    })<br/>  }))</pre> | `[]` | no |
+| <a name="input_custom_origins"></a> [custom\_origins](#input\_custom\_origins) | A list of additional custom website [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) for this distribution.<br/>The `origin_access_control_id` field specifies the Origin Access Control configuration to use for this origin.<br/>This is used to configure secure access between CloudFront and the origin. | <pre>list(object({<br/>    domain_name              = string<br/>    origin_id                = string<br/>    origin_path              = string<br/>    origin_access_control_id = optional(string)<br/>    custom_headers = list(object({<br/>      name  = string<br/>      value = string<br/>    }))<br/>    custom_origin_config = object({<br/>      http_port                = number<br/>      https_port               = number<br/>      origin_protocol_policy   = string<br/>      origin_ssl_protocols     = list(string)<br/>      origin_keepalive_timeout = number<br/>      origin_read_timeout      = number<br/>    })<br/>  }))</pre> | `[]` | no |
 | <a name="input_default_root_object"></a> [default\_root\_object](#input\_default\_root\_object) | Object that CloudFront return when requests the root URL | `string` | `"index.html"` | no |
 | <a name="input_default_ttl"></a> [default\_ttl](#input\_default\_ttl) | Default amount of time (in seconds) that an object is in a CloudFront cache | `number` | `60` | no |
 | <a name="input_delimiter"></a> [delimiter](#input\_delimiter) | Delimiter to be used between ID elements.<br/>Defaults to `-` (hyphen). Set to `""` to use no delimiter at all. | `string` | `null` | no |
@@ -711,7 +713,7 @@ All other trademarks referenced herein are the property of their respective owne
 
 
 ---
-Copyright © 2017-2024 [Cloud Posse, LLC](https://cpco.io/copyright)
+Copyright © 2017-2025 [Cloud Posse, LLC](https://cpco.io/copyright)
 
 
 <a href="https://cloudposse.com/readme/footer/link?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/terraform-aws-cloudfront-s3-cdn&utm_content=readme_footer_link"><img alt="README footer" src="https://cloudposse.com/readme/footer/img"/></a>
