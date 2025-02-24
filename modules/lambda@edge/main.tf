@@ -61,9 +61,10 @@ module "role" {
     ]
   }
 
-  policy_documents = [
-    data.aws_iam_policy_document.lambda_write_logs.json,
-  ]
+  policy_documents = compact(concat(
+    [data.aws_iam_policy_document.lambda_write_logs.json],
+    each.value.policy_documents
+  ))
 
   context = module.function_label[each.key].context
 }
