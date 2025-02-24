@@ -33,7 +33,7 @@ variable "functions" {
     handler          = string
     memory_size      = optional(number, 128)
     timeout          = optional(number, 3)
-    policy_documents = optional(list(string), [""]),
+    policy_documents = optional(list(string)),
     event_type       = string
     include_body     = bool
   }))
