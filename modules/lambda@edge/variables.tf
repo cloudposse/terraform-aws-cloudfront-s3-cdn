@@ -16,6 +16,8 @@ variable "functions" {
   `runtime`, `handler`, `memory_size` and `timeout` correspond to the attributes of the same name in the [lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function)
   resource. See [here](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-edge-function-restrictions.html) for Lambda@Edge function restrictions.
 
+  `policy_documents` contains a list of policy documents that will be attached to the Lambda execution role. Mind that CloudWatch access is always configured.
+
   `event_type` and `include_body` correspond to the attributes of the same name in the [Lambda Function association block
   of the cloudfront_distribution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#lambda-function-association)
   resource.
@@ -25,14 +27,15 @@ variable "functions" {
       filename = string
       content  = string
     })))
-    source_dir   = optional(string)
-    source_zip   = optional(string)
-    runtime      = string
-    handler      = string
-    memory_size  = optional(number, 128)
-    timeout      = optional(number, 3)
-    event_type   = string
-    include_body = bool
+    source_dir       = optional(string)
+    source_zip       = optional(string)
+    runtime          = string
+    handler          = string
+    memory_size      = optional(number, 128)
+    timeout          = optional(number, 3)
+    policy_documents = optional(list(string), [""]),
+    event_type       = string
+    include_body     = bool
   }))
 
   validation {
