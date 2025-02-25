@@ -64,7 +64,7 @@ module "role" {
 
   policy_documents = [
     data.aws_iam_policy_document.lambda_write_logs.json,
-    each.value.additional_policy.json
+    each.value.additional_policy
   ]
 
   context = module.function_label[each.key].context
