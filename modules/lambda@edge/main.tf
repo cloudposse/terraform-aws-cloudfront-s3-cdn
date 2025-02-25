@@ -32,6 +32,7 @@ module "function_label" {
 
 data "aws_iam_policy_document" "lambda_write_logs" {
   statement {
+    sid = "LambdaWriteCloudWatchLogs"
     actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
@@ -61,10 +62,10 @@ module "role" {
     ]
   }
 
-  policy_documents = compact(concat(
-    [data.aws_iam_policy_document.lambda_write_logs.json],
-    each.value.policy_documents
-  ))
+  policy_documents = [
+    data.aws_iam_policy_document.lambda_write_logs.json,
+    each.value.additional_policy.json
+  ]
 
   context = module.function_label[each.key].context
 }
