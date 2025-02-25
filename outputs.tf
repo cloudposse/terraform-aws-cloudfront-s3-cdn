@@ -33,6 +33,11 @@ output "cf_identity_iam_arn" {
   description = "CloudFront Origin Access Identity IAM ARN"
 }
 
+output "cf_access_control_id" {
+  value       = try(aws_cloudfront_origin_access_control.default[0].id, "")
+  description = "CloudFront Origin Access Control ID"
+}
+
 output "cf_origin_groups" {
   value       = try(flatten(aws_cloudfront_distribution.default[*].origin_group), [])
   description = "List of Origin Groups in the CloudFront distribution."
