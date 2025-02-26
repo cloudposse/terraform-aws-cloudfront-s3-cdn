@@ -16,7 +16,7 @@ variable "functions" {
   `runtime`, `handler`, `memory_size` and `timeout` correspond to the attributes of the same name in the [lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function)
   resource. See [here](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-edge-function-restrictions.html) for Lambda@Edge function restrictions.
 
-  `additional_policy` contains additional policies for Lambda@Edge function. If included in the policies, the variable `$${lambda_arn}` will be substituted. It's also possible to override default policy statement by providing your own statement with `LambdaWriteCloudWatchLogs` sid.
+  `additional_policy` contains additional IAM policies for Lambda@Edge function. It's possible to override default policy statement by providing your own statement with `LambdaWriteCloudWatchLogs` sid.
 
   `event_type` and `include_body` correspond to the attributes of the same name in the [Lambda Function association block
   of the cloudfront_distribution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#lambda-function-association)
