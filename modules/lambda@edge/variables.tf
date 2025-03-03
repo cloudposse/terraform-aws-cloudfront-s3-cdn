@@ -67,4 +67,3 @@ variable "destruction_delay" {
   EOT
   default     = "20m"
 }
-
