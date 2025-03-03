@@ -6,6 +6,7 @@ exports.handler = (event, context, callback) => {
 
     // Add a custom header to the response
     headers['x-custom-header'] = [{ key: 'X-Custom-Header', value: 'My custom value' }];
+    headers['x-my-response-header'] = [{ key: 'X-My-Response-Header', value: process.env.MY_RESPONSE_HEADER }];
 
     callback(null, response);
 };

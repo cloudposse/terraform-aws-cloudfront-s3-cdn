@@ -46,6 +46,11 @@ module "lambda_at_edge" {
       timeout      = 3
       event_type   = "viewer-response"
       include_body = false
+      environment = {
+        variables = {
+          "MY_RESPONSE_HEADER" = "test"
+        }
+      }
     },
     origin_request = {
       source_zip   = "origin-request.zip"

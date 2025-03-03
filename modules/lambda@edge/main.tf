@@ -85,6 +85,13 @@ resource "aws_lambda_function" "default" {
   source_code_hash = each.value.source_zip != null ? sha256(data.local_file.lambda_zip[each.key].content_base64) : data.archive_file.lambda_zip[each.key].output_base64sha256
   publish          = true
   tags             = module.function_label[each.key].tags
+
+  dynamic "environment" {
+    for_each = each.value.environment != null ? [each.value.environment] : []
+    content {
+      variables = environment.value.variables
+    }
+  }
 }
 
 resource "aws_lambda_permission" "allow_cloudfront" {
