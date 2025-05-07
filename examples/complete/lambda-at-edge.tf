@@ -3,6 +3,33 @@ provider "aws" {
   alias  = "us-east-1"
 }
 
+data "aws_iam_policy_document" "s3_policy" {
+  statement {
+    sid    = "AllowS3GetObjectFoo"
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::example-bucket-foo/*",
+    ]
+  }
+  statement {
+    sid    = "AllowS3PutObjectBar"
+    effect = "Allow"
+
+    actions = [
+      "s3:PutObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::example-bucket-bar/*",
+    ]
+  }
+}
+
 module "lambda_at_edge" {
   source = "../../modules/lambda@edge"
 
@@ -32,6 +59,8 @@ module "lambda_at_edge" {
       }]
       runtime      = "nodejs16.x"
       handler      = "index.handler"
+      memory_size  = 128
+      timeout      = 3
       event_type   = "viewer-request"
       include_body = false
     },
@@ -40,15 +69,20 @@ module "lambda_at_edge" {
       source_dir   = "lib"
       runtime      = "nodejs16.x"
       handler      = "index.handler"
+      memory_size  = 128
+      timeout      = 3
       event_type   = "viewer-response"
       include_body = false
     },
     origin_request = {
-      source_zip   = "origin-request.zip"
-      runtime      = "nodejs16.x"
-      handler      = "index.handler"
-      event_type   = "origin-request"
-      include_body = false
+      source_zip        = "origin-request.zip"
+      runtime           = "nodejs16.x"
+      handler           = "index.handler"
+      memory_size       = 128
+      timeout           = 3
+      event_type        = "origin-request"
+      include_body      = false
+      additional_policy = data.aws_iam_policy_document.s3_policy.json
     },
     # Add security headers to the request from CF to the origin
     origin_response = {
@@ -77,8 +111,11 @@ module "lambda_at_edge" {
         EOT
         filename = "index.js"
       }]
-      runtime      = "nodejs16.x"
-      handler      = "index.handler"
+      runtime     = "nodejs16.x"
+      handler     = "index.handler"
+      memory_size = 128
+      timeout     = 3
+
       event_type   = "origin-response"
       include_body = false
     }
