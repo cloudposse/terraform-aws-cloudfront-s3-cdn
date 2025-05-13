@@ -555,6 +555,18 @@ variable "origin_ssl_protocols" {
   description = "The SSL/TLS protocols that you want CloudFront to use when communicating with your origin over HTTPS."
 }
 
+variable "origin_keepalive_timeout" {
+  type        = number
+  description = "The Custom KeepAlive timeout, in seconds. By default, AWS enforces a limit of 60. But you can request an increase."
+  default     = 5
+}
+
+variable "origin_read_timeout" {
+  type        = number
+  description = "The Custom Read timeout, in seconds. By default, AWS enforces a limit of 60. But you can request an increase."
+  default     = 30
+}
+
 variable "block_origin_public_access_enabled" {
   type        = bool
   default     = false

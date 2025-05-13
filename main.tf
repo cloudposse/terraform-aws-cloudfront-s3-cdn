@@ -524,10 +524,12 @@ resource "aws_cloudfront_distribution" "default" {
     dynamic "custom_origin_config" {
       for_each = var.website_enabled ? [1] : []
       content {
-        http_port              = 80
-        https_port             = 443
-        origin_protocol_policy = "http-only"
-        origin_ssl_protocols   = var.origin_ssl_protocols
+        http_port                = 80
+        https_port               = 443
+        origin_protocol_policy   = "http-only"
+        origin_ssl_protocols     = var.origin_ssl_protocols
+        origin_keepalive_timeout = var.origin_keepalive_timeout
+        origin_read_timeout      = var.origin_read_timeout
       }
     }
     dynamic "custom_header" {
