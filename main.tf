@@ -98,6 +98,8 @@ locals {
     "me-south-1"   = "ap-south-1"
   }
   origin_shield_region = local.enabled ? lookup(local.origin_shield_region_fallback_map, data.aws_region.current[0].name, data.aws_region.current[0].name) : "this string is never used"
+
+  cors_origins = distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
 }
 
 ## Make up for deprecated template_file and lack of templatestring
@@ -350,12 +352,12 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "origin" {
 }
 
 resource "aws_s3_bucket_cors_configuration" "origin" {
-  count = local.create_s3_origin_bucket ? 1 : 0
+  count = local.create_s3_origin_bucket && length(local.cors_origins) > 0 ? 1 : 0
 
   bucket = one(aws_s3_bucket.origin).id
 
   dynamic "cors_rule" {
-    for_each = distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
+    for_each = local.cors_origins
     content {
       allowed_headers = var.cors_allowed_headers
       allowed_methods = var.cors_allowed_methods
@@ -557,6 +559,7 @@ resource "aws_cloudfront_distribution" "default" {
       origin_id                = origin.value.origin_id
       origin_path              = lookup(origin.value, "origin_path", "")
       origin_access_control_id = lookup(origin.value, "origin_access_control_id", null)
+
       dynamic "custom_header" {
         for_each = lookup(origin.value, "custom_headers", [])
         content {
@@ -564,6 +567,7 @@ resource "aws_cloudfront_distribution" "default" {
           value = custom_header.value["value"]
         }
       }
+
       custom_origin_config {
         http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
         https_port               = lookup(origin.value.custom_origin_config, "https_port", 443)
