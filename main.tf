@@ -557,11 +557,11 @@ resource "aws_cloudfront_distribution" "default" {
     content {
       domain_name              = origin.value.domain_name
       origin_id                = origin.value.origin_id
-      origin_path              = lookup(origin.value, "origin_path", "")
-      origin_access_control_id = lookup(origin.value, "origin_access_control_id", null)
+      origin_path              = origin.value.origin_path
+      origin_access_control_id = origin.value.origin_access_control_id
 
       dynamic "custom_header" {
-        for_each = lookup(origin.value, "custom_headers", [])
+        for_each = origin.value.custom_headers
         content {
           name  = custom_header.value["name"]
           value = custom_header.value["value"]
@@ -569,12 +569,12 @@ resource "aws_cloudfront_distribution" "default" {
       }
 
       custom_origin_config {
-        http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
-        https_port               = lookup(origin.value.custom_origin_config, "https_port", 443)
-        origin_protocol_policy   = lookup(origin.value.custom_origin_config, "origin_protocol_policy", "https-only")
-        origin_ssl_protocols     = lookup(origin.value.custom_origin_config, "origin_ssl_protocols", ["TLSv1.2"])
-        origin_keepalive_timeout = lookup(origin.value.custom_origin_config, "origin_keepalive_timeout", 60)
-        origin_read_timeout      = lookup(origin.value.custom_origin_config, "origin_read_timeout", 60)
+        http_port                = origin.value.custom_origin_config.http_port
+        https_port               = origin.value.custom_origin_config.https_port
+        origin_protocol_policy   = origin.value.custom_origin_config.origin_protocol_policy
+        origin_ssl_protocols     = origin.value.custom_origin_config.origin_ssl_protocols
+        origin_keepalive_timeout = origin.value.custom_origin_config.origin_keepalive_timeout
+        origin_read_timeout      = origin.value.custom_origin_config.origin_read_timeout
       }
     }
   }
@@ -584,7 +584,7 @@ resource "aws_cloudfront_distribution" "default" {
     content {
       domain_name = origin.value.domain_name
       origin_id   = origin.value.origin_id
-      origin_path = lookup(origin.value, "origin_path", "")
+      origin_path = origin.value.origin_path
       # the following enables specifying the origin_access_control used by the origin created by this module, prior to the module's creation:
       origin_access_control_id = local.origin_access_control_enabled && try(length(origin.value.s3_origin_config.origin_access_control_id), 0) > 0 ? origin.value.s3_origin_config.origin_access_control_id : local.origin_access_control_enabled ? aws_cloudfront_origin_access_control.default[0].id : null
 
@@ -642,7 +642,7 @@ resource "aws_cloudfront_distribution" "default" {
       for_each = var.lambda_function_association
       content {
         event_type   = lambda_function_association.value.event_type
-        include_body = lookup(lambda_function_association.value, "include_body", null)
+        include_body = lambda_function_association.value.include_body
         lambda_arn   = lambda_function_association.value.lambda_arn
       }
     }
@@ -697,7 +697,7 @@ resource "aws_cloudfront_distribution" "default" {
         for_each = try(ordered_cache_behavior.value.lambda_function_association, [])
         content {
           event_type   = lambda_function_association.value.event_type
-          include_body = lookup(lambda_function_association.value, "include_body", null)
+          include_body = lambda_function_association.value.include_body
           lambda_arn   = lambda_function_association.value.lambda_arn
         }
       }
@@ -722,10 +722,10 @@ resource "aws_cloudfront_distribution" "default" {
   dynamic "custom_error_response" {
     for_each = var.custom_error_response
     content {
-      error_caching_min_ttl = lookup(custom_error_response.value, "error_caching_min_ttl", null)
+      error_caching_min_ttl = custom_error_response.value.error_caching_min_ttl
       error_code            = custom_error_response.value.error_code
-      response_code         = lookup(custom_error_response.value, "response_code", null)
-      response_page_path    = lookup(custom_error_response.value, "response_page_path", null)
+      response_code         = custom_error_response.value.response_code
+      response_page_path    = custom_error_response.value.response_page_path
     }
   }
 
