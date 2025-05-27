@@ -586,7 +586,11 @@ resource "aws_cloudfront_distribution" "default" {
       origin_id   = origin.value.origin_id
       origin_path = origin.value.origin_path
       # the following enables specifying the origin_access_control used by the origin created by this module, prior to the module's creation:
-      origin_access_control_id = local.origin_access_control_enabled && try(length(origin.value.s3_origin_config.origin_access_control_id), 0) > 0 ? origin.value.s3_origin_config.origin_access_control_id : local.origin_access_control_enabled ? aws_cloudfront_origin_access_control.default[0].id : null
+      origin_access_control_id = local.origin_access_control_enabled ? (
+        try(length(origin.value.s3_origin_config.origin_access_control_id), 0) > 0
+        ? origin.value.s3_origin_config.origin_access_control_id
+        : aws_cloudfront_origin_access_control.default[0].id
+      ) : null
 
       dynamic "s3_origin_config" {
         for_each = local.origin_access_identity_enabled ? var.s3_origins : []
