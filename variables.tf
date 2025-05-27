@@ -459,8 +459,8 @@ variable "custom_origins" {
     custom_origin_config = optional(object({
       http_port                = optional(number, 80)
       https_port               = optional(number, 443)
-      origin_protocol_policy   = optional(string, "match-viewer")
-      origin_ssl_protocols     = optional(list(string), ["TLSv1", "TLSv1.1", "TLSv1.2"])
+      origin_protocol_policy   = optional(string, "https-only")
+      origin_ssl_protocols     = optional(list(string), ["TLSv1.2"])
       origin_keepalive_timeout = optional(number, 5)
       origin_read_timeout      = optional(number, 30)
     }), null)
