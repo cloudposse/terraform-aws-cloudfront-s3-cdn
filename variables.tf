@@ -500,12 +500,6 @@ variable "website_enabled" {
     EOT
 }
 
-variable "versioning_enabled" {
-  type        = bool
-  default     = true
-  description = "When set to 'true' the s3 origin bucket will have versioning enabled"
-}
-
 variable "deployment_principal_arns" {
   type        = map(list(string))
   default     = {}
