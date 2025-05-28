@@ -406,37 +406,37 @@ variable "ordered_cache" {
     target_origin_id = string
     path_pattern     = string
 
-    allowed_methods    = list(string)
-    cached_methods     = list(string)
-    compress           = bool
-    trusted_signers    = list(string)
-    trusted_key_groups = list(string)
+    allowed_methods    = optional(list(string), ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"])
+    cached_methods     = optional(list(string), ["GET", "HEAD"])
+    compress           = optional(bool, false)
+    trusted_signers    = optional(list(string), [])
+    trusted_key_groups = optional(list(string), [])
 
-    cache_policy_id          = string
-    origin_request_policy_id = string
-    realtime_log_config_arn  = optional(string)
+    cache_policy_id          = optional(string, null)
+    origin_request_policy_id = optional(string, null)
+    realtime_log_config_arn  = optional(string, null)
 
-    viewer_protocol_policy     = string
-    min_ttl                    = number
-    default_ttl                = number
-    max_ttl                    = number
-    response_headers_policy_id = string
+    viewer_protocol_policy     = optional(string, "redirect-to-https")
+    min_ttl                    = optional(number, 0)
+    default_ttl                = optional(number, 60)
+    max_ttl                    = optional(number, 31536000)
+    response_headers_policy_id = optional(string, "")
 
-    forward_query_string              = bool
-    forward_header_values             = list(string)
-    forward_cookies                   = string
-    forward_cookies_whitelisted_names = list(string)
+    forward_query_string              = optional(bool, false)
+    forward_header_values             = optional(list(string), [])
+    forward_cookies                   = optional(string, "none")
+    forward_cookies_whitelisted_names = optional(list(string), [])
 
-    lambda_function_association = list(object({
+    lambda_function_association = optional(list(object({
       event_type   = string
       include_body = optional(bool, false)
       lambda_arn   = string
-    }))
+    })), [])
 
-    function_association = list(object({
+    function_association = optional(list(object({
       event_type   = string
       function_arn = string
-    }))
+    })), [])
   }))
   default     = []
   description = <<-EOT
