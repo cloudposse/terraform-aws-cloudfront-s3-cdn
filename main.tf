@@ -68,7 +68,7 @@ locals {
   ) : ""
 
   use_default_acm_certificate = var.acm_certificate_arn == ""
-  minimum_protocol_version    = var.minimum_protocol_version == "" ? (local.use_default_acm_certificate ? "TLSv1" : "TLSv1.2_2019") : var.minimum_protocol_version
+  minimum_protocol_version    = var.minimum_protocol_version == "" ? (local.use_default_acm_certificate ? "TLSv1" : "TLSv1.2_2021") : var.minimum_protocol_version
 
   website_config = {
     redirect_all = [
