@@ -131,6 +131,7 @@ usage: |2-
       }
     }]
     origin_groups = [{
+      group_id           = "groupS3"
       primary_origin_id  = null # will get translated to the origin id of the origin created by this module.
       failover_origin_id = module.s3_bucket.bucket_id
       failover_criteria  = [

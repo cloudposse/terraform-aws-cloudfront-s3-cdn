@@ -118,6 +118,7 @@ module "cloudfront_s3_cdn" {
     }
   }], var.additional_s3_origins_enabled ? [local.additional_s3_origin_primary, local.additional_s3_origin_secondary] : [])
   origin_groups = concat([{
+    group_id           = "groupS3"
     primary_origin_id  = null # will get translated to the origin id of the origin created by this module.
     failover_origin_id = module.s3_bucket.bucket_id
     failover_criteria  = var.origin_group_failover_criteria_status_codes
