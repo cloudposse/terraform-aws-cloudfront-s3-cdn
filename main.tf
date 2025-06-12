@@ -354,15 +354,14 @@ resource "aws_s3_bucket_cors_configuration" "origin" {
 
   bucket = one(aws_s3_bucket.origin).id
 
-  dynamic "cors_rule" {
-    for_each = distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
-    content {
-      allowed_headers = var.cors_allowed_headers
-      allowed_methods = var.cors_allowed_methods
-      allowed_origins = [cors_rule.value]
-      expose_headers  = var.cors_expose_headers
-      max_age_seconds = var.cors_max_age_seconds
-    }
+  cors_rule {
+    allowed_headers = var.cors_allowed_headers
+    allowed_methods = var.cors_allowed_methods
+    allowed_origins = sort(
+      distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
+    )
+    expose_headers  = var.cors_expose_headers
+    max_age_seconds = var.cors_max_age_seconds
   }
 
   depends_on = [time_sleep.wait_for_aws_s3_bucket_settings]
