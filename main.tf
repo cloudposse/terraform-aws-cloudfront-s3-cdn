@@ -570,6 +570,14 @@ resource "aws_cloudfront_distribution" "default" {
         origin_keepalive_timeout = lookup(origin.value.custom_origin_config, "origin_keepalive_timeout", 60)
         origin_read_timeout      = lookup(origin.value.custom_origin_config, "origin_read_timeout", 60)
       }
+
+      dynamic "origin_shield" {
+        for_each = origin.value.origin_shield != null ? [origin.value.origin_shield] : []
+        content {
+          enabled              = origin_shield.value.enabled
+          origin_shield_region = origin_shield.value.region
+        }
+      }
     }
   }
 
@@ -587,6 +595,14 @@ resource "aws_cloudfront_distribution" "default" {
         content {
           # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
           origin_access_identity = local.origin_access_identity_enabled && try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.origin_access_identity_enabled ? local.cf_access.path : ""
+        }
+      }
+
+      dynamic "origin_shield" {
+        for_each = origin.value.origin_shield != null ? [origin.value.origin_shield] : []
+        content {
+          enabled              = origin_shield.value.enabled
+          origin_shield_region = origin_shield.value.region
         }
       }
     }
