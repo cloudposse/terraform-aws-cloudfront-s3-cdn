@@ -1,6 +1,11 @@
-# Atmos Configuration for Lambda@Edge Submodule
+# Atmos Configuration — powered by https://atmos.tools
 #
-# This configuration enables README generation for the Lambda@Edge submodule.
+# This configuration enables centralized, DRY, and consistent project scaffolding using Atmos.
+#
+# Included features:
+# - Organizational custom commands: https://atmos.tools/core-concepts/custom-commands
+# - Automated README generation: https://atmos.tools/cli/commands/docs/generate
+#
 
 # Import shared configuration used by all modules
 import:
