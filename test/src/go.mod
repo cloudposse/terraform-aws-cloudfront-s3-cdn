@@ -1,8 +1,8 @@
 module github.com/cloudposse/terraform-aws-cloudfront-s3-cdn
 
-go 1.23.9
+go 1.24
 
-toolchain go1.24.3
+toolchain go1.24.0
 
 require (
 	github.com/gruntwork-io/terratest v0.49.0
