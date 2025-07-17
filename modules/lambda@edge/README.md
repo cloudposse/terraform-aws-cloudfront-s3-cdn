@@ -1,7 +1,7 @@
 
 
 <!-- markdownlint-disable -->
-# terraform-aws-cloudfront-s3-cdn-lambda-edge <a href="https://cpco.io/homepage?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/terraform-aws-cloudfront-s3-cdn&utm_content="><img align="right" src="https://cloudposse.com/logo-300x69.svg" width="150" /></a>
+# Lambda@Edge <a href="https://cpco.io/homepage?utm_source=github&utm_medium=readme&utm_campaign=cloudposse/terraform-aws-cloudfront-s3-cdn&utm_content="><img align="right" src="https://cloudposse.com/logo-300x69.svg" width="150" /></a>
 
 
 <a href="https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn/releases/latest"><img src="https://img.shields.io/github/release/cloudposse/terraform-aws-cloudfront-s3-cdn.svg?style=for-the-badge" alt="Latest Release"/></a><a href="https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn/commits"><img src="https://img.shields.io/github/last-commit/cloudposse/terraform-aws-cloudfront-s3-cdn.svg?style=for-the-badge" alt="Last Updated"/></a><a href="https://cloudposse.com/slack"><img src="https://slack.cloudposse.com/for-the-badge.svg" alt="Slack Community"/></a><a href="https://cloudposse.com/support/"><img src="https://img.shields.io/badge/Get_Support-success.svg?style=for-the-badge" alt="Get Support"/></a>
