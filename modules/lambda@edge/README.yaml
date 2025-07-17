@@ -1,0 +1,80 @@
+#
+# This is the canonical configuration for the `README.md`
+# To rebuild `README.md`:
+# 1) Make all changes to `README.yaml`
+# 2) Run `make init` (you only need to do this once)
+# 3) Run`make readme` to rebuild this file.
+
+# Name of this project
+name: terraform-aws-cloudfront-s3-cdn-lambda-edge
+
+# Tags of this project
+tags:
+  - aws
+  - terraform
+  - terraform-modules
+  - cdn
+  - cloudfront
+  - lambda-edge
+
+# Categories of this project
+categories:
+  - terraform-modules/cdn
+
+# License of this project
+license: "APACHE2"
+
+# Canonical GitHub repo
+github_repo: cloudposse/terraform-aws-cloudfront-s3-cdn
+
+# Badges to display
+badges:
+  - name: Latest Release
+    image: https://img.shields.io/github/release/cloudposse/terraform-aws-cloudfront-s3-cdn.svg?style=for-the-badge
+    url: https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn/releases/latest
+  - name: Last Updated
+    image: https://img.shields.io/github/last-commit/cloudposse/terraform-aws-cloudfront-s3-cdn.svg?style=for-the-badge
+    url: https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn/commits
+  - name: Slack Community
+    image: https://slack.cloudposse.com/for-the-badge.svg
+    url: https://cloudposse.com/slack
+
+# List any related terraform modules that this module may be used with or that this module depends on.
+related:
+  - name: "terraform-aws-cloudfront-s3-cdn"
+    description: "Main CloudFront S3 CDN module that this Lambda@Edge submodule extends"
+    url: "https://github.com/cloudposse/terraform-aws-cloudfront-s3-cdn"
+
+# Short description of this project
+description: |-
+  Lambda@Edge submodule for the terraform-aws-cloudfront-s3-cdn module.
+  Creates Lambda@Edge functions to associate with CloudFront distributions.
+
+# How to use this project
+usage: |2-
+
+  The `lambda_function_association` output feeds in directly to the variable of the same name in the parent module.
+
+  > **Important**: An AWS Provider configured for us-east-1 must be passed to the module, as Lambda@Edge functions must exist
+  > in us-east-1. This is the primary reason why these resources exist in a submodule and not in the parent module.
+
+  ```hcl
+  module "lambda_at_edge" {
+    source = "cloudposse/cloudfront-s3-cdn/aws//modules/lambda@edge"
+    # Cloud Posse recommends pinning every module to a specific version
+    # version = "x.x.x"
+
+    functions = {
+      ...
+    }
+
+    providers = {
+      aws = aws.us-east-1
+    }
+
+    context = module.this.context
+  }
+  ```
+
+include: []
+contributors: []

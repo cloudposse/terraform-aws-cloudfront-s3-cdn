@@ -1,0 +1,7 @@
+# Atmos Configuration for Lambda@Edge Submodule
+#
+# This configuration enables README generation for the Lambda@Edge submodule.
+
+# Import shared configuration used by all modules
+import:
+  - https://raw.githubusercontent.com/cloudposse/.github/refs/heads/main/.github/atmos/terraform-module.yaml
