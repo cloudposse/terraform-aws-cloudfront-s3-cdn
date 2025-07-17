@@ -2,8 +2,7 @@
 # This is the canonical configuration for the `README.md`
 # To rebuild `README.md`:
 # 1) Make all changes to `README.yaml`
-# 2) Run `make init` (you only need to do this once)
-# 3) Run`make readme` to rebuild this file.
+# 2) Run`atmos docs generate readme` to rebuild this file.
 
 # Name of this project
 name: terraform-aws-cloudfront-s3-cdn
