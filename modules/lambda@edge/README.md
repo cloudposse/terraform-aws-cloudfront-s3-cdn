@@ -30,8 +30,7 @@
 
 -->
 
-Lambda@Edge submodule for the terraform-aws-cloudfront-s3-cdn module.
-Creates Lambda@Edge functions to associate with CloudFront distributions.
+Submodule which creates Lambda@Edge functions to associate with the CloudFront distribution in the parent module.
 
 
 > [!TIP]
