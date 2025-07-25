@@ -653,6 +653,7 @@ variable "s3_website_password_enabled" {
 
 variable "origin_groups" {
   type = list(object({
+    group_id           = optional(string)
     primary_origin_id  = string
     failover_origin_id = string
     failover_criteria  = list(string)
