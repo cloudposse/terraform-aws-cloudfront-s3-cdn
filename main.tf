@@ -611,6 +611,14 @@ resource "aws_cloudfront_distribution" "default" {
           )
         }
       }
+
+      dynamic "origin_shield" {
+        for_each = origin.value.origin_shield_enabled ? [1] : []
+        content {
+          enabled              = true
+          origin_shield_region = local.origin_shield_region
+        }
+      }
     }
   }
 

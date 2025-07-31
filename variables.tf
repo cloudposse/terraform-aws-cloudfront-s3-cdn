@@ -486,6 +486,7 @@ variable "s3_origins" {
     s3_origin_config = optional(object({
       origin_access_identity = string
     }), null)
+    origin_shield_enabled = optional(bool, false)
   }))
   default     = []
   description = <<-EOT
