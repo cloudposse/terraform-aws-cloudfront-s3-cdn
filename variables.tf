@@ -188,6 +188,12 @@ variable "forward_cookies" {
   description = "Specifies whether you want CloudFront to forward all or no cookies to the origin. Can be 'all' or 'none'"
 }
 
+variable "forward_cookies_whitelisted_names" {
+  type        = list(string)
+  description = "List of forwarded cookie names"
+  default     = []
+}
+
 variable "forward_header_values" {
   type        = list(string)
   description = "A list of whitelisted header values to forward to the origin (incompatible with `cache_policy_id`)"
