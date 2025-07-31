@@ -464,6 +464,10 @@ variable "custom_origins" {
       origin_keepalive_timeout = number
       origin_read_timeout      = number
     })
+    origin_shield = optional(object({
+      enabled = optional(bool, false)
+      region  = optional(string, null)
+    }), null)
   }))
   default     = []
   description = <<-EOT
@@ -482,6 +486,10 @@ variable "s3_origins" {
     s3_origin_config = object({
       origin_access_identity = string
     })
+    origin_shield = optional(object({
+      enabled = optional(bool, false)
+      region  = optional(string, null)
+    }), null)
   }))
   default     = []
   description = <<-EOT
