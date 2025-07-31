@@ -464,10 +464,10 @@ variable "custom_origins" {
       origin_keepalive_timeout = optional(number, 5)
       origin_read_timeout      = optional(number, 30)
     })
-    origin_shield = object({
+    origin_shield = optional(object({
       enabled = optional(bool, false)
       region  = optional(string, null)
-    })
+    }), null)
   }))
   default     = []
   description = <<-EOT
