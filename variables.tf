@@ -456,18 +456,18 @@ variable "custom_origins" {
       name  = string
       value = string
     })), [])
-    custom_origin_config = optional(object({
+    custom_origin_config = object({
       http_port                = optional(number, 80)
       https_port               = optional(number, 443)
       origin_protocol_policy   = optional(string, "https-only")
       origin_ssl_protocols     = optional(list(string), ["TLSv1.2"])
       origin_keepalive_timeout = optional(number, 5)
       origin_read_timeout      = optional(number, 30)
-    }), null)
-    origin_shield = optional(object({
+    })
+    origin_shield = object({
       enabled = optional(bool, false)
       region  = optional(string, null)
-    }), null)
+    })
   }))
   default     = []
   description = <<-EOT
