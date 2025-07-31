@@ -318,9 +318,9 @@ variable "custom_error_response" {
   # http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages.html#custom-error-pages-procedure
   # https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#custom-error-response-arguments
   type = list(object({
-    error_caching_min_ttl = optional(string, null)
+    error_caching_min_ttl = optional(number, null)
     error_code            = string
-    response_code         = optional(string, null)
+    response_code         = optional(number, null)
     response_page_path    = optional(string, null)
   }))
 
