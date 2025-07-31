@@ -697,6 +697,13 @@ resource "aws_cloudfront_distribution" "default" {
       origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
       realtime_log_config_arn  = ordered_cache_behavior.value.realtime_log_config_arn
 
+      dynamic "grpc_config" {
+        for_each = ordered_cache_behavior.value.grpc_config != null ? [ordered_cache_behavior.value.grpc_config] : []
+        content {
+          enabled = grpc_config.value.enabled
+        }
+      }
+
       dynamic "forwarded_values" {
         # If a cache policy or origin request policy is specified, we cannot include a `forwarded_values` block at all in the API request
         for_each = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? [] : [true]

@@ -422,6 +422,10 @@ variable "ordered_cache" {
     max_ttl                    = optional(number, 31536000)
     response_headers_policy_id = optional(string, "")
 
+    grpc_config = optional(object({
+      enabled = bool
+    }), { enabled = false })
+
     forward_query_string              = optional(bool, false)
     forward_header_values             = optional(list(string), [])
     forward_cookies                   = optional(string, "none")
