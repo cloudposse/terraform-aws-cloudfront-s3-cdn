@@ -328,7 +328,6 @@ resource "aws_s3_bucket" "origin" {
   }
 }
 
-
 resource "aws_s3_bucket_versioning" "origin" {
   count = local.create_s3_origin_bucket ? 1 : 0
 
