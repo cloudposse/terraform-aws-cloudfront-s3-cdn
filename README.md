@@ -553,7 +553,7 @@ module "cdn" {
 | <a name="input_versioning_enabled"></a> [versioning\_enabled](#input\_versioning\_enabled) | When set to 'true' the s3 origin bucket will have versioning enabled | `bool` | `true` | no |
 | <a name="input_viewer_protocol_policy"></a> [viewer\_protocol\_policy](#input\_viewer\_protocol\_policy) | Limit the protocol users can use to access content. One of `allow-all`, `https-only`, or `redirect-to-https` | `string` | `"redirect-to-https"` | no |
 | <a name="input_wait_for_deployment"></a> [wait\_for\_deployment](#input\_wait\_for\_deployment) | When set to 'true' the resource will wait for the distribution status to change from InProgress to Deployed | `bool` | `true` | no |
-| <a name="input_web_acl_id"></a> [web\_acl\_id](#input\_web\_acl\_id) | ID of the AWS WAF web ACL that is associated with the distribution | `string` | `""` | no |
+| <a name="input_web_acl_id"></a> [web\_acl\_id](#input\_web\_acl\_id) | ID or ARN of the AWS WAF web ACL that is associated with the distribution. NOTE: If using the latest version of WAF (WAFv2), be sure to use the ARN. If using WAF Classic, use the ID. https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#web_acl_id-3 | `string` | `""` | no |
 | <a name="input_website_enabled"></a> [website\_enabled](#input\_website\_enabled) | Set to true to enable the created S3 bucket to serve as a website independently of Cloudfront,<br/>and to use that website as the origin. See the README for details and caveats. See also `s3_website_password_enabled`. | `bool` | `false` | no |
 
 ## Outputs
@@ -674,15 +674,15 @@ Setup dependencies:
 
 To run tests:
 
-- Run all tests:  
+- Run all tests:
   ```sh
   atmos test run
   ```
-- Clean up test artifacts:  
+- Clean up test artifacts:
   ```sh
   atmos test clean
   ```
-- Explore additional test options:  
+- Explore additional test options:
   ```sh
   atmos test --help
   ```
