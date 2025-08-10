@@ -6,4 +6,6 @@ module "minimal" {
   name      = var.name
 
   cloudfront_access_logging_enabled = false
+
+  context = module.this.context
 }
