@@ -98,6 +98,8 @@ locals {
     "me-south-1"   = "ap-south-1"
   }
   origin_shield_region = local.enabled ? lookup(local.origin_shield_region_fallback_map, data.aws_region.current[0].name, data.aws_region.current[0].name) : "this string is never used"
+
+  cors_origins = distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
 }
 
 ## Make up for deprecated template_file and lack of templatestring
@@ -318,14 +320,13 @@ resource "aws_s3_bucket" "origin" {
   dynamic "website" {
     for_each = var.website_enabled ? local.website_config[var.redirect_all_requests_to == "" ? "default" : "redirect_all"] : []
     content {
-      error_document           = lookup(website.value, "error_document", null)
-      index_document           = lookup(website.value, "index_document", null)
-      redirect_all_requests_to = lookup(website.value, "redirect_all_requests_to", null)
-      routing_rules            = lookup(website.value, "routing_rules", null)
+      error_document           = website.value.error_document
+      index_document           = website.value.index_document
+      redirect_all_requests_to = website.value.redirect_all_requests_to
+      routing_rules            = website.value.routing_rules
     }
   }
 }
-
 
 resource "aws_s3_bucket_versioning" "origin" {
   count = local.create_s3_origin_bucket ? 1 : 0
@@ -350,12 +351,12 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "origin" {
 }
 
 resource "aws_s3_bucket_cors_configuration" "origin" {
-  count = local.create_s3_origin_bucket ? 1 : 0
+  count = local.create_s3_origin_bucket && length(local.cors_origins) > 0 ? 1 : 0
 
   bucket = one(aws_s3_bucket.origin).id
 
   dynamic "cors_rule" {
-    for_each = distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
+    for_each = local.cors_origins
     content {
       allowed_headers = var.cors_allowed_headers
       allowed_methods = var.cors_allowed_methods
@@ -524,10 +525,12 @@ resource "aws_cloudfront_distribution" "default" {
     dynamic "custom_origin_config" {
       for_each = var.website_enabled ? [1] : []
       content {
-        http_port              = 80
-        https_port             = 443
-        origin_protocol_policy = "http-only"
-        origin_ssl_protocols   = var.origin_ssl_protocols
+        http_port                = 80
+        https_port               = 443
+        origin_protocol_policy   = "http-only"
+        origin_ssl_protocols     = var.origin_ssl_protocols
+        origin_keepalive_timeout = var.origin_keepalive_timeout
+        origin_read_timeout      = var.origin_read_timeout
       }
     }
     dynamic "custom_header" {
@@ -553,22 +556,32 @@ resource "aws_cloudfront_distribution" "default" {
     content {
       domain_name              = origin.value.domain_name
       origin_id                = origin.value.origin_id
-      origin_path              = lookup(origin.value, "origin_path", "")
-      origin_access_control_id = lookup(origin.value, "origin_access_control_id", null)
+      origin_path              = origin.value.origin_path
+      origin_access_control_id = origin.value.origin_access_control_id
+
       dynamic "custom_header" {
-        for_each = lookup(origin.value, "custom_headers", [])
+        for_each = origin.value.custom_headers
         content {
           name  = custom_header.value["name"]
           value = custom_header.value["value"]
         }
       }
+
       custom_origin_config {
-        http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
-        https_port               = lookup(origin.value.custom_origin_config, "https_port", 443)
-        origin_protocol_policy   = lookup(origin.value.custom_origin_config, "origin_protocol_policy", "https-only")
-        origin_ssl_protocols     = lookup(origin.value.custom_origin_config, "origin_ssl_protocols", ["TLSv1.2"])
-        origin_keepalive_timeout = lookup(origin.value.custom_origin_config, "origin_keepalive_timeout", 60)
-        origin_read_timeout      = lookup(origin.value.custom_origin_config, "origin_read_timeout", 60)
+        http_port                = origin.value.custom_origin_config.http_port
+        https_port               = origin.value.custom_origin_config.https_port
+        origin_protocol_policy   = origin.value.custom_origin_config.origin_protocol_policy
+        origin_ssl_protocols     = origin.value.custom_origin_config.origin_ssl_protocols
+        origin_keepalive_timeout = origin.value.custom_origin_config.origin_keepalive_timeout
+        origin_read_timeout      = origin.value.custom_origin_config.origin_read_timeout
+      }
+
+      dynamic "origin_shield" {
+        for_each = origin.value.origin_shield != null ? [origin.value.origin_shield] : []
+        content {
+          enabled              = origin.value.origin_shield.enabled
+          origin_shield_region = origin.value.origin_shield.region
+        }
       }
     }
   }
@@ -578,15 +591,31 @@ resource "aws_cloudfront_distribution" "default" {
     content {
       domain_name = origin.value.domain_name
       origin_id   = origin.value.origin_id
-      origin_path = lookup(origin.value, "origin_path", "")
+      origin_path = origin.value.origin_path
       # the following enables specifying the origin_access_control used by the origin created by this module, prior to the module's creation:
-      origin_access_control_id = local.origin_access_control_enabled && try(length(origin.value.s3_origin_config.origin_access_control_id), 0) > 0 ? origin.value.s3_origin_config.origin_access_control_id : local.origin_access_control_enabled ? aws_cloudfront_origin_access_control.default[0].id : null
+      origin_access_control_id = local.origin_access_control_enabled ? (
+        try(length(origin.value.origin_access_control_id), 0) > 0
+        ? origin.value.origin_access_control_id
+        : aws_cloudfront_origin_access_control.default[0].id
+      ) : null
 
       dynamic "s3_origin_config" {
         for_each = local.origin_access_identity_enabled ? var.s3_origins : []
         content {
           # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
-          origin_access_identity = local.origin_access_identity_enabled && try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.origin_access_identity_enabled ? local.cf_access.path : ""
+          origin_access_identity = (
+            try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0
+            ? origin.value.s3_origin_config.origin_access_identity
+            : local.cf_access.path
+          )
+        }
+      }
+
+      dynamic "origin_shield" {
+        for_each = origin.value.origin_shield_enabled ? [1] : []
+        content {
+          enabled              = true
+          origin_shield_region = local.origin_shield_region
         }
       }
     }
@@ -620,7 +649,8 @@ resource "aws_cloudfront_distribution" "default" {
         headers                 = var.forward_header_values
 
         cookies {
-          forward = var.forward_cookies
+          forward           = var.forward_cookies
+          whitelisted_names = var.forward_cookies == "whitelist" ? var.forward_cookies_whitelisted_names : null
         }
       }
     }
@@ -636,7 +666,7 @@ resource "aws_cloudfront_distribution" "default" {
       for_each = var.lambda_function_association
       content {
         event_type   = lambda_function_association.value.event_type
-        include_body = lookup(lambda_function_association.value, "include_body", null)
+        include_body = lambda_function_association.value.include_body
         lambda_arn   = lambda_function_association.value.lambda_arn
       }
     }
@@ -667,6 +697,13 @@ resource "aws_cloudfront_distribution" "default" {
       origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
       realtime_log_config_arn  = ordered_cache_behavior.value.realtime_log_config_arn
 
+      dynamic "grpc_config" {
+        for_each = ordered_cache_behavior.value.grpc_config != null ? [ordered_cache_behavior.value.grpc_config] : []
+        content {
+          enabled = grpc_config.value.enabled
+        }
+      }
+
       dynamic "forwarded_values" {
         # If a cache policy or origin request policy is specified, we cannot include a `forwarded_values` block at all in the API request
         for_each = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? [] : [true]
@@ -676,7 +713,7 @@ resource "aws_cloudfront_distribution" "default" {
 
           cookies {
             forward           = ordered_cache_behavior.value.forward_cookies
-            whitelisted_names = ordered_cache_behavior.value.forward_cookies_whitelisted_names
+            whitelisted_names = ordered_cache_behavior.value.forward_cookies == "whitelist" ? ordered_cache_behavior.value.forward_cookies_whitelisted_names : null
           }
         }
       }
@@ -691,7 +728,7 @@ resource "aws_cloudfront_distribution" "default" {
         for_each = try(ordered_cache_behavior.value.lambda_function_association, [])
         content {
           event_type   = lambda_function_association.value.event_type
-          include_body = lookup(lambda_function_association.value, "include_body", null)
+          include_body = lambda_function_association.value.include_body
           lambda_arn   = lambda_function_association.value.lambda_arn
         }
       }
@@ -716,10 +753,10 @@ resource "aws_cloudfront_distribution" "default" {
   dynamic "custom_error_response" {
     for_each = var.custom_error_response
     content {
-      error_caching_min_ttl = lookup(custom_error_response.value, "error_caching_min_ttl", null)
+      error_caching_min_ttl = custom_error_response.value.error_caching_min_ttl
       error_code            = custom_error_response.value.error_code
-      response_code         = lookup(custom_error_response.value, "response_code", null)
-      response_page_path    = lookup(custom_error_response.value, "response_page_path", null)
+      response_code         = custom_error_response.value.response_code
+      response_page_path    = custom_error_response.value.response_page_path
     }
   }
 
