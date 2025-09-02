@@ -5,7 +5,7 @@ module "website_default" {
   stage     = var.stage
   name      = var.name
 
-  // Distinguish this module instance from the one in main.tf and to prevent S3 bucket name collisions
+  // Distinguish this module instance from the one in main.tf and prevent S3 bucket name collisions
   attributes = concat(var.attributes, ["website"])
 
   cloudfront_access_logging_enabled = false
@@ -22,7 +22,7 @@ module "website_redirect_all" {
   stage     = var.stage
   name      = var.name
 
-  // Distinguish this module instance from the one in main.tf and to prevent S3 bucket name collisions
+  // Distinguish this module instance from the one in main.tf and prevent S3 bucket name collisions
   attributes = concat(var.attributes, ["website-redirect-all"])
 
   cloudfront_access_logging_enabled = false
