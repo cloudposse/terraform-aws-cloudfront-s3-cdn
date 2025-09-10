@@ -319,11 +319,12 @@ resource "aws_s3_bucket" "origin" {
 
   dynamic "website" {
     for_each = var.website_enabled ? local.website_config[var.redirect_all_requests_to == "" ? "default" : "redirect_all"] : []
+    # The lookup is needed to safely access optional website config keys, since locals defines 2 distinct flavours of website config
     content {
-      error_document           = website.value.error_document
-      index_document           = website.value.index_document
-      redirect_all_requests_to = website.value.redirect_all_requests_to
-      routing_rules            = website.value.routing_rules
+      error_document           = lookup(website.value, "error_document", null)
+      index_document           = lookup(website.value, "index_document", null)
+      redirect_all_requests_to = lookup(website.value, "redirect_all_requests_to", null)
+      routing_rules            = lookup(website.value, "routing_rules", null)
     }
   }
 }
