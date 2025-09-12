@@ -188,6 +188,12 @@ variable "forward_cookies" {
   description = "Specifies whether you want CloudFront to forward all or no cookies to the origin. Can be 'all' or 'none'"
 }
 
+variable "forward_cookies_whitelisted_names" {
+  type        = list(string)
+  description = "List of forwarded cookie names"
+  default     = []
+}
+
 variable "forward_header_values" {
   type        = list(string)
   description = "A list of whitelisted header values to forward to the origin (incompatible with `cache_policy_id`)"
@@ -318,10 +324,10 @@ variable "custom_error_response" {
   # http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages.html#custom-error-pages-procedure
   # https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#custom-error-response-arguments
   type = list(object({
-    error_caching_min_ttl = string
+    error_caching_min_ttl = optional(number, null)
     error_code            = string
-    response_code         = string
-    response_page_path    = string
+    response_code         = optional(number, null)
+    response_page_path    = optional(string, null)
   }))
 
   description = "List of one or more custom error response element maps"
@@ -331,7 +337,7 @@ variable "custom_error_response" {
 variable "lambda_function_association" {
   type = list(object({
     event_type   = string
-    include_body = bool
+    include_body = optional(bool, false)
     lambda_arn   = string
   }))
 
@@ -406,37 +412,41 @@ variable "ordered_cache" {
     target_origin_id = string
     path_pattern     = string
 
-    allowed_methods    = list(string)
-    cached_methods     = list(string)
-    compress           = bool
-    trusted_signers    = list(string)
-    trusted_key_groups = list(string)
+    allowed_methods    = optional(list(string), ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"])
+    cached_methods     = optional(list(string), ["GET", "HEAD"])
+    compress           = optional(bool, false)
+    trusted_signers    = optional(list(string), [])
+    trusted_key_groups = optional(list(string), [])
 
-    cache_policy_id          = string
-    origin_request_policy_id = string
-    realtime_log_config_arn  = optional(string)
+    cache_policy_id          = optional(string, null)
+    origin_request_policy_id = optional(string, null)
+    realtime_log_config_arn  = optional(string, null)
 
-    viewer_protocol_policy     = string
-    min_ttl                    = number
-    default_ttl                = number
-    max_ttl                    = number
-    response_headers_policy_id = string
+    viewer_protocol_policy     = optional(string, "redirect-to-https")
+    min_ttl                    = optional(number, 0)
+    default_ttl                = optional(number, 60)
+    max_ttl                    = optional(number, 31536000)
+    response_headers_policy_id = optional(string, "")
 
-    forward_query_string              = bool
-    forward_header_values             = list(string)
-    forward_cookies                   = string
-    forward_cookies_whitelisted_names = list(string)
+    grpc_config = optional(object({
+      enabled = bool
+    }), { enabled = false })
 
-    lambda_function_association = list(object({
+    forward_query_string              = optional(bool, false)
+    forward_header_values             = optional(list(string), [])
+    forward_cookies                   = optional(string, "none")
+    forward_cookies_whitelisted_names = optional(list(string), [])
+
+    lambda_function_association = optional(list(object({
       event_type   = string
-      include_body = bool
+      include_body = optional(bool, false)
       lambda_arn   = string
-    }))
+    })), [])
 
-    function_association = list(object({
+    function_association = optional(list(object({
       event_type   = string
       function_arn = string
-    }))
+    })), [])
   }))
   default     = []
   description = <<-EOT
@@ -450,20 +460,24 @@ variable "custom_origins" {
   type = list(object({
     domain_name              = string
     origin_id                = string
-    origin_path              = string
-    origin_access_control_id = optional(string)
-    custom_headers = list(object({
+    origin_path              = optional(string, "")
+    origin_access_control_id = optional(string, null)
+    custom_headers = optional(list(object({
       name  = string
       value = string
-    }))
+    })), [])
     custom_origin_config = object({
-      http_port                = number
-      https_port               = number
-      origin_protocol_policy   = string
-      origin_ssl_protocols     = list(string)
-      origin_keepalive_timeout = number
-      origin_read_timeout      = number
+      http_port                = optional(number, 80)
+      https_port               = optional(number, 443)
+      origin_protocol_policy   = optional(string, "https-only")
+      origin_ssl_protocols     = optional(list(string), ["TLSv1.2"])
+      origin_keepalive_timeout = optional(number, 5)
+      origin_read_timeout      = optional(number, 30)
     })
+    origin_shield = optional(object({
+      enabled = optional(bool, false)
+      region  = optional(string, null)
+    }), null)
   }))
   default     = []
   description = <<-EOT
@@ -477,11 +491,12 @@ variable "s3_origins" {
   type = list(object({
     domain_name              = string
     origin_id                = string
-    origin_path              = string
-    origin_access_control_id = string
-    s3_origin_config = object({
+    origin_path              = optional(string, "")
+    origin_access_control_id = optional(string, null)
+    s3_origin_config = optional(object({
       origin_access_identity = string
-    })
+    }), null)
+    origin_shield_enabled = optional(bool, false)
   }))
   default     = []
   description = <<-EOT
@@ -498,12 +513,6 @@ variable "website_enabled" {
     Set to true to enable the created S3 bucket to serve as a website independently of Cloudfront,
     and to use that website as the origin. See the README for details and caveats. See also `s3_website_password_enabled`.
     EOT
-}
-
-variable "versioning_enabled" {
-  type        = bool
-  default     = true
-  description = "When set to 'true' the s3 origin bucket will have versioning enabled"
 }
 
 variable "deployment_principal_arns" {
@@ -553,6 +562,18 @@ variable "origin_ssl_protocols" {
   type        = list(string)
   default     = ["TLSv1", "TLSv1.1", "TLSv1.2"]
   description = "The SSL/TLS protocols that you want CloudFront to use when communicating with your origin over HTTPS."
+}
+
+variable "origin_keepalive_timeout" {
+  type        = number
+  description = "The Custom KeepAlive timeout, in seconds. By default, AWS enforces a limit of 60. But you can request an increase."
+  default     = 5
+}
+
+variable "origin_read_timeout" {
+  type        = number
+  description = "The Custom Read timeout, in seconds. By default, AWS enforces a limit of 60. But you can request an increase."
+  default     = 30
 }
 
 variable "block_origin_public_access_enabled" {
