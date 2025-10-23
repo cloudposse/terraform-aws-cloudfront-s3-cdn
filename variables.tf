@@ -362,7 +362,7 @@ variable "function_association" {
 variable "web_acl_id" {
   type        = string
   default     = ""
-  description = "ID of the AWS WAF web ACL that is associated with the distribution"
+  description = "ID or ARN of the AWS WAF web ACL that is associated with the distribution. NOTE: If using the latest version of WAF (WAFv2), be sure to use the ARN. If using WAF Classic, use the ID. https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#web_acl_id-3"
 }
 
 variable "wait_for_deployment" {
