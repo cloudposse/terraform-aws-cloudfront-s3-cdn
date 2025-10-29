@@ -491,7 +491,7 @@ resource "aws_cloudfront_distribution" "default" {
   dynamic "origin_group" {
     for_each = var.origin_groups
     content {
-      origin_id = "${module.this.id}-group[${origin_group.key}]"
+      origin_id = try(length(origin_group.value.group_id), 0) > 0 ? origin_group.value.group_id : "${module.this.id}-group[${origin_group.key}]"
 
       failover_criteria {
         status_codes = origin_group.value.failover_criteria
