@@ -15,7 +15,7 @@ commands:
 - name: readme
   steps:
     - "atmos docs generate readme"
-    - "cd modules/lambda@edge && atmos readme"
+    - "atmos docs generate readme --chdir modules/lambda@edge"
 
 - name: test
   commands:
