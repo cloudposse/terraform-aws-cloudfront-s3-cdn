@@ -49,7 +49,7 @@ module "role" {
   for_each = local.functions
 
   source  = "cloudposse/iam-role/aws"
-  version = "0.19.0"
+  version = "0.22.0"
 
   use_fullname       = true
   policy_description = "Allow ${module.function_label[each.key].id} Lambda function to write to CloudWatch Logs"
