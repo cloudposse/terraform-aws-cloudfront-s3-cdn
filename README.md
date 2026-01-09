@@ -466,7 +466,7 @@ module "cdn" {
 | <a name="input_cloudfront_origin_access_control_id"></a> [cloudfront\_origin\_access\_control\_id](#input\_cloudfront\_origin\_access\_control\_id) | CloudFront provides two ways to send authenticated requests to an Amazon S3 origin: origin access control (OAC) and origin access identity (OAI). OAC helps you secure your origins, such as for Amazon S3. | `string` | `""` | no |
 | <a name="input_cloudfront_origin_access_identity_iam_arn"></a> [cloudfront\_origin\_access\_identity\_iam\_arn](#input\_cloudfront\_origin\_access\_identity\_iam\_arn) | Existing cloudfront origin access identity iam arn that is supplied in the s3 bucket policy | `string` | `""` | no |
 | <a name="input_cloudfront_origin_access_identity_path"></a> [cloudfront\_origin\_access\_identity\_path](#input\_cloudfront\_origin\_access\_identity\_path) | Existing cloudfront origin access identity path used in the cloudfront distribution's s3\_origin\_config content | `string` | `""` | no |
-| <a name="input_comment"></a> [comment](#input\_comment) | Comment for the CloudFront distribution | `string` | `"Managed by Terraform"` | no |
+| <a name="input_comment"></a> [comment](#input\_comment) | Comment/description of the CloudFront distribution. | `string` | `"Managed by Terraform"` | no |
 | <a name="input_compress"></a> [compress](#input\_compress) | Compress content for web requests that include Accept-Encoding: gzip in the request header | `bool` | `true` | no |
 | <a name="input_context"></a> [context](#input\_context) | Single object for setting entire context at once.<br/>See description of individual variables for details.<br/>Leave string and numeric variables as `null` to use default value.<br/>Individual variable settings (non-null) override settings in context object,<br/>except for attributes, tags, and additional\_tag\_map, which are merged. | `any` | <pre>{<br/>  "additional_tag_map": {},<br/>  "attributes": [],<br/>  "delimiter": null,<br/>  "descriptor_formats": {},<br/>  "enabled": true,<br/>  "environment": null,<br/>  "id_length_limit": null,<br/>  "label_key_case": null,<br/>  "label_order": [],<br/>  "label_value_case": null,<br/>  "labels_as_tags": [<br/>    "unset"<br/>  ],<br/>  "name": null,<br/>  "namespace": null,<br/>  "regex_replace_chars": null,<br/>  "stage": null,<br/>  "tags": {},<br/>  "tenant": null<br/>}</pre> | no |
 | <a name="input_cors_allowed_headers"></a> [cors\_allowed\_headers](#input\_cors\_allowed\_headers) | List of allowed headers for S3 bucket | `list(string)` | <pre>[<br/>  "*"<br/>]</pre> | no |
@@ -678,15 +678,15 @@ Setup dependencies:
 
 To run tests:
 
-- Run all tests:  
+- Run all tests:
   ```sh
   atmos test run
   ```
-- Clean up test artifacts:  
+- Clean up test artifacts:
   ```sh
   atmos test clean
   ```
-- Explore additional test options:  
+- Explore additional test options:
   ```sh
   atmos test --help
   ```

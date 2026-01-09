@@ -101,7 +101,7 @@ variable "default_root_object" {
 variable "comment" {
   type        = string
   default     = "Managed by Terraform"
-  description = "Comment for the CloudFront distribution"
+  description = "Comment/description of the CloudFront distribution."
 }
 
 variable "log_standard_transition_days" {
