@@ -601,7 +601,7 @@ resource "aws_cloudfront_distribution" "default" {
       ) : null
 
       dynamic "s3_origin_config" {
-        for_each = local.origin_access_identity_enabled ? var.s3_origins : []
+        for_each = local.origin_access_identity_enabled ? [1] : []
         content {
           # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
           origin_access_identity = (
