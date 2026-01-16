@@ -85,10 +85,6 @@ locals {
     ]
   }
 
-  # The "region" attribute was only added in the AWS provider version 6.0.0, so we fall back to name for older versions.
-  # This can be removed once the minimum required AWS provider version is 6.0.0 or newer
-  aws_region_name = local.enabled ? try(data.aws_region.current[0].region, data.aws_region.current[0].name) : "this string is never used"
-
   # Based on https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html#choose-origin-shield-region
   # If a region is not specified, we assume it supports Origin Shield.
   origin_shield_region_fallback_map = {
@@ -101,7 +97,7 @@ locals {
     "eu-north-1"   = "eu-west-2"
     "me-south-1"   = "ap-south-1"
   }
-  origin_shield_region = local.enabled ? lookup(local.origin_shield_region_fallback_map, local.aws_region_name, local.aws_region_name) : "this string is never used"
+  origin_shield_region = local.enabled ? lookup(local.origin_shield_region_fallback_map, data.aws_region.current[0].region, data.aws_region.current[0].region) : "this string is never used"
 
   cors_origins = distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
 }
