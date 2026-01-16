@@ -87,7 +87,7 @@ locals {
 
   # The "region" attribute was only added in the AWS provider version 6.0.0, so we fall back to name for older versions.
   # This can be removed once the minimum required AWS provider version is 6.0.0 or newer
-  aws_region_name = try(data.aws_region.current[0].region, data.aws_region.current[0].name)
+  aws_region_name = local.enabled ? try(data.aws_region.current[0].region, data.aws_region.current[0].name) : "this string is never used"
 
   # Based on https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/origin-shield.html#choose-origin-shield-region
   # If a region is not specified, we assume it supports Origin Shield.
