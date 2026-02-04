@@ -67,8 +67,21 @@ locals {
     local.lookup_cf_log_bucket ? data.aws_s3_bucket.cf_logs[0].bucket_domain_name : module.logs.bucket_domain_name
   ) : ""
 
-  use_default_acm_certificate = var.acm_certificate_arn == ""
-  minimum_protocol_version    = var.minimum_protocol_version == "" ? (local.use_default_acm_certificate ? "TLSv1" : "TLSv1.2_2021") : var.minimum_protocol_version
+  # Certificate type detection - three states: default, ACM, or IAM
+  use_iam_certificate     = var.iam_certificate_id != ""
+  use_acm_certificate     = var.acm_certificate_arn != "" && !local.use_iam_certificate
+  use_default_certificate = !local.use_acm_certificate && !local.use_iam_certificate
+
+  # Auto-select protocol version based on certificate type
+  # Default cert: TLSv1 (required by CloudFront)
+  # ACM cert: TLSv1.2_2021 (CloudFront best practice for custom domains)
+  # IAM cert: TLSv1 (standard for China regions)
+  # User override: Always respected if var.minimum_protocol_version is set
+  minimum_protocol_version = var.minimum_protocol_version == "" ? (
+    local.use_default_certificate ? "TLSv1" :
+    local.use_acm_certificate ? "TLSv1.2_2021" :
+    "TLSv1" # IAM certificate (China regions)
+  ) : var.minimum_protocol_version
 
   website_config = {
     redirect_all = [
@@ -486,7 +499,7 @@ resource "aws_cloudfront_distribution" "default" {
     }
   }
 
-  aliases = var.acm_certificate_arn != "" ? concat(var.aliases, var.external_aliases) : []
+  aliases = (var.acm_certificate_arn != "" || var.iam_certificate_id != "") ? concat(var.aliases, var.external_aliases) : []
 
   dynamic "origin_group" {
     for_each = var.origin_groups
@@ -623,10 +636,11 @@ resource "aws_cloudfront_distribution" "default" {
   }
 
   viewer_certificate {
-    acm_certificate_arn            = var.acm_certificate_arn
-    ssl_support_method             = local.use_default_acm_certificate ? null : "sni-only"
+    acm_certificate_arn            = local.use_acm_certificate ? var.acm_certificate_arn : null
+    iam_certificate_id             = local.use_iam_certificate ? var.iam_certificate_id : null
+    ssl_support_method             = local.use_default_certificate ? null : "sni-only"
     minimum_protocol_version       = local.minimum_protocol_version
-    cloudfront_default_certificate = local.use_default_acm_certificate
+    cloudfront_default_certificate = local.use_default_certificate
   }
 
   default_cache_behavior {
