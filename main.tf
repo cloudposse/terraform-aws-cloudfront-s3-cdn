@@ -97,7 +97,7 @@ locals {
     "eu-north-1"   = "eu-west-2"
     "me-south-1"   = "ap-south-1"
   }
-  origin_shield_region = local.enabled ? lookup(local.origin_shield_region_fallback_map, data.aws_region.current[0].name, data.aws_region.current[0].name) : "this string is never used"
+  origin_shield_region = local.enabled ? lookup(local.origin_shield_region_fallback_map, data.aws_region.current[0].region, data.aws_region.current[0].region) : "this string is never used"
 
   cors_origins = distinct(compact(concat(var.cors_allowed_origins, var.aliases, var.external_aliases)))
 }
@@ -514,7 +514,8 @@ resource "aws_cloudfront_distribution" "default" {
     origin_id   = local.origin_id
     origin_path = var.origin_path
     # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
-    origin_access_control_id = local.create_cloudfront_origin_access_control ? aws_cloudfront_origin_access_control.default[0].id : local.origin_access_control_enabled && length(compact([var.cloudfront_origin_access_control_id])) > 0 ? var.cloudfront_origin_access_control_id : null
+    origin_access_control_id    = local.create_cloudfront_origin_access_control ? aws_cloudfront_origin_access_control.default[0].id : local.origin_access_control_enabled && length(compact([var.cloudfront_origin_access_control_id])) > 0 ? var.cloudfront_origin_access_control_id : null
+    response_completion_timeout = var.response_completion_timeout
 
     dynamic "s3_origin_config" {
       for_each = !var.website_enabled && !local.origin_access_control_enabled ? [1] : []
@@ -555,10 +556,11 @@ resource "aws_cloudfront_distribution" "default" {
   dynamic "origin" {
     for_each = var.custom_origins
     content {
-      domain_name              = origin.value.domain_name
-      origin_id                = origin.value.origin_id
-      origin_path              = origin.value.origin_path
-      origin_access_control_id = origin.value.origin_access_control_id
+      domain_name                 = origin.value.domain_name
+      origin_id                   = origin.value.origin_id
+      origin_path                 = origin.value.origin_path
+      origin_access_control_id    = origin.value.origin_access_control_id
+      response_completion_timeout = origin.value.response_completion_timeout
 
       dynamic "custom_header" {
         for_each = origin.value.custom_headers
@@ -590,9 +592,10 @@ resource "aws_cloudfront_distribution" "default" {
   dynamic "origin" {
     for_each = var.s3_origins
     content {
-      domain_name = origin.value.domain_name
-      origin_id   = origin.value.origin_id
-      origin_path = origin.value.origin_path
+      domain_name                 = origin.value.domain_name
+      origin_id                   = origin.value.origin_id
+      origin_path                 = origin.value.origin_path
+      response_completion_timeout = origin.value.response_completion_timeout
       # the following enables specifying the origin_access_control used by the origin created by this module, prior to the module's creation:
       origin_access_control_id = local.origin_access_control_enabled ? (
         try(length(origin.value.origin_access_control_id), 0) > 0
