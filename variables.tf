@@ -101,7 +101,7 @@ variable "default_root_object" {
 variable "comment" {
   type        = string
   default     = "Managed by Terraform"
-  description = "Comment for the CloudFront distribution"
+  description = "Comment/description of the CloudFront distribution."
 }
 
 variable "log_standard_transition_days" {
@@ -362,7 +362,7 @@ variable "function_association" {
 variable "web_acl_id" {
   type        = string
   default     = ""
-  description = "ID of the AWS WAF web ACL that is associated with the distribution"
+  description = "ID or ARN of the AWS WAF web ACL that is associated with the distribution. NOTE: If using the latest version of WAF (WAFv2), be sure to use the ARN. If using WAF Classic, use the ID. https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#web_acl_id-3"
 }
 
 variable "wait_for_deployment" {
@@ -458,10 +458,11 @@ variable "ordered_cache" {
 
 variable "custom_origins" {
   type = list(object({
-    domain_name              = string
-    origin_id                = string
-    origin_path              = optional(string, "")
-    origin_access_control_id = optional(string, null)
+    domain_name                 = string
+    origin_id                   = string
+    origin_path                 = optional(string, "")
+    origin_access_control_id    = optional(string, null)
+    response_completion_timeout = optional(number, 0)
     custom_headers = optional(list(object({
       name  = string
       value = string
@@ -489,10 +490,11 @@ variable "custom_origins" {
 
 variable "s3_origins" {
   type = list(object({
-    domain_name              = string
-    origin_id                = string
-    origin_path              = optional(string, "")
-    origin_access_control_id = optional(string, null)
+    domain_name                 = string
+    origin_id                   = string
+    origin_path                 = optional(string, "")
+    origin_access_control_id    = optional(string, null)
+    response_completion_timeout = optional(number, 0)
     s3_origin_config = optional(object({
       origin_access_identity = string
     }), null)
@@ -574,6 +576,12 @@ variable "origin_read_timeout" {
   type        = number
   description = "The Custom Read timeout, in seconds. By default, AWS enforces a limit of 60. But you can request an increase."
   default     = 30
+}
+
+variable "response_completion_timeout" {
+  type        = number
+  description = "Time (in seconds) that a request from CloudFront to the origin can stay open and wait for a response. Must be integer greater than or equal to the value of origin_read_timeout. If omitted or explicitly set to 0, no maximum value is enforced."
+  default     = 0
 }
 
 variable "block_origin_public_access_enabled" {
