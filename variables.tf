@@ -749,8 +749,3 @@ variable "bucket_versioning" {
   }
 }
 
-variable "cloudfront_ignore_etag_changes" {
-  type        = bool
-  default     = false
-  description = "Set to `true` to ignore changes to the CloudFront distribution etag. This is useful when an external process updates the CloudFront distribution and you want to prevent Terraform from showing the etag change in plans and state."
-}

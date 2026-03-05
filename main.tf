@@ -477,7 +477,7 @@ resource "aws_cloudfront_distribution" "default" {
   ]
 
   lifecycle {
-    ignore_changes = var.cloudfront_ignore_etag_changes ? [etag] : []
+    ignore_changes = [etag]
   }
 
   dynamic "logging_config" {
