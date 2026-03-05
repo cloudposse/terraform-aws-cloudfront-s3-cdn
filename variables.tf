@@ -756,4 +756,3 @@ variable "bucket_versioning" {
     error_message = "Please choose one of 'Enabled', 'Disabled', or 'Suspended'"
   }
 }
-
