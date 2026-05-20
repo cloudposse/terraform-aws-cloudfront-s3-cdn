@@ -388,9 +388,9 @@ resource "aws_s3_bucket_public_access_block" "origin" {
   block_public_policy     = var.block_origin_public_access_enabled
   restrict_public_buckets = var.block_origin_public_access_enabled
 
-  # Always block ACL access. We're using policies instead
-  block_public_acls  = true
-  ignore_public_acls = true
+  # We block ACL access by default and use policies instead
+  block_public_acls  = var.block_public_acls
+  ignore_public_acls = var.ignore_public_acls
 }
 
 resource "aws_s3_bucket_ownership_controls" "origin" {
