@@ -696,6 +696,12 @@ variable "origin_groups" {
   EOT
 }
 
+variable "additional_metrics_enabled" {
+  type        = bool
+  default     = false
+  description = "When set to `true`, enables additional CloudFront real-time metrics (4xx/5xx error rates by HTTP status code, origin latency, and cache hit rate) via a monitoring subscription."
+}
+
 # Variables below here are DEPRECATED and should not be used anymore
 
 variable "access_log_bucket_name" {
