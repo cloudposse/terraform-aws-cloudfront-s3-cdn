@@ -10,13 +10,25 @@ variable "acm_certificate_arn" {
   default     = ""
 }
 
+variable "iam_certificate_id" {
+  type        = string
+  default     = ""
+  description = "IAM certificate ID for CloudFront viewer certificate. Alternative to ACM certificates, required for AWS China regions where ACM is unavailable. The certificate must be uploaded to IAM with path `/cloudfront/`. Format: ASCAI... (example: ASCAI1234567890EXAMPLE)"
+
+  validation {
+    condition     = !(var.acm_certificate_arn != "" && var.iam_certificate_id != "")
+    error_message = "Cannot specify both acm_certificate_arn and iam_certificate_id. Choose one based on your certificate management requirements."
+  }
+}
+
 variable "minimum_protocol_version" {
   type        = string
   description = <<-EOT
     Cloudfront TLS minimum protocol version.
-    If `var.acm_certificate_arn` is unset, only "TLSv1" can be specified. See: [AWS Cloudfront create-distribution documentation](https://docs.aws.amazon.com/cli/latest/reference/cloudfront/create-distribution.html)
+    If using the default CloudFront certificate (neither `var.acm_certificate_arn` nor `var.iam_certificate_id` set), only "TLSv1" can be specified.
+    See: [AWS Cloudfront create-distribution documentation](https://docs.aws.amazon.com/cli/latest/reference/cloudfront/create-distribution.html)
     and [Supported protocols and ciphers between viewers and CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html#secure-connections-supported-ciphers) for more information.
-    Defaults to "TLSv1.2_2021" unless `var.acm_certificate_arn` is unset, in which case it defaults to `TLSv1`
+    Defaults to "TLSv1.2_2021" for ACM certificates, "TLSv1" for IAM certificates or default certificate.
     EOT
   default     = ""
 }

@@ -307,6 +307,60 @@ usage: |2-
   Then you can use this method for supressing the superfluous errors.
   `TF_WARN_OUTPUT_ERRORS=1 terraform destroy`
 
+  ### Custom Domain Names with IAM Server Certificates
+
+  CloudFront supports IAM Server Certificates as an alternative to ACM certificates for custom domains.
+  IAM certificates work in all AWS regions and are particularly important for specific use cases.
+
+  #### When to Use IAM Certificates:
+
+  - **Required**: AWS China regions (cn-north-1, cn-northwest-1) where ACM is not available
+  - **Optional**: Any region for legacy certificates, external CAs, or organizational certificate management policies
+
+  #### How to Use IAM Certificates:
+
+  1. **Upload your SSL certificate to IAM**:
+
+  ```bash
+  aws iam upload-server-certificate \
+    --server-certificate-name my-cloudfront-cert \
+    --certificate-body file://certificate.crt \
+    --private-key file://private.key \
+    --certificate-chain file://chain.crt \
+    --path /cloudfront/
+  ```
+
+  2. **Get the certificate ID from the output** (format: `ASCAI...`)
+
+  3. **Use the IAM certificate ID in the module:**
+
+  ```hcl
+  module "cdn" {
+    source = "cloudposse/cloudfront-s3-cdn/aws"
+    # Cloud Posse recommends pinning every module to a specific version
+    # version = "x.x.x"
+
+    namespace = "eg"
+    stage     = "prod"
+    name      = "app"
+
+    # Use IAM certificate instead of ACM
+    iam_certificate_id = "ASCAI1234567890EXAMPLE"
+    aliases            = ["abc.example.com"]
+
+    dns_alias_enabled = true
+    parent_zone_name  = "example.com"
+
+    # ... other configuration
+  }
+  ```
+
+  **Important Notes:**
+  - The certificate MUST be uploaded to IAM with the path `/cloudfront/` to work with CloudFront
+  - You cannot specify both `acm_certificate_arn` and `iam_certificate_id` - choose one based on your requirements
+  - **ACM certificates** (recommended): Use for standard AWS regions when ACM is available
+  - **IAM certificates**: Use when ACM is unavailable (China regions) or when required by organizational policies
+
   #### Lambda@Edge
 
   This module also features a Lambda@Edge submodule. Its `lambda_function_association` output is meant to feed directly into the variable of the same name in the parent module.
