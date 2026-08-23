@@ -340,13 +340,18 @@ resource "aws_s3_bucket_versioning" "origin" {
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "origin" {
-  count = var.encryption_enabled && local.create_s3_origin_bucket ? 1 : 0
+  count = local.create_s3_origin_bucket && (var.encryption_enabled || var.blocked_encryption_types != null) ? 1 : 0
 
   bucket = one(aws_s3_bucket.origin).id
 
   rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
+    blocked_encryption_types = var.blocked_encryption_types
+
+    dynamic "apply_server_side_encryption_by_default" {
+      for_each = var.encryption_enabled ? [1] : []
+      content {
+        sse_algorithm = "AES256"
+      }
     }
   }
 }
