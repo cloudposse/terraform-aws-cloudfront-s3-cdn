@@ -377,6 +377,16 @@ variable "encryption_enabled" {
   description = "When set to 'true' the resource will have aes256 encryption enabled by default"
 }
 
+variable "blocked_encryption_types" {
+  type        = list(string)
+  default     = null
+  description = <<-EOT
+    List of server-side encryption types to block on the origin S3 bucket, e.g. `["SSE-C"]`.
+    Leave as `null` to keep whatever S3 already has in effect, including the AWS default
+    that disables SSE-C for buckets created from March 2026 onward.
+    EOT
+}
+
 variable "index_document" {
   type        = string
   default     = "index.html"

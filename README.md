@@ -392,7 +392,7 @@ module "cdn" {
 | Name | Version |
 | ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.13.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.40.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 2.2 |
 | <a name="requirement_time"></a> [time](#requirement\_time) | >= 0.7 |
 
@@ -400,7 +400,7 @@ module "cdn" {
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.13.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 6.40.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | >= 2.2 |
 | <a name="provider_time"></a> [time](#provider\_time) | >= 0.7 |
 
@@ -457,6 +457,7 @@ module "cdn" {
 | <a name="input_allowed_methods"></a> [allowed\_methods](#input\_allowed\_methods) | List of allowed methods (e.g. GET, PUT, POST, DELETE, HEAD) for AWS CloudFront | `list(string)` | <pre>[<br/>  "DELETE",<br/>  "GET",<br/>  "HEAD",<br/>  "OPTIONS",<br/>  "PATCH",<br/>  "POST",<br/>  "PUT"<br/>]</pre> | no |
 | <a name="input_attributes"></a> [attributes](#input\_attributes) | ID element. Additional attributes (e.g. `workers` or `cluster`) to add to `id`,<br/>in the order they appear in the list. New attributes are appended to the<br/>end of the list. The elements of the list are joined by the `delimiter`<br/>and treated as a single ID element. | `list(string)` | `[]` | no |
 | <a name="input_block_origin_public_access_enabled"></a> [block\_origin\_public\_access\_enabled](#input\_block\_origin\_public\_access\_enabled) | When set to 'true' the s3 origin bucket will have public access block enabled | `bool` | `false` | no |
+| <a name="input_blocked_encryption_types"></a> [blocked\_encryption\_types](#input\_blocked\_encryption\_types) | List of server-side encryption types to block on the origin S3 bucket, e.g. `["SSE-C"]`.<br/>Leave as `null` to keep whatever S3 already has in effect, including the AWS default<br/>that disables SSE-C for buckets created from March 2026 onward. | `list(string)` | `null` | no |
 | <a name="input_bucket_versioning"></a> [bucket\_versioning](#input\_bucket\_versioning) | State of bucket versioning option | `string` | `"Disabled"` | no |
 | <a name="input_cache_policy_id"></a> [cache\_policy\_id](#input\_cache\_policy\_id) | The unique identifier of the existing cache policy to attach to the default cache behavior.<br/>If not provided, this module will add a default cache policy using other provided inputs. | `string` | `null` | no |
 | <a name="input_cached_methods"></a> [cached\_methods](#input\_cached\_methods) | List of cached methods (e.g. GET, PUT, POST, DELETE, HEAD) | `list(string)` | <pre>[<br/>  "GET",<br/>  "HEAD"<br/>]</pre> | no |
