@@ -476,6 +476,10 @@ resource "aws_cloudfront_distribution" "default" {
     module.logs
   ]
 
+  lifecycle {
+    ignore_changes = [etag]
+  }
+
   dynamic "logging_config" {
     for_each = local.cloudfront_access_logging_enabled ? ["true"] : []
 
