@@ -142,6 +142,49 @@ usage: |2-
   }
   ```
 
+  The following adds an existing CloudFront VPC origin to the distribution and routes a cache behavior to it.
+  The `aws_cloudfront_vpc_origin` resource is intentionally managed outside this module because the private endpoint
+  usually has an independent lifecycle. The origin must meet the AWS VPC Origin prerequisites, including private
+  subnets and an Internet Gateway attached to its VPC. See [examples/vpc-origin](examples/vpc-origin) for a complete example.
+
+  ```hcl
+  resource "aws_cloudfront_vpc_origin" "app" {
+    vpc_origin_endpoint_config {
+      name                   = "private-app"
+      arn                    = aws_lb.internal.arn
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+
+      origin_ssl_protocols {
+        items    = ["TLSv1.2"]
+        quantity = 1
+      }
+    }
+  }
+
+  module "cdn" {
+    source = "cloudposse/cloudfront-s3-cdn/aws"
+    # Cloud Posse recommends pinning every module to a specific version
+    # version = "x.x.x"
+
+    custom_origins = [{
+      domain_name = aws_lb.internal.dns_name
+      origin_id   = "private-app"
+      vpc_origin_config = {
+        vpc_origin_id = aws_cloudfront_vpc_origin.app.id
+      }
+    }]
+
+    ordered_cache = [{
+      target_origin_id = "private-app"
+      path_pattern     = "/private/*"
+    }]
+
+    context = module.this.context
+  }
+  ```
+
   ### Background on CDNs, "Origins", S3 Buckets, and Web Servers
 
   #### CDNs and Origin Servers

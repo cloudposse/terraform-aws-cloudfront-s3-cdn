@@ -570,13 +570,25 @@ resource "aws_cloudfront_distribution" "default" {
         }
       }
 
-      custom_origin_config {
-        http_port                = origin.value.custom_origin_config.http_port
-        https_port               = origin.value.custom_origin_config.https_port
-        origin_protocol_policy   = origin.value.custom_origin_config.origin_protocol_policy
-        origin_ssl_protocols     = origin.value.custom_origin_config.origin_ssl_protocols
-        origin_keepalive_timeout = origin.value.custom_origin_config.origin_keepalive_timeout
-        origin_read_timeout      = origin.value.custom_origin_config.origin_read_timeout
+      dynamic "custom_origin_config" {
+        for_each = origin.value.custom_origin_config != null ? [origin.value.custom_origin_config] : []
+        content {
+          http_port                = custom_origin_config.value.http_port
+          https_port               = custom_origin_config.value.https_port
+          origin_protocol_policy   = custom_origin_config.value.origin_protocol_policy
+          origin_ssl_protocols     = custom_origin_config.value.origin_ssl_protocols
+          origin_keepalive_timeout = custom_origin_config.value.origin_keepalive_timeout
+          origin_read_timeout      = custom_origin_config.value.origin_read_timeout
+        }
+      }
+
+      dynamic "vpc_origin_config" {
+        for_each = origin.value.vpc_origin_config != null ? [origin.value.vpc_origin_config] : []
+        content {
+          vpc_origin_id            = vpc_origin_config.value.vpc_origin_id
+          origin_keepalive_timeout = vpc_origin_config.value.origin_keepalive_timeout
+          origin_read_timeout      = vpc_origin_config.value.origin_read_timeout
+        }
       }
 
       dynamic "origin_shield" {

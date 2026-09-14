@@ -135,6 +135,49 @@ module "cdn" {
 }
 ```
 
+The following adds an existing CloudFront VPC origin to the distribution and routes a cache behavior to it.
+The `aws_cloudfront_vpc_origin` resource is intentionally managed outside this module because the private endpoint
+usually has an independent lifecycle. The origin must meet the AWS VPC Origin prerequisites, including private
+subnets and an Internet Gateway attached to its VPC. See [examples/vpc-origin](examples/vpc-origin) for a complete example.
+
+```hcl
+resource "aws_cloudfront_vpc_origin" "app" {
+  vpc_origin_endpoint_config {
+    name                   = "private-app"
+    arn                    = aws_lb.internal.arn
+    http_port              = 80
+    https_port             = 443
+    origin_protocol_policy = "http-only"
+
+    origin_ssl_protocols {
+      items    = ["TLSv1.2"]
+      quantity = 1
+    }
+  }
+}
+
+module "cdn" {
+  source = "cloudposse/cloudfront-s3-cdn/aws"
+  # Cloud Posse recommends pinning every module to a specific version
+  # version = "x.x.x"
+
+  custom_origins = [{
+    domain_name = aws_lb.internal.dns_name
+    origin_id   = "private-app"
+    vpc_origin_config = {
+      vpc_origin_id = aws_cloudfront_vpc_origin.app.id
+    }
+  }]
+
+  ordered_cache = [{
+    target_origin_id = "private-app"
+    path_pattern     = "/private/*"
+  }]
+
+  context = module.this.context
+}
+```
+
 ### Background on CDNs, "Origins", S3 Buckets, and Web Servers
 
 #### CDNs and Origin Servers
@@ -478,7 +521,7 @@ module "cdn" {
 | <a name="input_cors_max_age_seconds"></a> [cors\_max\_age\_seconds](#input\_cors\_max\_age\_seconds) | Time in seconds that browser can cache the response for S3 bucket | `number` | `3600` | no |
 | <a name="input_custom_error_response"></a> [custom\_error\_response](#input\_custom\_error\_response) | List of one or more custom error response element maps | <pre>list(object({<br/>    error_caching_min_ttl = optional(number, null)<br/>    error_code            = string<br/>    response_code         = optional(number, null)<br/>    response_page_path    = optional(string, null)<br/>  }))</pre> | `[]` | no |
 | <a name="input_custom_origin_headers"></a> [custom\_origin\_headers](#input\_custom\_origin\_headers) | A list of origin header parameters that will be sent to origin | `list(object({ name = string, value = string }))` | `[]` | no |
-| <a name="input_custom_origins"></a> [custom\_origins](#input\_custom\_origins) | A list of additional custom website [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) for this distribution.<br/>The `origin_access_control_id` field specifies the Origin Access Control configuration to use for this origin.<br/>This is used to configure secure access between CloudFront and the origin. | <pre>list(object({<br/>    domain_name                 = string<br/>    origin_id                   = string<br/>    origin_path                 = optional(string, "")<br/>    origin_access_control_id    = optional(string, null)<br/>    response_completion_timeout = optional(number, 0)<br/>    custom_headers = optional(list(object({<br/>      name  = string<br/>      value = string<br/>    })), [])<br/>    custom_origin_config = object({<br/>      http_port                = optional(number, 80)<br/>      https_port               = optional(number, 443)<br/>      origin_protocol_policy   = optional(string, "https-only")<br/>      origin_ssl_protocols     = optional(list(string), ["TLSv1.2"])<br/>      origin_keepalive_timeout = optional(number, 5)<br/>      origin_read_timeout      = optional(number, 30)<br/>    })<br/>    origin_shield = optional(object({<br/>      enabled = optional(bool, false)<br/>      region  = optional(string, null)<br/>    }), null)<br/>  }))</pre> | `[]` | no |
+| <a name="input_custom_origins"></a> [custom\_origins](#input\_custom\_origins) | A list of additional custom website or VPC [origins](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#origin-arguments) for this distribution.<br/>The `origin_access_control_id` field specifies the Origin Access Control configuration to use for this origin.<br/>This is used to configure secure access between CloudFront and the origin.<br/>Exactly one of `custom_origin_config` or `vpc_origin_config` must be specified for each origin. | <pre>list(object({<br/>    domain_name                 = string<br/>    origin_id                   = string<br/>    origin_path                 = optional(string, "")<br/>    origin_access_control_id    = optional(string, null)<br/>    response_completion_timeout = optional(number, 0)<br/>    custom_headers = optional(list(object({<br/>      name  = string<br/>      value = string<br/>    })), [])<br/>    custom_origin_config = optional(object({<br/>      http_port                = optional(number, 80)<br/>      https_port               = optional(number, 443)<br/>      origin_protocol_policy   = optional(string, "https-only")<br/>      origin_ssl_protocols     = optional(list(string), ["TLSv1.2"])<br/>      origin_keepalive_timeout = optional(number, 5)<br/>      origin_read_timeout      = optional(number, 30)<br/>    }), null)<br/>    vpc_origin_config = optional(object({<br/>      vpc_origin_id            = string<br/>      origin_keepalive_timeout = optional(number, 5)<br/>      origin_read_timeout      = optional(number, 30)<br/>    }), null)<br/>    origin_shield = optional(object({<br/>      enabled = optional(bool, false)<br/>      region  = optional(string, null)<br/>    }), null)<br/>  }))</pre> | `[]` | no |
 | <a name="input_default_root_object"></a> [default\_root\_object](#input\_default\_root\_object) | Object that CloudFront return when requests the root URL | `string` | `"index.html"` | no |
 | <a name="input_default_ttl"></a> [default\_ttl](#input\_default\_ttl) | Default amount of time (in seconds) that an object is in a CloudFront cache | `number` | `60` | no |
 | <a name="input_delimiter"></a> [delimiter](#input\_delimiter) | Delimiter to be used between ID elements.<br/>Defaults to `-` (hyphen). Set to `""` to use no delimiter at all. | `string` | `null` | no |
