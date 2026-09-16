@@ -173,6 +173,9 @@ usage: |2-
       origin_id   = "private-app"
       vpc_origin_config = {
         vpc_origin_id = aws_cloudfront_vpc_origin.app.id
+
+        # Required when the VPC origin belongs to another AWS account.
+        # owner_account_id = "123456789012"
       }
     }]
 
