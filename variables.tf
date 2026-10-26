@@ -467,14 +467,19 @@ variable "custom_origins" {
       name  = string
       value = string
     })), [])
-    custom_origin_config = object({
+    custom_origin_config = optional(object({
       http_port                = optional(number, 80)
       https_port               = optional(number, 443)
       origin_protocol_policy   = optional(string, "https-only")
       origin_ssl_protocols     = optional(list(string), ["TLSv1.2"])
       origin_keepalive_timeout = optional(number, 5)
       origin_read_timeout      = optional(number, 30)
-    })
+    }), null)
+    vpc_origin_config = optional(object({
+      vpc_origin_id            = string
+      origin_keepalive_timeout = optional(number, 5)
+      origin_read_timeout      = optional(number, 30)
+    }), null)
     origin_shield = optional(object({
       enabled = optional(bool, false)
       region  = optional(string, null)
@@ -482,10 +487,19 @@ variable "custom_origins" {
   }))
   default     = []
   description = <<-EOT
-    A list of additional custom website [origins](https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#origin-arguments) for this distribution.
+    A list of additional custom website or VPC [origins](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution#origin-arguments) for this distribution.
     The `origin_access_control_id` field specifies the Origin Access Control configuration to use for this origin.
     This is used to configure secure access between CloudFront and the origin.
+    Exactly one of `custom_origin_config` or `vpc_origin_config` must be specified for each origin.
     EOT
+
+  validation {
+    condition = alltrue([
+      for origin in var.custom_origins :
+      (origin.custom_origin_config != null) != (origin.vpc_origin_config != null)
+    ])
+    error_message = "Exactly one of custom_origin_config or vpc_origin_config must be specified for each custom_origins entry."
+  }
 }
 
 variable "s3_origins" {
