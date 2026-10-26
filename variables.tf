@@ -479,7 +479,6 @@ variable "custom_origins" {
       vpc_origin_id            = string
       origin_keepalive_timeout = optional(number, 5)
       origin_read_timeout      = optional(number, 30)
-      owner_account_id         = optional(string, null)
     }), null)
     origin_shield = optional(object({
       enabled = optional(bool, false)

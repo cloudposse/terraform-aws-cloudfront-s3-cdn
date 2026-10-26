@@ -145,7 +145,8 @@ usage: |2-
   The following adds an existing CloudFront VPC origin to the distribution and routes a cache behavior to it.
   The `aws_cloudfront_vpc_origin` resource is intentionally managed outside this module because the private endpoint
   usually has an independent lifecycle. The origin must meet the AWS VPC Origin prerequisites, including private
-  subnets and an Internet Gateway attached to its VPC. See [examples/vpc-origin](examples/vpc-origin) for a complete example.
+  subnets and an Internet Gateway attached to its VPC. The VPC origin must belong to the same AWS account as the
+  distribution.
 
   ```hcl
   resource "aws_cloudfront_vpc_origin" "app" {
@@ -173,9 +174,6 @@ usage: |2-
       origin_id   = "private-app"
       vpc_origin_config = {
         vpc_origin_id = aws_cloudfront_vpc_origin.app.id
-
-        # Required when the VPC origin belongs to another AWS account.
-        # owner_account_id = "123456789012"
       }
     }]
 

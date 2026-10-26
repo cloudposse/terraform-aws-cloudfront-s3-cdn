@@ -588,7 +588,6 @@ resource "aws_cloudfront_distribution" "default" {
           vpc_origin_id            = vpc_origin_config.value.vpc_origin_id
           origin_keepalive_timeout = vpc_origin_config.value.origin_keepalive_timeout
           origin_read_timeout      = vpc_origin_config.value.origin_read_timeout
-          owner_account_id         = vpc_origin_config.value.owner_account_id
         }
       }
 
